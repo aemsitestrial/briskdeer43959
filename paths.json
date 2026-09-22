@@ -1,10 +1,10 @@
 {
   "mappings": [
-    "/content/2026/39/briskdeer43959/:/",
-    "/content/2026/39/briskdeer43959/configuration:/.helix/config.json",
-    "/content/2026/39/briskdeer43959/metadata:/metadata.json"
+    "/content/2026/38/briskdeer43959/:/",
+    "/content/2026/38/briskdeer43959/configuration:/.helix/config.json",
+    "/content/2026/38/briskdeer43959/metadata:/metadata.json"
   ],
   "includes": [
-    "/content/2026/39/briskdeer43959/"
+    "/content/2026/38/briskdeer43959/"
   ]
 }
