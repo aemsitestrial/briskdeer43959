@@ -32,19 +32,17 @@ export default function decorate(block) {
       return;
     }
 
-    // Individual Card Item Setup
+    // Individual Card Component
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
 
-    // Helper to safely extract property text
     const getVal = (name) => {
       const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
       if (field) return field.textContent.trim();
       return '';
     };
 
-    // Helper to search all nested images inside a property container
     const getImg = (name) => {
       const propContainer = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
       if (propContainer) {
@@ -53,18 +51,23 @@ export default function decorate(block) {
       return null;
     };
 
-    // Parse author selection for Card Color
-    const authoredColor = getVal('defaultCardColor').toLowerCase();
-    let cardColorClass = 'grey'; // fallback only if author left it empty
+    const colorVal = getVal('defaultCardColor').toLowerCase();
+    const motionVal = getVal('motionType').toLowerCase();
+    const showIcon = getVal('showIcon') !== 'false';
+    const showTitle = getVal('showTitle') !== 'false';
+    const showDesc = getVal('showDesc') !== 'false';
 
-    if (authoredColor.includes('blue')) {
+    const eyebrow = getVal('eyebrow');
+    const title = getVal('title');
+    const desc = getVal('description');
+
+    // Color Class Logic
+    let cardColorClass = 'grey';
+    if (colorVal.includes('blue')) {
       cardColorClass = 'blue';
-    } else if (authoredColor.includes('black')) {
+    } else if (colorVal.includes('black')) {
       cardColorClass = 'black';
-    } else if (authoredColor.includes('grey')) {
-      cardColorClass = 'grey';
     } else {
-      // Direct raw text check across row children if data-aue-prop attribute is absent
       const rawText = row.textContent.toLowerCase();
       if (rawText.includes('blue')) {
         cardColorClass = 'blue';
@@ -74,37 +77,22 @@ export default function decorate(block) {
     }
     card.classList.add(`card-color-${cardColorClass}`);
 
-    // Motion Type
-    const motionVal = getVal('motionType').toLowerCase();
     if (motionVal && motionVal !== 'none') {
       card.classList.add(`motion-${motionVal}`);
     }
 
-    // Toggles
-    const showIcon = getVal('showIcon') !== 'false';
-    const showTitle = getVal('showTitle') !== 'false';
-    const showDesc = getVal('showDesc') !== 'false';
-
-    const eyebrow = getVal('eyebrow');
-    const title = getVal('title');
-    const desc = getVal('description');
-
-    // Image Extractions
-    const iconImg = getImg('icon') || row.querySelector('img:not([data-aue-prop="cardBgImage"] img)');
+    // Background Image
     const bgImg = getImg('cardBgImage');
-
-    // Set Card Background Image if authored
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    // Render Icon Top
+    // Top Icon
+    const iconImg = getImg('icon') || row.querySelector('img:not([data-aue-prop="cardBgImage"] img)');
     if (showIcon && iconImg) {
       const iconWrap = document.createElement('div');
       iconWrap.classList.add('icon-card-icon');
-
-      // Preserve original picture/img structure for Universal Editor
       const pictureParent = iconImg.closest('picture');
       if (pictureParent) {
         iconWrap.appendChild(pictureParent.cloneNode(true));
@@ -114,7 +102,7 @@ export default function decorate(block) {
       card.appendChild(iconWrap);
     }
 
-    // Content Wrapper
+    // Card Content Wrapper
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 

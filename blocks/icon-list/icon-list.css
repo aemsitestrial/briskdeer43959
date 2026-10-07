@@ -63,15 +63,15 @@
   min-height: 453px;
 }
 
-/* Individual Icon Card (Figma: Card - Graphic) */
+/* Individual Icon Card Component */
 .icon-card {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-start;
   padding: 24px;
-  gap: 10px;
+  gap: 20px;
   width: 302px;
   min-width: 240px;
   height: 453px;
@@ -81,6 +81,7 @@
   position: relative;
   isolation: isolate;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 /* Color Variations */
@@ -110,7 +111,7 @@
   box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
 }
 
-/* Top Icon (Figma: 48px x 48px) */
+/* Top Icon Dimensions */
 .icon-card-icon {
   width: 48px;
   height: 48px;
@@ -118,9 +119,11 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-bottom: 4px;
 }
 
-.icon-card-icon img {
+.icon-card-icon img,
+.icon-card-icon picture {
   width: 48px;
   height: 48px;
   object-fit: contain;
@@ -143,6 +146,7 @@
   align-items: flex-start;
   gap: 12px;
   width: 100%;
+  flex-grow: 1;
 }
 
 .icon-card-eyebrow {
@@ -150,37 +154,38 @@
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
-  line-height: 160%;
+  line-height: 140%;
   letter-spacing: 0.01em;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
-/* Card Title / Statistic (Figma: Display 2 & Display 3) */
+/* Card Title / Statistic Text */
 .icon-card-title {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 64px;
-  line-height: 120%;
+  font-size: 76px;
+  line-height: 110%;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .icon-card.card-color-blue .icon-card-title {
-  color: #f3f3f3;
+  color: #fff;
 }
 
 .icon-card.card-color-grey .icon-card-title {
   color: #303030;
 }
 
-/* Card Description (Figma: Body 3) */
+/* Card Description Text */
 .icon-card-desc {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 16px;
-  line-height: 160%;
-  letter-spacing: 0.01em;
+  font-size: 34px;
+  line-height: 125%;
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
@@ -202,7 +207,15 @@
   .icon-card {
     width: calc(50% - 12px);
     height: auto;
-    min-height: 400px;
+    min-height: 420px;
+  }
+
+  .icon-card-title {
+    font-size: 64px;
+  }
+
+  .icon-card-desc {
+    font-size: 28px;
   }
 }
 
@@ -213,7 +226,7 @@
 
   .icon-card {
     width: 100%;
-    min-height: 350px;
+    min-height: 380px;
   }
 
   .icon-list-title {
@@ -221,6 +234,10 @@
   }
 
   .icon-card-title {
-    font-size: 48px;
+    font-size: 56px;
+  }
+
+  .icon-card-desc {
+    font-size: 24px;
   }
 }
