@@ -22,6 +22,22 @@
   padding: 0;
 }
 
+.footer-sai-wrapper.footer-sai-authoring::before {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--footer-border);
+  background: var(--footer-surface);
+  color: var(--footer-muted);
+  content: "Footer";
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  pointer-events: none;
+}
+
 .footer-sai-wrapper.footer-sai-theme-soft-white {
   --footer-bg: #f7f5f2;
   --footer-surface: #fff;

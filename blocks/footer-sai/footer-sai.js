@@ -1,4 +1,5 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
+import { isAuthoringMode } from '../../scripts/endpointconfig.js';
 import decorateCanvasSearchHero from '../canvas-search-hero/canvas-search-hero.js';
 
 function getCells(row) {
@@ -282,6 +283,7 @@ export default function decorate(block) {
     .filter((className) => className.startsWith('footer-sai-theme-'))
     .forEach((className) => block.classList.remove(className));
   block.classList.add('footer-sai-wrapper');
+  if (isAuthoringMode()) block.classList.add('footer-sai-authoring');
   if (selectedTheme) block.classList.add(`footer-sai-theme-${selectedTheme}`);
   if (motionOptions.includes(motionValue)) block.classList.add(`footer-sai-motion-${motionValue}`);
   wrapper.append(heroContainer, mainContentContainer);
