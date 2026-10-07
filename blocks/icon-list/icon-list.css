@@ -1,4 +1,4 @@
-/* Block Outer Section Wrapper */
+/* Block Outer Section Wrapper (Figma: Content Section) */
 .icon-list-wrapper {
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@
   max-width: 1280px;
 }
 
-/* Header Text Lockup */
+/* Header Text Lockup (Figma: header-body-text-lockup) */
 .icon-list-header {
   display: flex;
   flex-direction: column;
@@ -52,18 +52,19 @@
   margin: 0;
 }
 
-/* 4-Column Grid Slot */
+/* 4-Column Grid Slot (Figma: 4 Column Slot) */
 .icon-list-cards-grid {
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
+  align-content: flex-start;
   gap: 24px;
   width: 100%;
   max-width: 1280px;
   min-height: 453px;
 }
 
-/* Individual Icon Card Component */
+/* Individual Icon Card Component (Figma: Card - Graphic) */
 .icon-card {
   box-sizing: border-box;
   display: flex;
@@ -71,9 +72,9 @@
   justify-content: flex-start;
   align-items: flex-start;
   padding: 24px;
-  gap: 20px;
+  gap: 12px;
   width: 302px;
-  min-width: 240px;
+  min-width: 180px;
   height: 453px;
   flex-grow: 1;
   background-size: cover;
@@ -84,7 +85,7 @@
   overflow: hidden;
 }
 
-/* Color Variations */
+/* Card Color Variations */
 .icon-card.card-color-blue {
   background-color: #4673db;
   color: #fff;
@@ -100,24 +101,24 @@
   color: #fff;
 }
 
-/* Card Background Image Support */
+/* Background Image Support */
 .icon-card.has-bg-image {
   background-repeat: no-repeat;
 }
 
-/* Motion Types */
+/* Motion Animation */
 .icon-card.motion-hover-lift:hover {
   transform: translateY(-6px);
   box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
 }
 
-/* Top Icon Dimensions */
+/* Icon Dimensions (Figma: Header / Icon - 48px x 48px) */
 .icon-card-icon {
   width: 48px;
   height: 48px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
   margin-bottom: 4px;
 }
@@ -129,7 +130,7 @@
   object-fit: contain;
 }
 
-/* Light Icon Color for Dark/Blue Cards */
+/* Invert Icon Color on Dark Backgrounds */
 .icon-card.card-color-blue .icon-card-icon img,
 .icon-card.card-color-black .icon-card-icon img {
   filter: brightness(0) invert(1);
@@ -139,65 +140,68 @@
   filter: none;
 }
 
-/* Content Container Inside Card */
+/* Card Text Container (Figma: Card Text and Metadata - width: 254px) */
 .icon-card-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  width: 100%;
-  flex-grow: 1;
+  gap: 8px;
+  width: 254px;
+  max-width: 100%;
 }
 
+/* Overline / Eyebrow (Figma: Overline) */
 .icon-card-eyebrow {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
-  line-height: 140%;
+  line-height: 160%;
   letter-spacing: 0.01em;
-  opacity: 0.9;
+  color: #cdcdcd;
 }
 
-/* Card Title / Statistic Text */
+.icon-card.card-color-grey .icon-card-eyebrow {
+  color: #5a5a5a;
+}
+
+/* Statistic Title (Figma: Display 2 - 64px) */
 .icon-card-title {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 76px;
-  line-height: 110%;
-  letter-spacing: -0.02em;
+  font-size: 64px;
+  line-height: 120%;
   margin: 0;
 }
 
 .icon-card.card-color-blue .icon-card-title {
-  color: #fff;
+  color: #f3f3f3;
 }
 
 .icon-card.card-color-grey .icon-card-title {
   color: #303030;
 }
 
-/* Card Description Text */
+/* Description / Subtitle (Figma: Display 3 - 40px) */
 .icon-card-desc {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 34px;
-  line-height: 125%;
-  letter-spacing: -0.01em;
+  font-size: 40px;
+  line-height: 120%;
   margin: 0;
 }
 
 .icon-card.card-color-blue .icon-card-desc {
-  color: #fff;
+  color: #f3f3f3;
 }
 
 .icon-card.card-color-grey .icon-card-desc {
   color: #303030;
 }
 
-/* Responsive Layout */
+/* Responsive Viewport Adjustments */
 @media (width <= 1024px) {
   .icon-list-wrapper {
     padding: 60px 32px;
@@ -211,11 +215,11 @@
   }
 
   .icon-card-title {
-    font-size: 64px;
+    font-size: 52px;
   }
 
   .icon-card-desc {
-    font-size: 28px;
+    font-size: 32px;
   }
 }
 
@@ -234,10 +238,10 @@
   }
 
   .icon-card-title {
-    font-size: 56px;
+    font-size: 44px;
   }
 
   .icon-card-desc {
-    font-size: 24px;
+    font-size: 26px;
   }
 }

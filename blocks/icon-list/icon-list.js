@@ -32,7 +32,7 @@ export default function decorate(block) {
       return;
     }
 
-    // Individual Card Component
+    // Individual Card Item Setup
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
