@@ -34,10 +34,12 @@ function getItemType(row) {
     return 'footer-sai-tcs-logo';
   }
   if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
-  if (values.some((value) => value.toLowerCase().includes('copyright')) || cells.length >= 3) {
+  if (values.some((value) => value.toLowerCase().includes('copyright'))
+    || cells.length >= 4
+    || (cells.length === 3 && !values[0])) {
     return 'footer-sai-legal-item';
   }
-  if (cells.length === 2 && values[0]) return 'footer-sai-nav-item';
+  if (cells.length >= 2 && values[0]) return 'footer-sai-nav-item';
   return '';
 }
 
@@ -62,11 +64,19 @@ function getThemeValueFromBlock(block) {
     .replace(/\s+/g, '-');
 }
 
-function createLink(label, href) {
+function createLink(label, href, target) {
   if (!label) return null;
   const link = document.createElement('a');
   link.textContent = label;
   link.href = href || '#';
+  const normalizedTarget = String(target || '').trim().toLowerCase().replace(/\s+/g, '-');
+  const opensNewTab = ['_blank', 'blank', 'new-tab', 'new-window'].includes(normalizedTarget);
+  if (opensNewTab) {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  } else if (normalizedTarget === '_self' || normalizedTarget === 'same-tab') {
+    link.target = '_self';
+  }
   return link;
 }
 
@@ -132,9 +142,15 @@ export default function decorate(block) {
   wrapper.className = 'footer-sai-content';
 
   const themeOptions = ['soft-white', 'powder-blue', 'sage-green', 'blush-pink', 'lavender', 'warm-cream', 'dark'];
+  const motionOptions = ['fade', 'slide-up'];
   let selectedTheme = '';
   const blockThemeValue = getThemeValueFromBlock(block);
   if (themeOptions.includes(blockThemeValue)) selectedTheme = blockThemeValue;
+  const motionProperty = block.querySelector('[data-aue-prop="motion"]');
+  const motionValue = (motionProperty?.dataset?.value || motionProperty?.textContent || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-');
 
   const heroContainer = document.createElement('div');
   heroContainer.className = 'footer-sai-hero';
@@ -208,7 +224,7 @@ export default function decorate(block) {
     } else if (itemType === 'footer-sai-nav-item') {
       const navItem = document.createElement('div');
       navItem.className = 'footer-sai-nav-item';
-      const link = createLink(values[0], values[1]);
+      const link = createLink(values[0], values[1], values[2]);
       if (link) navItem.appendChild(link);
       moveInstrumentation(row, navItem);
       navContainer.appendChild(navItem);
@@ -222,7 +238,7 @@ export default function decorate(block) {
         copyrightElement.textContent = copyright;
         copyrightTextElement = copyrightElement;
       }
-      const link = createLink(values[1], values[2]);
+      const link = createLink(values[1], values[2], values[3]);
       if (link) {
         moveInstrumentation(row, link);
         legalLinksContainer.appendChild(link);
@@ -258,6 +274,7 @@ export default function decorate(block) {
     .forEach((className) => block.classList.remove(className));
   block.classList.add('footer-sai-wrapper');
   if (selectedTheme) block.classList.add(`footer-sai-theme-${selectedTheme}`);
+  if (motionOptions.includes(motionValue)) block.classList.add(`footer-sai-motion-${motionValue}`);
   wrapper.append(heroContainer, mainContentContainer);
   block.replaceChildren(wrapper);
 }
