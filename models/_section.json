@@ -64,7 +64,9 @@
         "text",
         "title",
 	"teaser",
-        "video"
+        "video",
+        "footer-sai",
+        "canvas-search-hero"
       ]
     }
   ]

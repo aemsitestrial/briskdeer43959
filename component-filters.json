@@ -29,13 +29,22 @@
       "text",
       "title",
       "teaser",
-      "video"
+      "video",
+      "footer-sai",
+      "canvas-search-hero"
     ]
   },
   {
     "id": "accordion",
     "components": [
       "accordion-item"
+    ]
+  },
+  {
+    "id": "canvas-search-hero",
+    "components": [
+      "canvas-search-hero-settings",
+      "canvas-search-hero-cta"
     ]
   },
   {
@@ -63,6 +72,17 @@
       "image",
       "button",
       "title"
+    ]
+  },
+  {
+    "id": "footer-sai",
+    "components": [
+      "footer-sai-hero",
+      "footer-sai-nav-item",
+      "footer-sai-legal-item",
+      "footer-sai-tcs-logo",
+      "footer-sai-tata-logo",
+      "canvas-search-hero-settings"
     ]
   },
   {

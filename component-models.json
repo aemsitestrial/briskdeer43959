@@ -203,6 +203,133 @@
     ]
   },
   {
+    "id": "canvas-search-hero-settings",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "heading",
+        "label": "Heading",
+        "value": "What are you looking to do?"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "backgroundStyle",
+        "label": "Background Style",
+        "value": "light",
+        "options": [
+          {
+            "name": "Light",
+            "value": "light"
+          },
+          {
+            "name": "Dark",
+            "value": "dark"
+          },
+          {
+            "name": "Image",
+            "value": "image"
+          }
+        ]
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "backgroundImage",
+        "label": "Background Image",
+        "multi": false,
+        "condition": {
+          "==": [
+            {
+              "var": "backgroundStyle"
+            },
+            "image"
+          ]
+        }
+      },
+      {
+        "component": "select",
+        "name": "headingFont",
+        "label": "Heading Font",
+        "value": "roboto",
+        "options": [
+          {
+            "name": "Roboto",
+            "value": "roboto"
+          },
+          {
+            "name": "Roboto Condensed",
+            "value": "roboto-condensed"
+          }
+        ]
+      },
+      {
+        "component": "boolean",
+        "name": "enableSearch",
+        "label": "Enable Search",
+        "value": true
+      },
+      {
+        "component": "select",
+        "name": "searchMode",
+        "label": "Search Input Mode",
+        "value": "text-and-voice",
+        "options": [
+          {
+            "name": "Text",
+            "value": "text"
+          },
+          {
+            "name": "Voice",
+            "value": "voice"
+          },
+          {
+            "name": "Text and Voice",
+            "value": "text-and-voice"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "searchPlaceholder",
+        "label": "Search Placeholder",
+        "value": "Ask TCS..."
+      },
+      {
+        "component": "aem-content",
+        "name": "searchActionUrl",
+        "label": "Search Results Page URL",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "canvas-search-hero-cta",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "ctaLabel",
+        "label": "CTA Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "ctaLink",
+        "label": "CTA Link",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -349,6 +476,199 @@
         "valueType": "string",
         "name": "embed_uri",
         "label": "URI"
+      }
+    ]
+  },
+  {
+    "id": "footer-sai",
+    "fields": [
+      {
+        "component": "multiselect",
+        "name": "classes",
+        "label": "Footer Theme",
+        "valueType": "string",
+        "required": false,
+        "maxSize": 1,
+        "options": [
+          {
+            "name": "Theme",
+            "children": [
+              {
+                "name": "Dark",
+                "value": "footer-sai-theme-dark"
+              },
+              {
+                "name": "Soft White",
+                "value": "footer-sai-theme-soft-white"
+              },
+              {
+                "name": "Powder Blue",
+                "value": "footer-sai-theme-powder-blue"
+              },
+              {
+                "name": "Sage Green",
+                "value": "footer-sai-theme-sage-green"
+              },
+              {
+                "name": "Blush Pink",
+                "value": "footer-sai-theme-blush-pink"
+              },
+              {
+                "name": "Lavender",
+                "value": "footer-sai-theme-lavender"
+              },
+              {
+                "name": "Warm Cream",
+                "value": "footer-sai-theme-warm-cream"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "footer-sai-hero",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "heading",
+        "label": "Heading",
+        "value": ""
+      },
+      {
+        "component": "boolean",
+        "name": "enableSearch",
+        "label": "Enable Search Bar",
+        "value": true
+      },
+      {
+        "component": "select",
+        "name": "searchMode",
+        "label": "AI Search Input Mode",
+        "value": "text-and-voice",
+        "options": [
+          {
+            "name": "Text",
+            "value": "text"
+          },
+          {
+            "name": "Voice",
+            "value": "voice"
+          },
+          {
+            "name": "Text and Voice",
+            "value": "text-and-voice"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "searchPlaceholder",
+        "label": "Search Placeholder Text",
+        "value": "Search..."
+      },
+      {
+        "component": "aem-content",
+        "name": "searchActionUrl",
+        "label": "Search Results Page URL",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "footer-sai-nav-item",
+    "fields": [
+      {
+        "component": "text",
+        "name": "linkText",
+        "label": "Link Text",
+        "valueType": "string"
+      },
+      {
+        "component": "aem-content",
+        "name": "linkCta",
+        "label": "Link CTA",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "footer-sai-legal-item",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "copyrightText",
+        "label": "Copyright Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "label",
+        "label": "Legal Link Label",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "name": "linkCta",
+        "label": "Legal Link URL",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "footer-sai-tcs-logo",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "tcsLogo",
+        "label": "TCS Logo Image",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tcsLogoAlt",
+        "label": "TCS Logo Alt Text",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "tcsLogoLink",
+        "label": "TCS Logo Link URL",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "footer-sai-tata-logo",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "tataLogo",
+        "label": "Tata Logo Image",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "tataLogoAlt",
+        "label": "Tata Logo Alt Text",
+        "value": ""
+      },
+      {
+        "component": "aem-content",
+        "valueType": "string",
+        "name": "tataLogoLink",
+        "label": "Tata Logo Link URL",
+        "value": ""
       }
     ]
   },
