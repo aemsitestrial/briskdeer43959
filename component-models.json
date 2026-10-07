@@ -5748,15 +5748,13 @@
         "component": "text",
         "valueType": "string",
         "name": "title",
-        "label": "List Title",
-        "value": "Banking today"
+        "label": "List Title"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "description",
-        "label": "List Description",
-        "value": ""
+        "label": "List Description"
       }
     ]
   },
@@ -5767,8 +5765,7 @@
         "component": "text",
         "valueType": "string",
         "name": "eyebrow",
-        "label": "Eyebrow",
-        "value": ""
+        "label": "Eyebrow"
       },
       {
         "component": "select",
@@ -5818,15 +5815,13 @@
         "component": "reference",
         "valueType": "string",
         "name": "icon",
-        "label": "Icon",
-        "value": ""
+        "label": "Icon"
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "cardBgImage",
-        "label": "Card BG Image",
-        "value": ""
+        "label": "Card BG Image"
       },
       {
         "component": "select",
@@ -5852,15 +5847,13 @@
         "component": "text",
         "valueType": "string",
         "name": "title",
-        "label": "Title / Statistic",
-        "value": ""
+        "label": "Title / Statistic"
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "description",
-        "label": "Description",
-        "value": ""
+        "label": "Description"
       }
     ]
   },
