@@ -7,7 +7,8 @@ export default function decorate(block) {
 
   [...block.children].forEach((row) => {
     const modelName = row.dataset.aueModel || row.dataset.model || '';
-    const isHeaderRow = modelName === 'icon-list' || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
+    const isHeaderRow = modelName === 'icon-list'
+      || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
 
     if (isHeaderRow) {
       const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]') || row.children[0];
@@ -31,7 +32,7 @@ export default function decorate(block) {
       return;
     }
 
-    // Build Individual Card Component
+    // Individual Card Item Setup
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
@@ -42,8 +43,8 @@ export default function decorate(block) {
       return '';
     };
 
-    const color = getVal('defaultCardColor').toLowerCase() || 'grey';
-    const motion = getVal('motionType').toLowerCase() || 'none';
+    const colorVal = getVal('defaultCardColor').toLowerCase();
+    const motionVal = getVal('motionType').toLowerCase();
     const showIcon = getVal('showIcon') !== 'false';
     const showTitle = getVal('showTitle') !== 'false';
     const showDesc = getVal('showDesc') !== 'false';
@@ -52,27 +53,33 @@ export default function decorate(block) {
     const title = getVal('title');
     const desc = getVal('description');
 
-    const iconImg = row.querySelector('[data-aue-prop="icon"] img, [data-name="icon"] img');
-    const bgImg = row.querySelector('[data-aue-prop="cardBgImage"] img, [data-name="cardBgImage"] img');
+    // Robust Image Extraction for Universal Editor
+    const iconContainer = row.querySelector('[data-aue-prop="icon"], [data-name="icon"]');
+    const bgImgContainer = row.querySelector('[data-aue-prop="cardBgImage"], [data-name="cardBgImage"]');
 
+    const iconImg = iconContainer ? iconContainer.querySelector('img') : null;
+    const bgImg = bgImgContainer ? bgImgContainer.querySelector('img') : null;
+
+    // Background Color Class Logic
     let cardColorClass = 'grey';
-    if (color.includes('blue')) {
+    if (colorVal.includes('blue')) {
       cardColorClass = 'blue';
-    } else if (color.includes('black')) {
+    } else if (colorVal.includes('black')) {
       cardColorClass = 'black';
     }
     card.classList.add(`card-color-${cardColorClass}`);
 
-    if (motion && motion !== 'none') {
-      card.classList.add(`motion-${motion}`);
+    if (motionVal && motionVal !== 'none') {
+      card.classList.add(`motion-${motionVal}`);
     }
 
+    // Card Background Image Application
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    // Render Icon if switch is toggled ON
+    // Top Icon Rendering
     if (showIcon && iconImg) {
       const iconWrap = document.createElement('div');
       iconWrap.classList.add('icon-card-icon');
@@ -81,7 +88,7 @@ export default function decorate(block) {
       card.appendChild(iconWrap);
     }
 
-    // Content Block
+    // Card Content Wrapper
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 

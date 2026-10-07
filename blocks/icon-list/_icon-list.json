@@ -72,7 +72,7 @@
           "component": "select",
           "name": "defaultCardColor",
           "label": "Default Card Color",
-          "value": "grey",
+          "value": "blue",
           "options": [
             { "name": "Blue", "value": "blue" },
             { "name": "Grey", "value": "grey" },
