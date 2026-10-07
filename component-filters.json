@@ -31,7 +31,8 @@
       "teaser",
       "video",
       "footer-sai",
-      "canvas-search-hero"
+      "canvas-search-hero",
+      "icon-list"
     ]
   },
   {
@@ -113,6 +114,12 @@
       "text-input",
       "tnc",
       "wizard"
+    ]
+  },
+  {
+    "id": "icon-list",
+    "components": [
+      "icon-cards"
     ]
   },
   {

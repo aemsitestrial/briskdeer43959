@@ -1,0 +1,201 @@
+/* Block Container based on Figma layout */
+.icon-list-wrapper {
+  background: #FFF;
+  padding: 120px 80px;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.icon-list {
+  width: 100%;
+  max-width: 1280px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 80px;
+}
+
+/* Header Lockup Section */
+.icon-list-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.icon-list-title {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 120%;
+  letter-spacing: -0.03em;
+  color: #0C0C0D;
+  margin: 0;
+}
+
+.icon-list-description {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 140%;
+  color: #0C0C0D;
+  margin: 0;
+}
+
+/* 4-Column Cards Grid */
+.icon-list-cards-grid {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+
+/* Card Styling */
+.icon-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 12px;
+  flex: 1;
+  min-width: 250px;
+  height: 453px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Background Color Variants */
+.icon-card.card-color-blue {
+  background-color: #4673DB;
+  color: #FFF;
+}
+
+.icon-card.card-color-grey {
+  background-color: #D9D9D9;
+  color: #303030;
+}
+
+.icon-card.card-color-black {
+  background-color: #0C0C0D;
+  color: #FFF;
+}
+
+/* Motion Effects */
+.icon-card.motion-hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
+}
+
+/* Icon Container */
+.icon-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.icon-card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Card Content Structure */
+.icon-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.icon-card-eyebrow {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 160%;
+  letter-spacing: 0.01em;
+  opacity: 0.8;
+}
+
+/* Card Statistic / Title */
+.icon-card-title {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 120%;
+  margin: 0;
+}
+
+.icon-card.card-color-blue .icon-card-title {
+  color: #F3F3F3;
+}
+
+.icon-card.card-color-grey .icon-card-title {
+  color: #303030;
+}
+
+/* Card Description */
+.icon-card-desc {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 140%;
+  margin: 0;
+}
+
+.icon-card.card-color-blue .icon-card-desc {
+  color: #FFF;
+}
+
+.icon-card.card-color-grey .icon-card-desc {
+  color: #303030;
+}
+
+/* Responsive Styles */
+@media (width <= 1024px) {
+  .icon-list-cards-grid {
+    gap: 16px;
+  }
+
+  .icon-card {
+    flex: 1 1 calc(50% - 16px);
+    height: auto;
+    min-height: 380px;
+  }
+}
+
+@media (width <= 600px) {
+  .icon-list-wrapper {
+    padding: 60px 20px;
+  }
+
+  .icon-list {
+    gap: 40px;
+  }
+
+  .icon-card {
+    flex: 1 1 100%;
+  }
+
+  .icon-list-title {
+    font-size: 32px;
+  }
+
+  .icon-card-title {
+    font-size: 48px;
+  }
+}

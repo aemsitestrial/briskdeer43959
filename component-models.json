@@ -5742,6 +5742,129 @@
     ]
   },
   {
+    "id": "icon-list",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "List Title",
+        "value": "Banking today"
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "List Description",
+        "value": ""
+      }
+    ]
+  },
+  {
+    "id": "icon-cards",
+    "fields": [
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "eyebrow",
+        "label": "Eyebrow",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "view",
+        "label": "View Option",
+        "value": "card-image-top",
+        "options": [
+          {
+            "name": "Card Image Top",
+            "value": "card-image-top"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "name": "defaultCardColor",
+        "label": "Default Card Color",
+        "value": "grey",
+        "options": [
+          {
+            "name": "Blue",
+            "value": "blue"
+          },
+          {
+            "name": "Grey",
+            "value": "grey"
+          },
+          {
+            "name": "Black",
+            "value": "black"
+          }
+        ]
+      },
+      {
+        "component": "select",
+        "name": "display",
+        "label": "Display Components",
+        "value": "icon-title-desc",
+        "options": [
+          {
+            "name": "Icon, Title, Desc",
+            "value": "icon-title-desc"
+          }
+        ]
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "icon",
+        "label": "Icon",
+        "value": ""
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "cardBgImage",
+        "label": "Card BG Image",
+        "value": ""
+      },
+      {
+        "component": "select",
+        "name": "motionType",
+        "label": "Motion Type",
+        "value": "none",
+        "options": [
+          {
+            "name": "None",
+            "value": "none"
+          },
+          {
+            "name": "Hover Lift",
+            "value": "hover-lift"
+          },
+          {
+            "name": "Fade In",
+            "value": "fade-in"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title / Statistic",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description",
+        "value": ""
+      }
+    ]
+  },
+  {
     "id": "list",
     "fields": [
       {
