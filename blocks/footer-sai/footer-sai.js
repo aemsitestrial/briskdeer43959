@@ -10,7 +10,9 @@ function getCells(row) {
 }
 
 function getCellValue(cell) {
-  return cell?.querySelector('a')?.getAttribute('href') || cell?.textContent?.trim() || '';
+  const linkHref = cell?.querySelector('a')?.getAttribute('href');
+  const valueNode = cell?.matches('[data-value]') ? cell : cell?.querySelector('[data-value]');
+  return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
 }
 
 function getItemType(row) {
@@ -146,10 +148,17 @@ export default function decorate(block) {
   let selectedTheme = '';
   const blockThemeValue = getThemeValueFromBlock(block);
   if (themeOptions.includes(blockThemeValue)) selectedTheme = blockThemeValue;
-  const motionProperty = block.querySelector('[data-aue-prop="motion"]');
-  const motionValue = (motionProperty?.dataset?.value || motionProperty?.textContent || '')
+  const motionProperty = block.matches('[data-aue-prop="motion"]')
+    ? block
+    : block.querySelector('[data-aue-prop="motion"]');
+  const motionClass = [...block.classList]
+    .find((className) => className.startsWith('footer-sai-motion-'))
+    ?.replace('footer-sai-motion-', '');
+  const motionValue = (motionClass || motionProperty?.dataset?.value || motionProperty?.textContent || '')
     .trim()
     .toLowerCase()
+    .replace(/^footer-sai-motion-/, '')
+    .replace(/^fade-in$/, 'fade')
     .replace(/\s+/g, '-');
 
   const heroContainer = document.createElement('div');
