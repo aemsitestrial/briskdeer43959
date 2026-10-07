@@ -1,79 +1,50 @@
-/* Block Container based on Figma layout */
 .icon-list-wrapper {
   background: #FFF;
-  padding: 120px 80px;
-  display: flex;
-  justify-content: center;
+  padding: 80px 60px;
   box-sizing: border-box;
 }
 
 .icon-list {
-  width: 100%;
   max-width: 1280px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 80px;
-}
-
-/* Header Lockup Section */
-.icon-list-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  width: 100%;
+  gap: 40px;
 }
 
 .icon-list-title {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
+  font-family: Inter, -apple-system, sans-serif;
   font-weight: 400;
-  font-size: 48px;
-  line-height: 120%;
-  letter-spacing: -0.03em;
+  font-size: 40px;
+  line-height: 1.2;
   color: #0C0C0D;
-  margin: 0;
+  margin: 0 0 10px;
 }
 
-.icon-list-description {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 140%;
-  color: #0C0C0D;
-  margin: 0;
-}
-
-/* 4-Column Cards Grid */
 .icon-list-cards-grid {
   display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
+  flex-direction: row;
   gap: 24px;
   width: 100%;
 }
 
-/* Card Styling */
 .icon-card {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 24px;
-  gap: 12px;
+  padding: 32px 28px;
   flex: 1;
-  min-width: 250px;
-  height: 453px;
+  min-width: 0;
+  height: 420px;
   background-size: cover;
   background-position: center;
   position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
-/* Background Color Variants */
+/* Card Background Color Variations */
 .icon-card.card-color-blue {
   background-color: #4673DB;
   color: #FFF;
@@ -81,7 +52,7 @@
 
 .icon-card.card-color-grey {
   background-color: #D9D9D9;
-  color: #303030;
+  color: #1E1E1E;
 }
 
 .icon-card.card-color-black {
@@ -89,113 +60,77 @@
   color: #FFF;
 }
 
-/* Motion Effects */
-.icon-card.motion-hover-lift:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
-}
-
 /* Icon Container */
 .icon-card-icon {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 8px;
+  justify-content: flex-start;
 }
 
 .icon-card-icon img {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
+  filter: invert(1); /* Inverts icon to white for dark/blue backgrounds */
 }
 
-/* Card Content Structure */
+.icon-card.card-color-grey .icon-card-icon img {
+  filter: none; /* Keeps dark icon for grey card */
+}
+
+/* Text Content */
 .icon-card-content {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 }
 
 .icon-card-eyebrow {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 160%;
-  letter-spacing: 0.01em;
-  opacity: 0.8;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.85;
 }
 
-/* Card Statistic / Title */
 .icon-card-title {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: Inter, -apple-system, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 64px;
-  line-height: 120%;
-  margin: 0;
+  font-size: 52px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-.icon-card.card-color-blue .icon-card-title {
-  color: #F3F3F3;
-}
-
-.icon-card.card-color-grey .icon-card-title {
-  color: #303030;
-}
-
-/* Card Description */
 .icon-card-desc {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: Inter, -apple-system, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 20px;
-  line-height: 140%;
+  line-height: 1.35;
   margin: 0;
 }
 
-.icon-card.card-color-blue .icon-card-desc {
-  color: #FFF;
-}
-
-.icon-card.card-color-grey .icon-card-desc {
-  color: #303030;
-}
-
-/* Responsive Styles */
-@media (width <= 1024px) {
+/* Mobile Responsiveness */
+@media (width <= 900px) {
   .icon-list-cards-grid {
-    gap: 16px;
+    flex-wrap: wrap;
   }
 
   .icon-card {
-    flex: 1 1 calc(50% - 16px);
-    height: auto;
-    min-height: 380px;
+    flex: 1 1 calc(50% - 12px);
   }
 }
 
 @media (width <= 600px) {
-  .icon-list-wrapper {
-    padding: 60px 20px;
-  }
-
-  .icon-list {
-    gap: 40px;
-  }
-
   .icon-card {
     flex: 1 1 100%;
-  }
-
-  .icon-list-title {
-    font-size: 32px;
-  }
-
-  .icon-card-title {
-    font-size: 48px;
+    height: auto;
+    min-height: 320px;
   }
 }

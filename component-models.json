@@ -5801,13 +5801,26 @@
       },
       {
         "component": "select",
-        "name": "display",
+        "name": "displayComponents",
         "label": "Display Components",
-        "value": "icon-title-desc",
+        "multiple": true,
+        "value": [
+          "icon",
+          "title",
+          "desc"
+        ],
         "options": [
           {
-            "name": "Icon, Title, Desc",
-            "value": "icon-title-desc"
+            "name": "Icon",
+            "value": "icon"
+          },
+          {
+            "name": "Title",
+            "value": "title"
+          },
+          {
+            "name": "Description",
+            "value": "desc"
           }
         ]
       },

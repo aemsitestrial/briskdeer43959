@@ -6,7 +6,6 @@ export default function decorate(block) {
   cardsGrid.classList.add('icon-list-cards-grid');
 
   [...block.children].forEach((row) => {
-    // Retain AEM Universal Editor attributes on the row
     const rowAttributes = [...row.attributes];
 
     const getVal = (name) => {
@@ -14,8 +13,6 @@ export default function decorate(block) {
       if (field) return field.textContent.trim();
       return '';
     };
-
-    const getImg = (name) => row.querySelector(`[data-name="${name}"] img, img`);
 
     const isCard = row.children.length > 2
       || row.querySelector('[data-name="title"]')
@@ -40,21 +37,21 @@ export default function decorate(block) {
       return;
     }
 
-    // Build Card Item and copy instrumentation
     const card = document.createElement('div');
     card.classList.add('icon-card');
     rowAttributes.forEach((attr) => card.setAttribute(attr.name, attr.value));
 
     const color = getVal('defaultCardColor').toLowerCase() || 'grey';
     const motion = getVal('motionType').toLowerCase() || 'none';
+    const displayComp = getVal('displayComponents').toLowerCase() || 'icon,title,desc';
     const eyebrow = getVal('eyebrow');
     const title = getVal('title');
     const desc = getVal('description');
 
-    const iconImg = getImg('icon');
-    const bgImg = getImg('cardBgImage');
+    const iconImg = row.querySelector('[data-name="icon"] img');
+    const bgImg = row.querySelector('[data-name="cardBgImage"] img');
 
-    // ESLint-compliant color assignment (replaces nested ternary)
+    // Color logic
     let cardColorClass = 'grey';
     if (color.includes('blue')) {
       cardColorClass = 'blue';
@@ -67,18 +64,23 @@ export default function decorate(block) {
       card.classList.add(`motion-${motion}`);
     }
 
+    // Set background image only if explicitly set
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    if (iconImg) {
+    // Render Icon if toggled ON in displayComponents
+    if (iconImg && displayComp.includes('icon')) {
       const iconWrap = document.createElement('div');
       iconWrap.classList.add('icon-card-icon');
-      iconWrap.appendChild(iconImg.cloneNode(true));
+      const clonedIcon = iconImg.cloneNode(true);
+      clonedIcon.removeAttribute('data-aue-prop');
+      iconWrap.appendChild(clonedIcon);
       card.appendChild(iconWrap);
     }
 
+    // Render Content Block
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 
@@ -89,14 +91,14 @@ export default function decorate(block) {
       content.appendChild(eb);
     }
 
-    if (title) {
+    if (title && displayComp.includes('title')) {
       const t = document.createElement('div');
       t.classList.add('icon-card-title');
       t.textContent = title;
       content.appendChild(t);
     }
 
-    if (desc) {
+    if (desc && displayComp.includes('desc')) {
       const d = document.createElement('p');
       d.classList.add('icon-card-desc');
       d.textContent = desc;
@@ -107,7 +109,6 @@ export default function decorate(block) {
     cardsGrid.appendChild(card);
   });
 
-  // Re-build DOM content
   block.textContent = '';
   if (headerWrapper.children.length > 0) {
     block.appendChild(headerWrapper);
