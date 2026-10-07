@@ -37,14 +37,50 @@ export default function decorate(block) {
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
 
+    // Helper to safely extract property text
     const getVal = (name) => {
       const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
       if (field) return field.textContent.trim();
       return '';
     };
 
-    const colorVal = getVal('defaultCardColor').toLowerCase();
+    // Helper to search all nested images inside a property container
+    const getImg = (name) => {
+      const propContainer = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
+      if (propContainer) {
+        return propContainer.querySelector('img');
+      }
+      return null;
+    };
+
+    // Parse author selection for Card Color
+    const authoredColor = getVal('defaultCardColor').toLowerCase();
+    let cardColorClass = 'grey'; // fallback only if author left it empty
+
+    if (authoredColor.includes('blue')) {
+      cardColorClass = 'blue';
+    } else if (authoredColor.includes('black')) {
+      cardColorClass = 'black';
+    } else if (authoredColor.includes('grey')) {
+      cardColorClass = 'grey';
+    } else {
+      // Direct raw text check across row children if data-aue-prop attribute is absent
+      const rawText = row.textContent.toLowerCase();
+      if (rawText.includes('blue')) {
+        cardColorClass = 'blue';
+      } else if (rawText.includes('black')) {
+        cardColorClass = 'black';
+      }
+    }
+    card.classList.add(`card-color-${cardColorClass}`);
+
+    // Motion Type
     const motionVal = getVal('motionType').toLowerCase();
+    if (motionVal && motionVal !== 'none') {
+      card.classList.add(`motion-${motionVal}`);
+    }
+
+    // Toggles
     const showIcon = getVal('showIcon') !== 'false';
     const showTitle = getVal('showTitle') !== 'false';
     const showDesc = getVal('showDesc') !== 'false';
@@ -53,42 +89,32 @@ export default function decorate(block) {
     const title = getVal('title');
     const desc = getVal('description');
 
-    // Robust Image Extraction for Universal Editor
-    const iconContainer = row.querySelector('[data-aue-prop="icon"], [data-name="icon"]');
-    const bgImgContainer = row.querySelector('[data-aue-prop="cardBgImage"], [data-name="cardBgImage"]');
+    // Image Extractions
+    const iconImg = getImg('icon') || row.querySelector('img:not([data-aue-prop="cardBgImage"] img)');
+    const bgImg = getImg('cardBgImage');
 
-    const iconImg = iconContainer ? iconContainer.querySelector('img') : null;
-    const bgImg = bgImgContainer ? bgImgContainer.querySelector('img') : null;
-
-    // Background Color Class Logic
-    let cardColorClass = 'grey';
-    if (colorVal.includes('blue')) {
-      cardColorClass = 'blue';
-    } else if (colorVal.includes('black')) {
-      cardColorClass = 'black';
-    }
-    card.classList.add(`card-color-${cardColorClass}`);
-
-    if (motionVal && motionVal !== 'none') {
-      card.classList.add(`motion-${motionVal}`);
-    }
-
-    // Card Background Image Application
+    // Set Card Background Image if authored
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    // Top Icon Rendering
+    // Render Icon Top
     if (showIcon && iconImg) {
       const iconWrap = document.createElement('div');
       iconWrap.classList.add('icon-card-icon');
-      const clonedIcon = iconImg.cloneNode(true);
-      iconWrap.appendChild(clonedIcon);
+
+      // Preserve original picture/img structure for Universal Editor
+      const pictureParent = iconImg.closest('picture');
+      if (pictureParent) {
+        iconWrap.appendChild(pictureParent.cloneNode(true));
+      } else {
+        iconWrap.appendChild(iconImg.cloneNode(true));
+      }
       card.appendChild(iconWrap);
     }
 
-    // Card Content Wrapper
+    // Content Wrapper
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 
