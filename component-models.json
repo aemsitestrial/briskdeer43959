@@ -5800,35 +5800,64 @@
         ]
       },
       {
-        "component": "select",
-        "name": "displayComponents",
-        "label": "Display Components",
-        "multiple": true,
-        "value": [
-          "icon",
-          "title",
-          "desc"
-        ],
-        "options": [
-          {
-            "name": "Icon",
-            "value": "icon"
-          },
-          {
-            "name": "Title",
-            "value": "title"
-          },
-          {
-            "name": "Description",
-            "value": "desc"
-          }
-        ]
+        "component": "boolean",
+        "name": "showIcon",
+        "label": "Show Icon Toggle",
+        "value": true
       },
       {
         "component": "reference",
         "valueType": "string",
         "name": "icon",
-        "label": "Icon"
+        "label": "Upload Icon",
+        "condition": {
+          "===": [
+            {
+              "var": "showIcon"
+            },
+            true
+          ]
+        }
+      },
+      {
+        "component": "boolean",
+        "name": "showTitle",
+        "label": "Show Title Toggle",
+        "value": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "title",
+        "label": "Title / Statistic Text",
+        "condition": {
+          "===": [
+            {
+              "var": "showTitle"
+            },
+            true
+          ]
+        }
+      },
+      {
+        "component": "boolean",
+        "name": "showDesc",
+        "label": "Show Description Toggle",
+        "value": true
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "description",
+        "label": "Description Text",
+        "condition": {
+          "===": [
+            {
+              "var": "showDesc"
+            },
+            true
+          ]
+        }
       },
       {
         "component": "reference",
@@ -5855,18 +5884,6 @@
             "value": "fade-in"
           }
         ]
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "title",
-        "label": "Title / Statistic"
-      },
-      {
-        "component": "text",
-        "valueType": "string",
-        "name": "description",
-        "label": "Description"
       }
     ]
   },

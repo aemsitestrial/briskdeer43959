@@ -6,30 +6,55 @@ export default function decorate(block) {
   cardsGrid.classList.add('icon-list-cards-grid');
 
   [...block.children].forEach((row) => {
-    // Preserve Universal Editor data attributes from the container row
+    const modelName = row.dataset.aueModel || row.dataset.model || '';
+    const isHeaderRow = modelName === 'icon-list' || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
+
+    if (isHeaderRow) {
+      const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]') || row.children[0];
+      const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]') || row.children[1];
+
+      if (titleEl && titleEl.textContent.trim()) {
+        const h2 = document.createElement('h2');
+        h2.classList.add('icon-list-title');
+        h2.innerHTML = titleEl.innerHTML;
+        [...titleEl.attributes].forEach((attr) => h2.setAttribute(attr.name, attr.value));
+        headerWrapper.appendChild(h2);
+      }
+
+      if (descEl && descEl.textContent.trim()) {
+        const p = document.createElement('p');
+        p.classList.add('icon-list-description');
+        p.innerHTML = descEl.innerHTML;
+        [...descEl.attributes].forEach((attr) => p.setAttribute(attr.name, attr.value));
+        headerWrapper.appendChild(p);
+      }
+      return;
+    }
+
+    // Build Individual Card Component
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
 
-    // Helper function to extract inner text or attributes safely
     const getVal = (name) => {
-      const el = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
-      if (el) return el.textContent.trim();
+      const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
+      if (field) return field.textContent.trim();
       return '';
     };
 
-    // Extract fields
     const color = getVal('defaultCardColor').toLowerCase() || 'grey';
     const motion = getVal('motionType').toLowerCase() || 'none';
-    const displayComp = getVal('displayComponents').toLowerCase() || 'icon,title,desc';
+    const showIcon = getVal('showIcon') !== 'false';
+    const showTitle = getVal('showTitle') !== 'false';
+    const showDesc = getVal('showDesc') !== 'false';
+
     const eyebrow = getVal('eyebrow');
     const title = getVal('title');
     const desc = getVal('description');
 
-    const iconImg = row.querySelector('[data-aue-prop="icon"] img, [data-name="icon"] img, img:not([data-aue-prop="cardBgImage"] img)');
+    const iconImg = row.querySelector('[data-aue-prop="icon"] img, [data-name="icon"] img');
     const bgImg = row.querySelector('[data-aue-prop="cardBgImage"] img, [data-name="cardBgImage"] img');
 
-    // Color assignment
     let cardColorClass = 'grey';
     if (color.includes('blue')) {
       cardColorClass = 'blue';
@@ -42,14 +67,13 @@ export default function decorate(block) {
       card.classList.add(`motion-${motion}`);
     }
 
-    // Apply card background image if uploaded
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    // Top Icon (Only renders if toggled in Display Components)
-    if (iconImg && (displayComp.includes('icon') || displayComp === '')) {
+    // Render Icon if switch is toggled ON
+    if (showIcon && iconImg) {
       const iconWrap = document.createElement('div');
       iconWrap.classList.add('icon-card-icon');
       const clonedIcon = iconImg.cloneNode(true);
@@ -57,7 +81,7 @@ export default function decorate(block) {
       card.appendChild(iconWrap);
     }
 
-    // Text Content Wrapper
+    // Content Block
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 
@@ -68,14 +92,14 @@ export default function decorate(block) {
       content.appendChild(eb);
     }
 
-    if (title && (displayComp.includes('title') || displayComp === '')) {
+    if (showTitle && title) {
       const t = document.createElement('div');
       t.classList.add('icon-card-title');
       t.textContent = title;
       content.appendChild(t);
     }
 
-    if (desc && (displayComp.includes('desc') || displayComp === '')) {
+    if (showDesc && desc) {
       const d = document.createElement('p');
       d.classList.add('icon-card-desc');
       d.textContent = desc;
@@ -86,6 +110,5 @@ export default function decorate(block) {
     cardsGrid.appendChild(card);
   });
 
-  // Re-build DOM without dropping UE tracking wrappers
   block.replaceChildren(headerWrapper, cardsGrid);
 }
