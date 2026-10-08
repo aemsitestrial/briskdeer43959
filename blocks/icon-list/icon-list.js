@@ -7,52 +7,67 @@ export default function decorate(block) {
 
   let cardsPerRow = '4';
 
+  // 1. Extract block-level setting (Cards Per Row) before processing items
+  const cardsPerRowEl = block.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]');
+  if (cardsPerRowEl) {
+    const matchedVal = cardsPerRowEl.textContent.trim().match(/\d+/);
+    if (matchedVal) {
+      [cardsPerRow] = matchedVal;
+    }
+  }
+
+  // 2. Process rows
   [...block.children].forEach((row) => {
+    // Skip row if it contains only setting property data
+    if (row.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]')) {
+      return;
+    }
+
     const modelName = row.dataset.aueModel || row.dataset.model || '';
     const isHeaderRow = modelName === 'icon-list'
       || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
+
+    if (isHeaderRow) {
+      const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]');
+      const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]');
+
+      const rawTitleEl = titleEl || row.children[0];
+      const rawDescEl = descEl || row.children[1];
+      const rawTitle = rawTitleEl ? rawTitleEl.textContent.trim() : '';
+      const rawDesc = rawDescEl ? rawDescEl.textContent.trim() : '';
+
+      if (rawTitle && !/^\d+$/.test(rawTitle)) {
+        const h2 = document.createElement('h2');
+        h2.classList.add('icon-list-title');
+        h2.textContent = rawTitle;
+        if (titleEl) {
+          [...titleEl.attributes].forEach((attr) => h2.setAttribute(attr.name, attr.value));
+        }
+        headerWrapper.appendChild(h2);
+      }
+
+      if (rawDesc && !/^\d+$/.test(rawDesc)) {
+        const p = document.createElement('p');
+        p.classList.add('icon-list-description');
+        p.textContent = rawDesc;
+        if (descEl) {
+          [...descEl.attributes].forEach((attr) => p.setAttribute(attr.name, attr.value));
+        }
+        headerWrapper.appendChild(p);
+      }
+      return;
+    }
+
+    // Build Individual Card Component
+    const card = document.createElement('div');
+    card.classList.add('icon-card');
+    [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
 
     const getVal = (name) => {
       const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
       if (field) return field.textContent.trim();
       return '';
     };
-
-    if (isHeaderRow) {
-      const cprVal = getVal('cardsPerRow');
-      if (cprVal) {
-        const match = cprVal.match(/\d+/);
-        if (match) {
-          const [cardCount] = match;
-          cardsPerRow = cardCount;
-        }
-      }
-
-      const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]') || row.children[0];
-      const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]') || row.children[1];
-
-      if (titleEl && titleEl.textContent.trim()) {
-        const h2 = document.createElement('h2');
-        h2.classList.add('icon-list-title');
-        h2.innerHTML = titleEl.innerHTML;
-        [...titleEl.attributes].forEach((attr) => h2.setAttribute(attr.name, attr.value));
-        headerWrapper.appendChild(h2);
-      }
-
-      if (descEl && descEl.textContent.trim()) {
-        const p = document.createElement('p');
-        p.classList.add('icon-list-description');
-        p.innerHTML = descEl.innerHTML;
-        [...descEl.attributes].forEach((attr) => p.setAttribute(attr.name, attr.value));
-        headerWrapper.appendChild(p);
-      }
-      return;
-    }
-
-    // Individual Card Item Setup
-    const card = document.createElement('div');
-    card.classList.add('icon-card');
-    [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
 
     const getImg = (name) => {
       const propContainer = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
@@ -141,5 +156,12 @@ export default function decorate(block) {
   // Apply layout class for cards per row
   cardsGrid.classList.add(`grid-cols-${cardsPerRow}`);
 
-  block.replaceChildren(headerWrapper, cardsGrid);
+  // Construct block output
+  const childrenToRender = [];
+  if (headerWrapper.children.length > 0) {
+    childrenToRender.push(headerWrapper);
+  }
+  childrenToRender.push(cardsGrid);
+
+  block.replaceChildren(...childrenToRender);
 }
