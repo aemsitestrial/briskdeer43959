@@ -5,14 +5,30 @@ export default function decorate(block) {
   const cardsGrid = document.createElement('div');
   cardsGrid.classList.add('icon-list-cards-grid');
 
+  let cardsPerRow = '4';
+  let maxCardsAllowed = 0;
+  let renderedCardsCount = 0;
+
   [...block.children].forEach((row) => {
     const modelName = row.dataset.aueModel || row.dataset.model || '';
     const isHeaderRow = modelName === 'icon-list'
       || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
 
+    const getVal = (name) => {
+      const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
+      if (field) return field.textContent.trim();
+      return '';
+    };
+
     if (isHeaderRow) {
       const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]') || row.children[0];
       const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]') || row.children[1];
+
+      const cprVal = getVal('cardsPerRow');
+      if (cprVal) cardsPerRow = cprVal;
+
+      const maxVal = getVal('maxCardsAllowed');
+      if (maxVal) maxCardsAllowed = parseInt(maxVal, 10);
 
       if (titleEl && titleEl.textContent.trim()) {
         const h2 = document.createElement('h2');
@@ -32,16 +48,15 @@ export default function decorate(block) {
       return;
     }
 
-    // Individual Card Item Setup
+    // Enforce Max Cards Display Limit
+    if (maxCardsAllowed > 0 && renderedCardsCount >= maxCardsAllowed) {
+      return;
+    }
+
+    // Build Card Item
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
-
-    const getVal = (name) => {
-      const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
-      if (field) return field.textContent.trim();
-      return '';
-    };
 
     const getImg = (name) => {
       const propContainer = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
@@ -61,7 +76,6 @@ export default function decorate(block) {
     const title = getVal('title');
     const desc = getVal('description');
 
-    // Color Class Logic
     let cardColorClass = 'grey';
     if (colorVal.includes('blue')) {
       cardColorClass = 'blue';
@@ -81,14 +95,12 @@ export default function decorate(block) {
       card.classList.add(`motion-${motionVal}`);
     }
 
-    // Background Image
     const bgImg = getImg('cardBgImage');
     if (bgImg) {
       card.style.backgroundImage = `url('${bgImg.src}')`;
       card.classList.add('has-bg-image');
     }
 
-    // Top Icon
     const iconImg = getImg('icon') || row.querySelector('img:not([data-aue-prop="cardBgImage"] img)');
     if (showIcon && iconImg) {
       const iconWrap = document.createElement('div');
@@ -102,7 +114,6 @@ export default function decorate(block) {
       card.appendChild(iconWrap);
     }
 
-    // Card Content Wrapper
     const content = document.createElement('div');
     content.classList.add('icon-card-content');
 
@@ -129,7 +140,11 @@ export default function decorate(block) {
 
     card.appendChild(content);
     cardsGrid.appendChild(card);
+    renderedCardsCount += 1;
   });
+
+  // Apply grid column layout class based on author selection
+  cardsGrid.classList.add(`grid-cols-${cardsPerRow}`);
 
   block.replaceChildren(headerWrapper, cardsGrid);
 }

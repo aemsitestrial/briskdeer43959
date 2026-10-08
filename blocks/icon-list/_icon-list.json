@@ -47,6 +47,24 @@
           "valueType": "string",
           "name": "description",
           "label": "List Description"
+        },
+        {
+          "component": "select",
+          "name": "cardsPerRow",
+          "label": "Cards Per Row",
+          "value": "4",
+          "options": [
+            { "name": "2 Cards Per Row", "value": "2" },
+            { "name": "3 Cards Per Row", "value": "3" },
+            { "name": "4 Cards Per Row", "value": "4" },
+            { "name": "5 Cards Per Row", "value": "5" }
+          ]
+        },
+        {
+          "component": "number",
+          "name": "maxCardsAllowed",
+          "label": "Max Cards Display Limit",
+          "value": 4
         }
       ]
     },

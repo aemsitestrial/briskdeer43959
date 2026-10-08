@@ -1,4 +1,4 @@
-/* Block Outer Section Wrapper (Figma: Content Section) */
+/* Block Outer Section Wrapper */
 .icon-list-wrapper {
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@
   max-width: 1280px;
 }
 
-/* Header Text Lockup (Figma: header-body-text-lockup) */
+/* Header Text Lockup */
 .icon-list-header {
   display: flex;
   flex-direction: column;
@@ -52,19 +52,18 @@
   margin: 0;
 }
 
-/* 4-Column Grid Slot (Figma: 4 Column Slot) */
+/* Base Dynamic Grid Slot */
 .icon-list-cards-grid {
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
-  align-content: flex-start;
   gap: 24px;
   width: 100%;
   max-width: 1280px;
   min-height: 453px;
 }
 
-/* Individual Icon Card Component (Figma: Card - Graphic) */
+/* Base Individual Icon Card (Declared BEFORE high-specificity modifiers) */
 .icon-card {
   box-sizing: border-box;
   display: flex;
@@ -73,16 +72,35 @@
   align-items: flex-start;
   padding: 24px;
   gap: 12px;
-  width: 302px;
-  min-width: 180px;
+  min-width: 220px;
   height: 453px;
-  flex-grow: 1;
   background-size: cover;
   background-position: center;
   position: relative;
   isolation: isolate;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
+}
+
+/* Dynamic Columns Per Row Modifiers */
+.icon-list-cards-grid.grid-cols-2 .icon-card {
+  width: calc(50% - 12px);
+  flex: 0 0 calc(50% - 12px);
+}
+
+.icon-list-cards-grid.grid-cols-3 .icon-card {
+  width: calc(33.333% - 16px);
+  flex: 0 0 calc(33.333% - 16px);
+}
+
+.icon-list-cards-grid.grid-cols-4 .icon-card {
+  width: calc(25% - 18px);
+  flex: 0 0 calc(25% - 18px);
+}
+
+.icon-list-cards-grid.grid-cols-5 .icon-card {
+  width: calc(20% - 19.2px);
+  flex: 0 0 calc(20% - 19.2px);
 }
 
 /* Card Color Variations */
@@ -106,13 +124,13 @@
   background-repeat: no-repeat;
 }
 
-/* Motion Animation */
+/* Motion Types */
 .icon-card.motion-hover-lift:hover {
   transform: translateY(-6px);
   box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
 }
 
-/* Icon Dimensions (Figma: Header / Icon - 48px x 48px) */
+/* Icon Dimensions */
 .icon-card-icon {
   width: 48px;
   height: 48px;
@@ -130,7 +148,6 @@
   object-fit: contain;
 }
 
-/* Invert Icon Color on Dark Backgrounds */
 .icon-card.card-color-blue .icon-card-icon img,
 .icon-card.card-color-black .icon-card-icon img {
   filter: brightness(0) invert(1);
@@ -140,17 +157,15 @@
   filter: none;
 }
 
-/* Card Text Container (Figma: Card Text and Metadata - width: 254px) */
+/* Content Container Inside Card */
 .icon-card-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  width: 254px;
-  max-width: 100%;
+  width: 100%;
 }
 
-/* Overline / Eyebrow (Figma: Overline) */
 .icon-card-eyebrow {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
@@ -165,7 +180,6 @@
   color: #5a5a5a;
 }
 
-/* Statistic Title (Figma: Display 2 - 64px) */
 .icon-card-title {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
@@ -183,7 +197,6 @@
   color: #303030;
 }
 
-/* Description / Subtitle (Figma: Display 3 - 40px) */
 .icon-card-desc {
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
@@ -208,18 +221,14 @@
     gap: 40px;
   }
 
-  .icon-card {
+  .icon-list-cards-grid.grid-cols-2 .icon-card,
+  .icon-list-cards-grid.grid-cols-3 .icon-card,
+  .icon-list-cards-grid.grid-cols-4 .icon-card,
+  .icon-list-cards-grid.grid-cols-5 .icon-card {
     width: calc(50% - 12px);
+    flex: 0 0 calc(50% - 12px);
     height: auto;
     min-height: 420px;
-  }
-
-  .icon-card-title {
-    font-size: 52px;
-  }
-
-  .icon-card-desc {
-    font-size: 32px;
   }
 }
 
@@ -228,20 +237,12 @@
     padding: 40px 16px;
   }
 
-  .icon-card {
+  .icon-list-cards-grid.grid-cols-2 .icon-card,
+  .icon-list-cards-grid.grid-cols-3 .icon-card,
+  .icon-list-cards-grid.grid-cols-4 .icon-card,
+  .icon-list-cards-grid.grid-cols-5 .icon-card {
     width: 100%;
+    flex: 0 0 100%;
     min-height: 380px;
-  }
-
-  .icon-list-title {
-    font-size: 32px;
-  }
-
-  .icon-card-title {
-    font-size: 44px;
-  }
-
-  .icon-card-desc {
-    font-size: 26px;
   }
 }
