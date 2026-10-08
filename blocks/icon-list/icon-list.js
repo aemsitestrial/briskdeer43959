@@ -6,8 +6,6 @@ export default function decorate(block) {
   cardsGrid.classList.add('icon-list-cards-grid');
 
   let cardsPerRow = '4';
-  let maxCardsAllowed = 0;
-  let renderedCardsCount = 0;
 
   [...block.children].forEach((row) => {
     const modelName = row.dataset.aueModel || row.dataset.model || '';
@@ -21,14 +19,17 @@ export default function decorate(block) {
     };
 
     if (isHeaderRow) {
+      const cprVal = getVal('cardsPerRow');
+      if (cprVal) {
+        const match = cprVal.match(/\d+/);
+        if (match) {
+          const [cardCount] = match;
+          cardsPerRow = cardCount;
+        }
+      }
+
       const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]') || row.children[0];
       const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]') || row.children[1];
-
-      const cprVal = getVal('cardsPerRow');
-      if (cprVal) cardsPerRow = cprVal;
-
-      const maxVal = getVal('maxCardsAllowed');
-      if (maxVal) maxCardsAllowed = parseInt(maxVal, 10);
 
       if (titleEl && titleEl.textContent.trim()) {
         const h2 = document.createElement('h2');
@@ -48,12 +49,7 @@ export default function decorate(block) {
       return;
     }
 
-    // Enforce Max Cards Display Limit
-    if (maxCardsAllowed > 0 && renderedCardsCount >= maxCardsAllowed) {
-      return;
-    }
-
-    // Build Card Item
+    // Individual Card Item Setup
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
@@ -140,10 +136,9 @@ export default function decorate(block) {
 
     card.appendChild(content);
     cardsGrid.appendChild(card);
-    renderedCardsCount += 1;
   });
 
-  // Apply grid column layout class based on author selection
+  // Apply layout class for cards per row
   cardsGrid.classList.add(`grid-cols-${cardsPerRow}`);
 
   block.replaceChildren(headerWrapper, cardsGrid);

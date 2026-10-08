@@ -59,12 +59,6 @@
             { "name": "4 Cards Per Row", "value": "4" },
             { "name": "5 Cards Per Row", "value": "5" }
           ]
-        },
-        {
-          "component": "number",
-          "name": "maxCardsAllowed",
-          "label": "Max Cards Display Limit",
-          "value": 4
         }
       ]
     },

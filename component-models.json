@@ -5779,12 +5779,6 @@
             "value": "5"
           }
         ]
-      },
-      {
-        "component": "number",
-        "name": "maxCardsAllowed",
-        "label": "Max Cards Display Limit",
-        "value": 4
       }
     ]
   },
