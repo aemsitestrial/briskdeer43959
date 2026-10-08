@@ -424,21 +424,6 @@
           }
         },
         {
-          "title": "Footer Sai Copyright",
-          "id": "footer-sai-copyright",
-          "plugins": {
-            "xwalk": {
-              "page": {
-                "resourceType": "core/franklin/components/block/v1/block/item",
-                "template": {
-                  "name": "Footer Sai Copyright",
-                  "model": "footer-sai-copyright"
-                }
-              }
-            }
-          }
-        },
-        {
           "title": "Footer Sai TCS Logo",
           "id": "footer-sai-tcs-logo",
           "plugins": {

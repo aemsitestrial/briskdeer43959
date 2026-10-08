@@ -639,6 +639,13 @@
       {
         "component": "text",
         "valueType": "string",
+        "name": "copyrightText",
+        "label": "Copyright Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "valueType": "string",
         "name": "label",
         "label": "Legal Link Label",
         "value": ""
@@ -665,18 +672,6 @@
             "value": "_blank"
           }
         ]
-      }
-    ]
-  },
-  {
-    "id": "footer-sai-copyright",
-    "fields": [
-      {
-        "component": "richtext",
-        "valueType": "string",
-        "name": "copyrightText",
-        "label": "Copyright Text",
-        "value": ""
       }
     ]
   },
