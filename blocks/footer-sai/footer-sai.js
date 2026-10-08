@@ -15,25 +15,27 @@ function getCellValue(cell) {
   return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
 }
 
-function getCellRichText(cell) {
-  if (!cell) return '';
-  const valueNode = cell.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]') || cell;
-  return valueNode.innerHTML.trim() || valueNode.textContent.trim() || '';
+function getBlockCopyrightText(block) {
+  const propNode = block.matches('[data-aue-prop="copyrightText"]')
+    ? block
+    : block.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]');
+
+  if (propNode) {
+    return propNode.innerHTML.trim() || propNode.textContent.trim();
+  }
+
+  return block.dataset.copyrightText
+    || block.getAttribute('data-copyrightText')
+    || block.getAttribute('data-copyrighttext')
+    || '';
 }
 
 function getItemType(row) {
-  // 1. Explicit Universal Editor data attribute or class match
   const explicitType = row.dataset.aueComponent
-    || row.getAttribute('data-aue-model')
     || [...row.classList].find((className) => (
       className.startsWith('footer-sai-') || className.startsWith('canvas-search-hero-')
     ));
   if (explicitType) return explicitType;
-
-  // 2. Check explicitly for the copyright field attribute
-  if (row.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]') || row.matches('[data-aue-prop="copyrightText"]')) {
-    return 'footer-sai-copyright';
-  }
 
   const cells = getCells(row);
   const values = cells.map((cell) => cell.textContent.trim());
@@ -53,13 +55,7 @@ function getItemType(row) {
 
   if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
 
-  // 3. Fallback check for single-cell copyright row
-  if (cells.length === 1 && values[0] && (values[0].toLowerCase().includes('copyright') || values[0].includes('©') || values[0].length > 0)) {
-    return 'footer-sai-copyright';
-  }
-
-  // 4. Legal items
-  if (cells.length >= 4 || (cells.length === 3 && !values[0])) {
+  if (cells.length >= 3) {
     return 'footer-sai-legal-item';
   }
 
@@ -200,7 +196,15 @@ export default function decorate(block) {
   legalLinksContainer.setAttribute('aria-label', 'Legal');
   const canvasHeroRows = [];
 
+  // Extract block-level property
+  const copyrightText = getBlockCopyrightText(block);
   let copyrightTextElement = null;
+
+  if (copyrightText) {
+    copyrightTextElement = document.createElement('div');
+    copyrightTextElement.className = 'footer-sai-copyright';
+    copyrightTextElement.innerHTML = copyrightText;
+  }
 
   [...block.children].forEach((row) => {
     const itemType = getItemType(row);
@@ -260,32 +264,12 @@ export default function decorate(block) {
       if (link) navItem.appendChild(link);
       moveInstrumentation(row, navItem);
       navContainer.appendChild(navItem);
-    } else if (itemType === 'footer-sai-copyright') {
-      const copyrightContent = getCellRichText(cells[0]);
-      if (copyrightContent) {
-        const copyrightElement = document.createElement('div');
-        copyrightElement.className = 'footer-sai-copyright';
-        copyrightElement.innerHTML = copyrightContent;
-        moveInstrumentation(row, copyrightElement);
-        copyrightTextElement = copyrightElement;
-      }
     } else if (itemType === 'footer-sai-legal-item') {
-      const [firstValue] = values;
-      const isLegacyCopyright = firstValue?.toLowerCase().includes('copyright');
-      if (isLegacyCopyright) {
-        const copyrightElement = document.createElement('div');
-        copyrightElement.className = 'footer-sai-copyright';
-        copyrightElement.textContent = firstValue;
-        moveInstrumentation(row, copyrightElement);
-        copyrightTextElement = copyrightElement;
-      }
-      const link = isLegacyCopyright
-        ? createLink(values[1], values[2], values[3])
-        : createLink(values[0], values[1], values[2]);
+      const link = createLink(values[0], values[1], values[2]);
       if (link) {
         moveInstrumentation(row, link);
         legalLinksContainer.appendChild(link);
-      } else if (!isLegacyCopyright) {
+      } else {
         const legalItem = document.createElement('span');
         legalItem.className = 'footer-sai-legal-item';
         moveInstrumentation(row, legalItem);
