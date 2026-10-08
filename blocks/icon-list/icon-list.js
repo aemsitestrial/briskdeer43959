@@ -21,7 +21,7 @@ export default function decorate(block) {
   }
 
   [...block.children].forEach((row) => {
-    // Skip row if it only holds setting data
+    // Skip row if it holds setting data
     if (row.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]')) {
       return;
     }
@@ -165,7 +165,7 @@ export default function decorate(block) {
     cardsGrid.appendChild(card);
   });
 
-  // Apply layout modifier class to both grid and block wrapper
+  // Apply grid modifier class
   const gridClass = `grid-cols-${cardsPerRow}`;
   cardsGrid.classList.add(gridClass);
   block.classList.add(gridClass);
