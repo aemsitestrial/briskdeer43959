@@ -15,21 +15,6 @@ function getCellValue(cell) {
   return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
 }
 
-function getBlockCopyrightText(block) {
-  const propNode = block.matches('[data-aue-prop="copyrightText"]')
-    ? block
-    : block.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]');
-
-  if (propNode) {
-    return propNode.innerHTML.trim() || propNode.textContent.trim();
-  }
-
-  return block.dataset.copyrightText
-    || block.getAttribute('data-copyrightText')
-    || block.getAttribute('data-copyrighttext')
-    || '';
-}
-
 function getItemType(row) {
   const explicitType = row.dataset.aueComponent
     || [...row.classList].find((className) => (
@@ -44,7 +29,6 @@ function getItemType(row) {
     || cells.length >= 8) {
     return 'canvas-search-hero-settings';
   }
-
   if (row.querySelector('img')) {
     const combinedText = values.join(' ').toLowerCase();
     if (combinedText.includes('tata') && !combinedText.includes('tcs')) {
@@ -52,30 +36,27 @@ function getItemType(row) {
     }
     return 'footer-sai-tcs-logo';
   }
-
-  if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
-
-  if (cells.length >= 3) {
+  if (cells.length >= 5 || (cells.length >= 2 && /^(true|false)$/i.test(values[1] || ''))) {
+    return 'footer-sai-hero';
+  }
+  if (cells.length === 3 || (cells.length >= 2 && values[0] && !values[2])) {
     return 'footer-sai-legal-item';
   }
-
-  if (cells.length >= 2 && values[0]) return 'footer-sai-nav-item';
-
+  if (cells.length >= 2 && values[0]) {
+    return 'footer-sai-nav-item';
+  }
   return '';
 }
 
 function getThemeValueFromBlock(block) {
-  const propNode = block.matches('[data-aue-prop="theme"]')
+  const propNode = block.matches('[data-aue-prop="classes"]')
     ? block
-    : block.querySelector('[data-aue-prop="theme"]');
+    : block.querySelector('[data-aue-prop="classes"]');
   const propertyValue = propNode?.dataset?.value || propNode?.textContent?.trim() || '';
   const directValue = block.dataset.theme
     || block.getAttribute('data-theme')
-    || block.dataset.backgroundColor
-    || block.getAttribute('data-backgroundColor')
-    || block.getAttribute('data-backgroundcolor')
     || propertyValue
-    || [...block.classList].find((className) => className.startsWith('footer-sai-theme-'))?.replace('footer-sai-theme-', '')
+    || [...block.classList].find((className) => className.startsWith('footer-sai-theme-'))
     || '';
 
   return directValue
@@ -116,7 +97,7 @@ function createSearch(block, mode, placeholder, action) {
     input = document.createElement('input');
     input.type = 'search';
     input.name = 'q';
-    input.placeholder = placeholder || 'Ask TCS...';
+    input.placeholder = placeholder || 'Search...';
     input.setAttribute('aria-label', input.placeholder);
     input.addEventListener('input', () => {
       form.dataset.query = input.value;
@@ -164,21 +145,29 @@ export default function decorate(block) {
 
   const themeOptions = ['soft-white', 'powder-blue', 'sage-green', 'blush-pink', 'lavender', 'warm-cream', 'dark'];
   const motionOptions = ['fade', 'slide-up'];
+
   let selectedTheme = '';
   const blockThemeValue = getThemeValueFromBlock(block);
   if (themeOptions.includes(blockThemeValue)) selectedTheme = blockThemeValue;
+
   const motionProperty = block.matches('[data-aue-prop="motion"]')
     ? block
     : block.querySelector('[data-aue-prop="motion"]');
   const motionClass = [...block.classList]
     .find((className) => className.startsWith('footer-sai-motion-'))
     ?.replace('footer-sai-motion-', '');
-  const motionValue = (motionClass || motionProperty?.dataset?.value || motionProperty?.textContent || '')
+  const motionValue = (motionClass || motionProperty?.dataset?.value || motionProperty?.textContent || 'none')
     .trim()
     .toLowerCase()
     .replace(/^footer-sai-motion-/, '')
     .replace(/^fade-in$/, 'fade')
     .replace(/\s+/g, '-');
+
+  // Extract block-level copyrightText richtext field if present
+  const copyrightPropNode = block.matches('[data-aue-prop="copyrightText"]')
+    ? block
+    : block.querySelector('[data-aue-prop="copyrightText"]');
+  const blockCopyrightHtml = copyrightPropNode?.innerHTML?.trim() || '';
 
   const heroContainer = document.createElement('div');
   heroContainer.className = 'footer-sai-hero';
@@ -196,15 +185,7 @@ export default function decorate(block) {
   legalLinksContainer.setAttribute('aria-label', 'Legal');
   const canvasHeroRows = [];
 
-  // Extract block-level property
-  const copyrightText = getBlockCopyrightText(block);
   let copyrightTextElement = null;
-
-  if (copyrightText) {
-    copyrightTextElement = document.createElement('div');
-    copyrightTextElement.className = 'footer-sai-copyright';
-    copyrightTextElement.innerHTML = copyrightText;
-  }
 
   [...block.children].forEach((row) => {
     const itemType = getItemType(row);
@@ -214,21 +195,26 @@ export default function decorate(block) {
     if (itemType === 'canvas-search-hero-settings') {
       canvasHeroRows.push(row);
     } else if (itemType === 'footer-sai-hero') {
+      // Fields: heading, enableSearch, searchMode, searchPlaceholder, searchActionUrl
       const heroItem = document.createElement('div');
       heroItem.className = 'footer-sai-hero-item';
       const heading = document.createElement('h2');
       heading.textContent = values[0] || '';
       if (heading.textContent) heroItem.appendChild(heading);
 
-      if (values[1]?.toLowerCase() === 'true') {
+      const enableSearch = (values[1] || 'true').toLowerCase() === 'true';
+      if (enableSearch) {
         const mode = ['text', 'voice', 'text-and-voice'].includes(values[2]?.toLowerCase())
           ? values[2].toLowerCase()
           : 'text-and-voice';
-        heroItem.appendChild(createSearch(block, mode, values[3], values[4]));
+        const placeholder = values[3] || 'Search...';
+        const actionUrl = values[4] || '';
+        heroItem.appendChild(createSearch(block, mode, placeholder, actionUrl));
       }
       moveInstrumentation(row, heroItem);
       heroContainer.appendChild(heroItem);
     } else if (itemType === 'footer-sai-tcs-logo' || itemType === 'footer-sai-tata-logo') {
+      // Fields: logo (reference), logoAlt (text), logoLink (aem-content)
       const logoItem = document.createElement('div');
       logoItem.className = 'footer-sai-logo-item';
       const [imageCell] = cells;
@@ -258,6 +244,7 @@ export default function decorate(block) {
       moveInstrumentation(row, logoItem);
       logosContainer.appendChild(logoItem);
     } else if (itemType === 'footer-sai-nav-item') {
+      // Fields: linkText, linkCta, linkTarget
       const navItem = document.createElement('div');
       navItem.className = 'footer-sai-nav-item';
       const link = createLink(values[0], values[1], values[2]);
@@ -265,22 +252,26 @@ export default function decorate(block) {
       moveInstrumentation(row, navItem);
       navContainer.appendChild(navItem);
     } else if (itemType === 'footer-sai-legal-item') {
+      // Fields: label, linkCta, linkTarget
       const link = createLink(values[0], values[1], values[2]);
       if (link) {
         moveInstrumentation(row, link);
         legalLinksContainer.appendChild(link);
-      } else {
-        const legalItem = document.createElement('span');
-        legalItem.className = 'footer-sai-legal-item';
-        moveInstrumentation(row, legalItem);
-        legalLinksContainer.appendChild(legalItem);
       }
     }
   });
 
+  // Render copyright from the main model field if present
+  if (blockCopyrightHtml) {
+    copyrightTextElement = document.createElement('div');
+    copyrightTextElement.className = 'footer-sai-copyright';
+    copyrightTextElement.innerHTML = blockCopyrightHtml;
+  }
+
   mainRowContainer.append(logosContainer, navContainer);
   if (copyrightTextElement) legalRowContainer.appendChild(copyrightTextElement);
   legalRowContainer.appendChild(legalLinksContainer);
+
   const mainContentContainer = document.createElement('div');
   mainContentContainer.className = 'footer-sai-main-content';
   mainContentContainer.append(mainRowContainer, document.createElement('hr'), legalRowContainer);
@@ -297,9 +288,11 @@ export default function decorate(block) {
   [...block.classList]
     .filter((className) => className.startsWith('footer-sai-theme-'))
     .forEach((className) => block.classList.remove(className));
+
   block.classList.add('footer-sai-wrapper');
   if (selectedTheme) block.classList.add(`footer-sai-theme-${selectedTheme}`);
   if (motionOptions.includes(motionValue)) block.classList.add(`footer-sai-motion-${motionValue}`);
+
   wrapper.append(heroContainer, mainContentContainer);
   block.replaceChildren(wrapper);
 }
