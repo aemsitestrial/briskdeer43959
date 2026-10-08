@@ -672,6 +672,19 @@
             "value": "_blank"
           }
         ]
+      },
+      {
+        "component": "select",
+        "name": "itemType",
+        "label": "Link Group",
+        "value": "footer-sai-legal-item",
+        "valueType": "string",
+        "options": [
+          {
+            "name": "Legal",
+            "value": "footer-sai-legal-item"
+          }
+        ]
       }
     ]
   },

@@ -3,7 +3,8 @@ import decorateCanvasSearchHero from '../canvas-search-hero/canvas-search-hero.j
 
 function getCells(row) {
   let cells = [...row.children];
-  while (cells.length === 1 && cells[0].children.length > 1) {
+  while (cells.length === 1 && cells[0].children.length > 1
+    && [...cells[0].children].every((child) => child.tagName === 'DIV')) {
     cells = [...cells[0].children];
   }
   return cells;
@@ -24,6 +25,7 @@ function getItemType(row) {
 
   const cells = getCells(row);
   const values = cells.map((cell) => cell.textContent.trim());
+  if (values.includes('footer-sai-legal-item')) return 'footer-sai-legal-item';
   if (row.querySelector('[data-aue-prop="heading"], [data-aue-prop="backgroundStyle"]')
     || cells.length >= 8) {
     return 'canvas-search-hero-settings';
@@ -32,7 +34,7 @@ function getItemType(row) {
     return 'footer-sai-legal-item';
   }
   if (row.querySelector('img')) {
-    const combinedText = values.join(' ').toLowerCase();
+    const combinedText = [...values, row.querySelector('img').alt].join(' ').toLowerCase();
     if (combinedText.includes('tata') && !combinedText.includes('tcs')) {
       return 'footer-sai-tata-logo';
     }
@@ -41,7 +43,8 @@ function getItemType(row) {
   if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
   if (values.some((value) => value.toLowerCase().includes('copyright'))
     || cells.length >= 4
-    || (cells.length === 3 && !values[0])) {
+    || (cells.length === 3 && !values[0])
+    || /^(privacy(?: notice| policy)?|cookie(?: notice| policy)?|disclaimer|security policy)$/i.test(values[0] || '')) {
     return 'footer-sai-legal-item';
   }
   if (cells.length >= 2 && values[0]) return 'footer-sai-nav-item';
@@ -148,6 +151,16 @@ export default function decorate(block) {
 
   const themeOptions = ['soft-white', 'powder-blue', 'sage-green', 'blush-pink', 'lavender', 'warm-cream', 'dark'];
   const motionOptions = ['fade', 'slide-up'];
+  const propertyCells = [];
+  [...block.children].every((row) => {
+    const cells = getCells(row);
+    if (cells.length !== 1 || row.querySelector('img') || row.dataset.aueComponent) return false;
+    propertyCells.push(cells[0]);
+    return true;
+  });
+  const publishedMotion = propertyCells.find((cell) => (
+    ['none', 'fade', 'fade-in', 'slide-up'].includes(getCellValue(cell).toLowerCase())
+  ));
   let selectedTheme = '';
   const blockThemeValue = getThemeValueFromBlock(block);
   if (themeOptions.includes(blockThemeValue)) selectedTheme = blockThemeValue;
@@ -157,7 +170,8 @@ export default function decorate(block) {
   const motionClass = [...block.classList]
     .find((className) => className.startsWith('footer-sai-motion-'))
     ?.replace('footer-sai-motion-', '');
-  const motionValue = (motionClass || motionProperty?.dataset?.value || motionProperty?.textContent || '')
+  const motionValue = (motionClass || motionProperty?.dataset?.value
+    || motionProperty?.textContent || getCellValue(publishedMotion))
     .trim()
     .toLowerCase()
     .replace(/^footer-sai-motion-/, '')
@@ -182,18 +196,21 @@ export default function decorate(block) {
 
   const copyrightProperty = block.matches('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')
     ? block
-    : block.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]');
+    : block.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')
+      || propertyCells.find((cell) => cell !== publishedMotion && cell.textContent.trim());
   const copyrightContent = copyrightProperty?.innerHTML || '';
   const copyrightTextElement = copyrightContent.trim() ? document.createElement('div') : null;
   if (copyrightTextElement) {
     copyrightTextElement.className = 'footer-sai-copyright';
     copyrightTextElement.innerHTML = copyrightContent;
+    moveInstrumentation(copyrightProperty, copyrightTextElement);
   }
 
   [...block.children].forEach((row) => {
+    if (propertyCells.includes(getCells(row)[0])) return;
     const itemType = getItemType(row);
     const cells = getCells(row);
-    const values = cells.map(getCellValue);
+    const values = cells.map(getCellValue).filter((value) => value !== 'footer-sai-legal-item');
 
     if (itemType === 'canvas-search-hero-settings') {
       canvasHeroRows.push(row);
