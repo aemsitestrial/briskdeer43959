@@ -1,18 +1,15 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 function getPropValue(row, propName, fallbackCell) {
-  // 1. Check direct Universal Editor property node
   const propNode = row.querySelector(`[data-aue-prop="${propName}"]`);
   if (propNode) {
     return propNode.dataset.value || propNode.getAttribute('data-value') || propNode.textContent?.trim() || '';
   }
 
-  // 2. Check row dataset/attribute
   if (row.dataset[propName] || row.getAttribute(`data-${propName}`)) {
     return row.dataset[propName] || row.getAttribute(`data-${propName}`);
   }
 
-  // 3. Fallback to provided cell text/content
   if (fallbackCell) {
     const linkHref = fallbackCell.querySelector('a')?.getAttribute('href');
     const valueNode = fallbackCell.matches('[data-value]') ? fallbackCell : fallbackCell.querySelector('[data-value]');
@@ -41,6 +38,7 @@ export default function decorate(block) {
   if (eyebrowVal) {
     const eyebrow = document.createElement('span');
     eyebrow.className = 'icon-list-eyebrow';
+    eyebrow.setAttribute('data-aue-prop', 'eyebrow');
     eyebrow.textContent = eyebrowVal;
     header.appendChild(eyebrow);
   }
@@ -48,6 +46,7 @@ export default function decorate(block) {
   if (titleVal) {
     const title = document.createElement('h2');
     title.className = 'icon-list-title';
+    title.setAttribute('data-aue-prop', 'title');
     title.textContent = titleVal;
     header.appendChild(title);
   }
@@ -55,19 +54,20 @@ export default function decorate(block) {
   if (descVal) {
     const desc = document.createElement('div');
     desc.className = 'icon-list-description';
+    desc.setAttribute('data-aue-prop', 'description');
     desc.innerHTML = descVal;
     header.appendChild(desc);
   }
 
-  // Build Grid Container
+  // Build Grid Container with UE Container Instrumentations
   const grid = document.createElement('div');
   grid.className = `icon-list-grid grid-cols-${cardsPerRow}`;
+  grid.setAttribute('data-aue-type', 'container');
+  grid.setAttribute('data-aue-filter', 'icon-list');
 
   [...block.children].forEach((row) => {
-    // Skip row if it contains main block properties
     if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
 
-    // Extract item properties
     const cardColor = getPropValue(row, 'cardColor') || 'light';
     const motionType = getPropValue(row, 'motionType') || 'none';
     const cardImageTopVal = getPropValue(row, 'cardImageTop');
@@ -76,7 +76,6 @@ export default function decorate(block) {
     const displayElementsVal = getPropValue(row, 'displayElements') || 'icon,title,description';
     const displayElements = displayElementsVal.toLowerCase();
 
-    // Content extraction
     const iconNode = row.querySelector('[data-aue-prop="icon"]') || row.querySelector('img')?.closest('td, div') || row.querySelector('img');
     const iconImg = iconNode?.tagName === 'IMG' ? iconNode.cloneNode(true) : iconNode?.querySelector('img')?.cloneNode(true);
     const iconSrc = iconImg?.src || getPropValue(row, 'icon');
@@ -90,16 +89,16 @@ export default function decorate(block) {
     const bgImgNode = row.querySelector('[data-aue-prop="cardBgImage"]');
     const bgImgSrc = bgImgNode?.querySelector('img')?.src || getPropValue(row, 'cardBgImage');
 
-    // Only render items with actual content
-    const hasContent = cardTitle || cardDesc || iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) || bgImgSrc;
-    if (!hasContent) return;
-
     const card = document.createElement('div');
     card.className = `icon-list-item card-color-${cardColor}`;
+    card.setAttribute('data-aue-resource', row.getAttribute('data-aue-resource') || '');
+    card.setAttribute('data-aue-type', 'component');
+    card.setAttribute('data-aue-label', 'Icon List Item');
+
     if (cardImageTop) card.classList.add('image-top');
     if (motionType !== 'none') card.classList.add(`motion-${motionType}`);
 
-    // 1. Icon Element
+    // Icon
     if (displayElements.includes('icon') && (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)))) {
       const iconWrapper = document.createElement('div');
       iconWrapper.className = 'icon-list-icon';
@@ -110,7 +109,7 @@ export default function decorate(block) {
       card.appendChild(iconWrapper);
     }
 
-    // 2. Card Body Container (Title & Description)
+    // Card Body
     const cardBody = document.createElement('div');
     cardBody.className = 'icon-list-body';
 
@@ -132,7 +131,7 @@ export default function decorate(block) {
       card.appendChild(cardBody);
     }
 
-    // 3. Card Background Image Rendering
+    // Background Image
     if (bgImgSrc && bgImgSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) {
       const bgImg = document.createElement('img');
       bgImg.className = 'icon-list-bg-image';
@@ -146,7 +145,7 @@ export default function decorate(block) {
   });
 
   if (header.children.length) container.appendChild(header);
-  if (grid.children.length) container.appendChild(grid);
+  container.appendChild(grid);
 
   block.classList.add('icon-list-wrapper');
   block.replaceChildren(container);
