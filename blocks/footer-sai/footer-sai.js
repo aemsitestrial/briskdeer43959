@@ -16,25 +16,32 @@ function getCellValue(cell) {
 }
 
 function getCellRichText(cell) {
-  const valueNode = cell?.matches('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')
-    ? cell
-    : cell?.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]');
-  return valueNode?.innerHTML || cell?.innerHTML || '';
+  if (!cell) return '';
+  const valueNode = cell.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]') || cell;
+  return valueNode.innerHTML.trim() || valueNode.textContent.trim() || '';
 }
 
 function getItemType(row) {
+  // 1. Check for explicit AUE or CSS class matching
   const explicitType = row.dataset.aueComponent
     || [...row.classList].find((className) => (
       className.startsWith('footer-sai-') || className.startsWith('canvas-search-hero-')
     ));
   if (explicitType) return explicitType;
 
+  // 2. Explicitly check for Copyright model property or single copyright cell
+  if (row.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')) {
+    return 'footer-sai-copyright';
+  }
+
   const cells = getCells(row);
   const values = cells.map((cell) => cell.textContent.trim());
+
   if (row.querySelector('[data-aue-prop="heading"], [data-aue-prop="backgroundStyle"]')
     || cells.length >= 8) {
     return 'canvas-search-hero-settings';
   }
+
   if (row.querySelector('img')) {
     const combinedText = values.join(' ').toLowerCase();
     if (combinedText.includes('tata') && !combinedText.includes('tcs')) {
@@ -42,13 +49,21 @@ function getItemType(row) {
     }
     return 'footer-sai-tcs-logo';
   }
+
   if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
-  if (values.some((value) => value.toLowerCase().includes('copyright'))
-    || cells.length >= 4
-    || (cells.length === 3 && !values[0])) {
+
+  // 3. Fallback check for single cell carrying copyright content
+  if (cells.length === 1 && (values[0].toLowerCase().includes('copyright') || values[0].includes('©'))) {
+    return 'footer-sai-copyright';
+  }
+
+  // 4. Legal item check
+  if (cells.length >= 4 || (cells.length === 3 && !values[0])) {
     return 'footer-sai-legal-item';
   }
+
   if (cells.length >= 2 && values[0]) return 'footer-sai-nav-item';
+
   return '';
 }
 
