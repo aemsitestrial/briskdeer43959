@@ -62,6 +62,21 @@
       }
     },
     {
+      "title": "Footer Sai Copyright",
+      "id": "footer-sai-copyright",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Footer Sai Copyright",
+              "model": "footer-sai-copyright"
+            }
+          }
+        }
+      }
+    },
+    {
       "title": "Footer Sai TCS Logo",
       "id": "footer-sai-tcs-logo",
       "plugins": {
@@ -217,13 +232,6 @@
         {
           "component": "text",
           "valueType": "string",
-          "name": "copyrightText",
-          "label": "Copyright Text",
-          "value": ""
-        },
-        {
-          "component": "text",
-          "valueType": "string",
           "name": "label",
           "label": "Legal Link Label",
           "value": ""
@@ -244,6 +252,18 @@
             { "name": "Same Tab", "value": "_self" },
             { "name": "New Tab", "value": "_blank" }
           ]
+        }
+      ]
+    },
+    {
+      "id": "footer-sai-copyright",
+      "fields": [
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "copyrightText",
+          "label": "Copyright Text",
+          "value": ""
         }
       ]
     },
@@ -307,6 +327,7 @@
         "footer-sai-hero",
         "footer-sai-nav-item",
         "footer-sai-legal-item",
+        "footer-sai-copyright",
         "footer-sai-tcs-logo",
         "footer-sai-tata-logo",
         "canvas-search-hero-settings"
