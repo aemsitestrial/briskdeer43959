@@ -31,13 +31,14 @@ export default function decorate(block) {
   const cardsPerRowProp = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row') || '3';
   const cardsPerRow = ['1', '2', '3', '4'].includes(cardsPerRowProp) ? cardsPerRowProp : '3';
 
-  // Header
+  // Build Block Header
   const header = document.createElement('div');
   header.className = 'icon-list-header';
 
   if (eyebrowVal) {
     const eyebrow = document.createElement('span');
     eyebrow.className = 'icon-list-eyebrow';
+    eyebrow.setAttribute('data-aue-prop', 'eyebrow');
     eyebrow.textContent = eyebrowVal;
     header.appendChild(eyebrow);
   }
@@ -45,6 +46,7 @@ export default function decorate(block) {
   if (titleVal) {
     const title = document.createElement('h2');
     title.className = 'icon-list-title';
+    title.setAttribute('data-aue-prop', 'title');
     title.textContent = titleVal;
     header.appendChild(title);
   }
@@ -52,13 +54,16 @@ export default function decorate(block) {
   if (descVal) {
     const desc = document.createElement('div');
     desc.className = 'icon-list-description';
+    desc.setAttribute('data-aue-prop', 'description');
     desc.innerHTML = descVal;
     header.appendChild(desc);
   }
 
-  // Grid
+  // Build Grid Container with UE Container Instrumentations
   const grid = document.createElement('div');
   grid.className = `icon-list-grid grid-cols-${cardsPerRow}`;
+  grid.setAttribute('data-aue-type', 'container');
+  grid.setAttribute('data-aue-filter', 'icon-list');
 
   [...block.children].forEach((row) => {
     if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
@@ -86,10 +91,14 @@ export default function decorate(block) {
 
     const card = document.createElement('div');
     card.className = `icon-list-item card-color-${cardColor}`;
+    card.setAttribute('data-aue-resource', row.getAttribute('data-aue-resource') || '');
+    card.setAttribute('data-aue-type', 'component');
+    card.setAttribute('data-aue-label', 'Icon List Item');
+
     if (cardImageTop) card.classList.add('image-top');
     if (motionType !== 'none') card.classList.add(`motion-${motionType}`);
 
-    // 1. Icon
+    // Icon
     if (displayElements.includes('icon') && (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)))) {
       const iconWrapper = document.createElement('div');
       iconWrapper.className = 'icon-list-icon';
@@ -100,7 +109,7 @@ export default function decorate(block) {
       card.appendChild(iconWrapper);
     }
 
-    // 2. Card Body
+    // Card Body
     const cardBody = document.createElement('div');
     cardBody.className = 'icon-list-body';
 
@@ -122,7 +131,7 @@ export default function decorate(block) {
       card.appendChild(cardBody);
     }
 
-    // 3. Card Background Image
+    // Background Image
     if (bgImgSrc && bgImgSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) {
       const bgImg = document.createElement('img');
       bgImg.className = 'icon-list-bg-image';
