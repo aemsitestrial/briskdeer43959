@@ -72,7 +72,7 @@
   align-items: flex-start;
   padding: 24px;
   gap: 12px;
-  min-width: 220px;
+  min-width: 200px;
   height: 453px;
   background-size: cover;
   background-position: center;
@@ -82,25 +82,29 @@
   overflow: hidden;
 }
 
-/* Dynamic Columns Per Row Modifiers */
-.icon-list-cards-grid.grid-cols-2 .icon-card {
-  width: calc(50% - 12px);
-  flex: 0 0 calc(50% - 12px);
+/* Dynamic Columns Per Row Modifiers (Force card width expansion per author selection) */
+.icon-list-cards-grid.grid-cols-2 .icon-card,
+.icon-list.grid-cols-2 .icon-card {
+  width: calc(50% - 12px) !important;
+  flex: 0 0 calc(50% - 12px) !important;
 }
 
-.icon-list-cards-grid.grid-cols-3 .icon-card {
-  width: calc(33.333% - 16px);
-  flex: 0 0 calc(33.333% - 16px);
+.icon-list-cards-grid.grid-cols-3 .icon-card,
+.icon-list.grid-cols-3 .icon-card {
+  width: calc(33.333% - 16px) !important;
+  flex: 0 0 calc(33.333% - 16px) !important;
 }
 
-.icon-list-cards-grid.grid-cols-4 .icon-card {
-  width: calc(25% - 18px);
-  flex: 0 0 calc(25% - 18px);
+.icon-list-cards-grid.grid-cols-4 .icon-card,
+.icon-list.grid-cols-4 .icon-card {
+  width: calc(25% - 18px) !important;
+  flex: 0 0 calc(25% - 18px) !important;
 }
 
-.icon-list-cards-grid.grid-cols-5 .icon-card {
-  width: calc(20% - 19.2px);
-  flex: 0 0 calc(20% - 19.2px);
+.icon-list-cards-grid.grid-cols-5 .icon-card,
+.icon-list.grid-cols-5 .icon-card {
+  width: calc(20% - 19.2px) !important;
+  flex: 0 0 calc(20% - 19.2px) !important;
 }
 
 /* Card Color Variations */
@@ -225,8 +229,8 @@
   .icon-list-cards-grid.grid-cols-3 .icon-card,
   .icon-list-cards-grid.grid-cols-4 .icon-card,
   .icon-list-cards-grid.grid-cols-5 .icon-card {
-    width: calc(50% - 12px);
-    flex: 0 0 calc(50% - 12px);
+    width: calc(50% - 12px) !important;
+    flex: 0 0 calc(50% - 12px) !important;
     height: auto;
     min-height: 420px;
   }
@@ -241,8 +245,8 @@
   .icon-list-cards-grid.grid-cols-3 .icon-card,
   .icon-list-cards-grid.grid-cols-4 .icon-card,
   .icon-list-cards-grid.grid-cols-5 .icon-card {
-    width: 100%;
-    flex: 0 0 100%;
+    width: 100% !important;
+    flex: 0 0 100% !important;
     min-height: 380px;
   }
 }
