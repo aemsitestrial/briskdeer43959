@@ -22,9 +22,10 @@ export default function decorate(block) {
   const eyebrowVal = block.querySelector('[data-aue-prop="eyebrow"]')?.textContent?.trim() || '';
   const titleVal = block.querySelector('[data-aue-prop="title"]')?.textContent?.trim() || '';
   const descVal = block.querySelector('[data-aue-prop="description"]')?.innerHTML || '';
-  const colorVal = block.dataset.defaultCardColor || 'light';
-  const motionVal = block.dataset.motionType || 'none';
-  const cardImageTop = block.dataset.cardImageTop !== 'false';
+
+  // Cards per row setting (Default to 3 as seen in screenshot)
+  const cardsPerRowProp = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row') || '3';
+  const cardsPerRow = ['1', '2', '3', '4'].includes(cardsPerRowProp) ? cardsPerRowProp : '3';
 
   // Build Block Header
   const header = document.createElement('div');
@@ -51,65 +52,76 @@ export default function decorate(block) {
     header.appendChild(desc);
   }
 
-  // Build Grid for Items
+  // Build Grid Container
   const grid = document.createElement('div');
-  grid.className = 'icon-list-grid';
+  grid.className = `icon-list-grid grid-cols-${cardsPerRow}`;
 
   [...block.children].forEach((row) => {
-    // Skip header row if it contains block properties
+    // Skip header row if it contains block level meta-data
     if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
 
     const cells = getCells(row);
     if (!cells.length) return;
 
-    const card = document.createElement('div');
-    card.className = `icon-list-item card-color-${colorVal}`;
-    if (cardImageTop) card.classList.add('image-top');
+    // Extract item level properties
+    const cardColor = row.dataset.cardColor || row.getAttribute('data-card-color') || 'light';
+    const motionType = row.dataset.motionType || row.getAttribute('data-motion-type') || 'none';
+    const cardImageTop = (row.dataset.cardImageTop || row.getAttribute('data-card-image-top')) !== 'false';
+    const displayElements = (row.dataset.displayElements || row.getAttribute('data-display-elements') || 'icon,title,description').toLowerCase();
 
+    const card = document.createElement('div');
+    card.className = `icon-list-item card-color-${cardColor}`;
+    if (cardImageTop) card.classList.add('image-top');
+    if (motionType !== 'none') card.classList.add(`motion-${motionType}`);
+
+    // Cell index mapping: 0 -> Icon, 1 -> List Title, 2 -> List Description
     const iconCell = cells[0];
     const titleCell = cells[1];
     const descCell = cells[2];
-    const bgImgCell = cells[3];
 
-    // Icon Rendering
-    const iconImg = iconCell?.querySelector('img')?.cloneNode(true) || null;
-    if (iconImg) {
-      const iconWrapper = document.createElement('div');
-      iconWrapper.className = 'icon-list-icon';
-      iconWrapper.appendChild(iconImg);
-      card.appendChild(iconWrapper);
+    // 1. Icon Element
+    if (displayElements.includes('icon')) {
+      const iconImg = iconCell?.querySelector('img')?.cloneNode(true);
+      const iconSrc = iconImg?.src || getCellValue(iconCell);
+      if (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i))) {
+        const iconWrapper = document.createElement('div');
+        iconWrapper.className = 'icon-list-icon';
+        const imgNode = iconImg || document.createElement('img');
+        if (!imgNode.src) imgNode.src = iconSrc;
+        imgNode.alt = '';
+        iconWrapper.appendChild(imgNode);
+        card.appendChild(iconWrapper);
+      }
     }
 
-    // Text Container
+    // 2. Card Body Container (Title & Description)
     const cardBody = document.createElement('div');
     cardBody.className = 'icon-list-body';
 
-    const cardTitle = getCellValue(titleCell);
-    if (cardTitle) {
-      const h3 = document.createElement('h3');
-      h3.className = 'icon-list-item-title';
-      h3.textContent = cardTitle;
-      cardBody.appendChild(h3);
+    // List Title Element
+    if (displayElements.includes('title')) {
+      const cardTitle = getCellValue(titleCell);
+      if (cardTitle) {
+        const h3 = document.createElement('h3');
+        h3.className = 'icon-list-item-title';
+        h3.textContent = cardTitle;
+        cardBody.appendChild(h3);
+      }
     }
 
-    const cardDesc = descCell?.innerHTML || getCellValue(descCell);
-    if (cardDesc) {
-      const p = document.createElement('div');
-      p.className = 'icon-list-item-desc';
-      p.innerHTML = cardDesc;
-      cardBody.appendChild(p);
+    // List Description Element
+    if (displayElements.includes('description')) {
+      const cardDesc = descCell?.innerHTML || getCellValue(descCell);
+      if (cardDesc) {
+        const p = document.createElement('div');
+        p.className = 'icon-list-item-desc';
+        p.innerHTML = cardDesc;
+        cardBody.appendChild(p);
+      }
     }
 
-    card.appendChild(cardBody);
-
-    // Background Image / Pattern
-    const bgImgSrc = bgImgCell?.querySelector('img')?.src || getCellValue(bgImgCell);
-    if (bgImgSrc && bgImgSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) {
-      const bgImg = document.createElement('img');
-      bgImg.className = 'icon-list-bg-image';
-      bgImg.src = bgImgSrc;
-      bgImg.alt = '';
-      card.appendChild(bgImg);
+    if (cardBody.children.length) {
+      card.appendChild(cardBody);
     }
 
     moveInstrumentation(row, card);
@@ -120,7 +132,5 @@ export default function decorate(block) {
   container.appendChild(grid);
 
   block.classList.add('icon-list-wrapper');
-  if (motionVal !== 'none') block.classList.add(`motion-${motionVal}`);
-
   block.replaceChildren(container);
 }

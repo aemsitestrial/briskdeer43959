@@ -5776,15 +5776,38 @@
         "valueType": "string"
       },
       {
-        "component": "boolean",
-        "name": "cardImageTop",
-        "label": "View - Card Image Top",
-        "value": true
-      },
+        "component": "select",
+        "name": "cardsPerRow",
+        "label": "Cards Per Row",
+        "value": "3",
+        "options": [
+          {
+            "name": "1 Card Per Row",
+            "value": "1"
+          },
+          {
+            "name": "2 Cards Per Row",
+            "value": "2"
+          },
+          {
+            "name": "3 Cards Per Row",
+            "value": "3"
+          },
+          {
+            "name": "4 Cards Per Row",
+            "value": "4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "icon-list-item",
+    "fields": [
       {
         "component": "select",
-        "name": "defaultCardColor",
-        "label": "Default Card Color",
+        "name": "cardColor",
+        "label": "Card Color",
         "value": "light",
         "options": [
           {
@@ -5798,25 +5821,6 @@
           {
             "name": "Dark / Black",
             "value": "black"
-          }
-        ]
-      },
-      {
-        "component": "multiselect",
-        "name": "displayElements",
-        "label": "Display Elements",
-        "options": [
-          {
-            "name": "Icon",
-            "value": "icon"
-          },
-          {
-            "name": "Title",
-            "value": "title"
-          },
-          {
-            "name": "Description",
-            "value": "description"
           }
         ]
       },
@@ -5839,12 +5843,32 @@
             "value": "slide-up"
           }
         ]
-      }
-    ]
-  },
-  {
-    "id": "icon-list-item",
-    "fields": [
+      },
+      {
+        "component": "boolean",
+        "name": "cardImageTop",
+        "label": "View - Card Image Top",
+        "value": true
+      },
+      {
+        "component": "multiselect",
+        "name": "displayElements",
+        "label": "Display Elements",
+        "options": [
+          {
+            "name": "Display - Icon",
+            "value": "icon"
+          },
+          {
+            "name": "Display - Title",
+            "value": "title"
+          },
+          {
+            "name": "Display - Description",
+            "value": "description"
+          }
+        ]
+      },
       {
         "component": "reference",
         "name": "icon",
@@ -5861,12 +5885,6 @@
         "component": "richtext",
         "name": "listDescription",
         "label": "List Description",
-        "valueType": "string"
-      },
-      {
-        "component": "reference",
-        "name": "cardBgImage",
-        "label": "Card BG Image",
         "valueType": "string"
       }
     ]
