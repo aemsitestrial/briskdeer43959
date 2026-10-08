@@ -1,29 +1,36 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-function getCells(row) {
-  let cells = [...row.children];
-  while (cells.length === 1 && cells[0].children.length > 1) {
-    cells = [...cells[0].children];
+function getPropValue(row, propName, fallbackCell) {
+  // 1. Check direct Universal Editor property node
+  const propNode = row.querySelector(`[data-aue-prop="${propName}"]`);
+  if (propNode) {
+    return propNode.dataset.value || propNode.getAttribute('data-value') || propNode.textContent?.trim() || '';
   }
-  return cells;
-}
 
-function getCellValue(cell) {
-  const linkHref = cell?.querySelector('a')?.getAttribute('href');
-  const valueNode = cell?.matches('[data-value]') ? cell : cell?.querySelector('[data-value]');
-  return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
+  // 2. Check row dataset/attribute
+  if (row.dataset[propName] || row.getAttribute(`data-${propName}`)) {
+    return row.dataset[propName] || row.getAttribute(`data-${propName}`);
+  }
+
+  // 3. Fallback to provided cell text/content
+  if (fallbackCell) {
+    const linkHref = fallbackCell.querySelector('a')?.getAttribute('href');
+    const valueNode = fallbackCell.matches('[data-value]') ? fallbackCell : fallbackCell.querySelector('[data-value]');
+    return linkHref || valueNode?.dataset?.value || fallbackCell.textContent?.trim() || '';
+  }
+
+  return '';
 }
 
 export default function decorate(block) {
   const container = document.createElement('div');
   container.className = 'icon-list-content';
 
-  // Extract block properties
+  // Extract block-level properties
   const eyebrowVal = block.querySelector('[data-aue-prop="eyebrow"]')?.textContent?.trim() || '';
   const titleVal = block.querySelector('[data-aue-prop="title"]')?.textContent?.trim() || '';
   const descVal = block.querySelector('[data-aue-prop="description"]')?.innerHTML || '';
 
-  // Cards per row setting (Default: 3)
   const cardsPerRowProp = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row') || '3';
   const cardsPerRow = ['1', '2', '3', '4'].includes(cardsPerRowProp) ? cardsPerRowProp : '3';
 
@@ -57,31 +64,32 @@ export default function decorate(block) {
   grid.className = `icon-list-grid grid-cols-${cardsPerRow}`;
 
   [...block.children].forEach((row) => {
-    // Skip header row if it contains block level meta-data
+    // Skip row if it contains main block properties
     if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
 
-    const cells = getCells(row);
-    if (!cells.length) return;
+    // Extract item properties by property name
+    const cardColor = getPropValue(row, 'cardColor') || 'light';
+    const motionType = getPropValue(row, 'motionType') || 'none';
+    const cardImageTopVal = getPropValue(row, 'cardImageTop');
+    const cardImageTop = cardImageTopVal !== 'false' && cardImageTopVal !== 'none';
 
-    // Cell index mapping: 0 -> Icon, 1 -> List Title, 2 -> List Description
-    const iconCell = cells[0];
-    const titleCell = cells[1];
-    const descCell = cells[2];
+    const displayElementsVal = getPropValue(row, 'displayElements') || 'icon,title,description';
+    const displayElements = displayElementsVal.toLowerCase();
 
-    const cardTitle = getCellValue(titleCell);
-    const cardDesc = descCell?.innerHTML?.trim() || getCellValue(descCell);
-    const iconImg = iconCell?.querySelector('img')?.cloneNode(true);
-    const iconSrc = iconImg?.src || getCellValue(iconCell);
+    // Content extraction by explicit UE property name or element selectors
+    const iconNode = row.querySelector('[data-aue-prop="icon"]') || row.querySelector('img')?.closest('td, div') || row.querySelector('img');
+    const iconImg = iconNode?.tagName === 'IMG' ? iconNode.cloneNode(true) : iconNode?.querySelector('img')?.cloneNode(true);
+    const iconSrc = iconImg?.src || getPropValue(row, 'icon');
 
-    // CRITICAL FIX: Skip rendering empty card shells if no content exists in this row
+    const titleNode = row.querySelector('[data-aue-prop="listTitle"]');
+    const cardTitle = titleNode?.textContent?.trim() || getPropValue(row, 'listTitle');
+
+    const descNode = row.querySelector('[data-aue-prop="listDescription"]');
+    const cardDesc = descNode?.innerHTML?.trim() || getPropValue(row, 'listDescription');
+
+    // Only render valid items that have actual title, desc, or icon content
     const hasContent = cardTitle || cardDesc || iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i));
     if (!hasContent) return;
-
-    // Extract item level properties
-    const cardColor = row.dataset.cardColor || row.getAttribute('data-card-color') || 'light';
-    const motionType = row.dataset.motionType || row.getAttribute('data-motion-type') || 'none';
-    const cardImageTop = (row.dataset.cardImageTop || row.getAttribute('data-card-image-top')) !== 'false';
-    const displayElements = (row.dataset.displayElements || row.getAttribute('data-display-elements') || 'icon,title,description').toLowerCase();
 
     const card = document.createElement('div');
     card.className = `icon-list-item card-color-${cardColor}`;
@@ -128,11 +136,7 @@ export default function decorate(block) {
   });
 
   if (header.children.length) container.appendChild(header);
-
-  // Only append grid if actual authored items exist
-  if (grid.children.length) {
-    container.appendChild(grid);
-  }
+  if (grid.children.length) container.appendChild(grid);
 
   block.classList.add('icon-list-wrapper');
   block.replaceChildren(container);
