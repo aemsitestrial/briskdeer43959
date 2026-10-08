@@ -117,6 +117,12 @@
     ]
   },
   {
+    "id": "section",
+    "components": [
+      "icon-list"
+    ]
+  },
+  {
     "id": "icon-list",
     "components": [
       "icon-list-item"
