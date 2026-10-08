@@ -28,6 +28,9 @@ function getItemType(row) {
     || cells.length >= 8) {
     return 'canvas-search-hero-settings';
   }
+  if (row.querySelector('[data-aue-prop="label"], [data-name="label"]')) {
+    return 'footer-sai-legal-item';
+  }
   if (row.querySelector('img')) {
     const combinedText = values.join(' ').toLowerCase();
     if (combinedText.includes('tata') && !combinedText.includes('tcs')) {
@@ -177,7 +180,15 @@ export default function decorate(block) {
   legalLinksContainer.setAttribute('aria-label', 'Legal');
   const canvasHeroRows = [];
 
-  let copyrightTextElement = null;
+  const copyrightProperty = block.matches('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')
+    ? block
+    : block.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]');
+  const copyrightContent = copyrightProperty?.innerHTML || '';
+  const copyrightTextElement = copyrightContent.trim() ? document.createElement('div') : null;
+  if (copyrightTextElement) {
+    copyrightTextElement.className = 'footer-sai-copyright';
+    copyrightTextElement.innerHTML = copyrightContent;
+  }
 
   [...block.children].forEach((row) => {
     const itemType = getItemType(row);
@@ -238,22 +249,18 @@ export default function decorate(block) {
       moveInstrumentation(row, navItem);
       navContainer.appendChild(navItem);
     } else if (itemType === 'footer-sai-legal-item') {
-      const [copyright] = values;
-      const copyrightElement = copyright?.toLowerCase().includes('copyright')
-        ? document.createElement('div')
-        : null;
-      if (copyrightElement) {
-        copyrightElement.className = 'footer-sai-copyright';
-        copyrightElement.textContent = copyright;
-        copyrightTextElement = copyrightElement;
+      const [firstValue] = values;
+      const isLegacyCopyright = firstValue?.toLowerCase().includes('copyright');
+      let link = null;
+      if (isLegacyCopyright && values.length >= 4) {
+        link = createLink(values[1], values[2], values[3]);
+      } else if (!isLegacyCopyright) {
+        link = createLink(values[0], values[1], values[2]);
       }
-      const link = createLink(values[1], values[2], values[3]);
       if (link) {
         moveInstrumentation(row, link);
         legalLinksContainer.appendChild(link);
-      } else if (copyrightElement) {
-        moveInstrumentation(row, copyrightElement);
-      } else {
+      } else if (!isLegacyCopyright) {
         const legalItem = document.createElement('span');
         legalItem.className = 'footer-sai-legal-item';
         moveInstrumentation(row, legalItem);

@@ -129,6 +129,13 @@
             { "name": "Fade In", "value": "fade" },
             { "name": "Slide Up", "value": "slide-up" }
           ]
+        },
+        {
+          "component": "richtext",
+          "name": "copyrightText",
+          "label": "Copyright Text",
+          "value": "",
+          "valueType": "string"
         }
       ]
     },
@@ -214,13 +221,6 @@
     {
       "id": "footer-sai-legal-item",
       "fields": [
-        {
-          "component": "text",
-          "valueType": "string",
-          "name": "copyrightText",
-          "label": "Copyright Text",
-          "value": ""
-        },
         {
           "component": "text",
           "valueType": "string",
