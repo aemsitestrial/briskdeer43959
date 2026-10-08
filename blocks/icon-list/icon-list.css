@@ -7,7 +7,7 @@
   gap: 80px;
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto 80px; /* Adds spacing between multiple icon-list blocks */
+  margin: 0 auto 80px; /* Spacing between multiple icon-list blocks */
   background: #fff;
   box-sizing: border-box;
 }
@@ -36,9 +36,9 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 48px;
+  font-size: 36px;
   line-height: 120%;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: #0c0c0d;
   margin: 0;
 }
@@ -47,7 +47,7 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 24px;
+  font-size: 18px;
   line-height: 140%;
   color: #0c0c0d;
   margin: 0;
@@ -73,7 +73,7 @@
   justify-content: flex-start;
   align-items: flex-start;
   padding: 24px;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
   height: 453px;
   background-size: cover;
@@ -140,7 +140,7 @@
   align-items: center;
   justify-content: flex-start;
   flex-shrink: 0;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .icon-card-icon img,
@@ -164,7 +164,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -172,8 +172,8 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 16px;
-  line-height: 160%;
+  font-size: 14px;
+  line-height: 140%;
   letter-spacing: 0.01em;
   color: #cdcdcd;
 }
@@ -186,8 +186,8 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 64px;
-  line-height: 120%;
+  font-size: 44px;
+  line-height: 110%;
   margin: 0;
 }
 
@@ -203,8 +203,8 @@
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: normal;
   font-weight: 400;
-  font-size: 40px;
-  line-height: 120%;
+  font-size: 18px;
+  line-height: 135%;
   margin: 0;
 }
 
