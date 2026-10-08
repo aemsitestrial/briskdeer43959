@@ -23,7 +23,7 @@ export default function decorate(block) {
   const titleVal = block.querySelector('[data-aue-prop="title"]')?.textContent?.trim() || '';
   const descVal = block.querySelector('[data-aue-prop="description"]')?.innerHTML || '';
 
-  // Cards per row setting (Default to 3 as seen in screenshot)
+  // Cards per row setting (Default: 3)
   const cardsPerRowProp = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row') || '3';
   const cardsPerRow = ['1', '2', '3', '4'].includes(cardsPerRowProp) ? cardsPerRowProp : '3';
 
@@ -63,6 +63,20 @@ export default function decorate(block) {
     const cells = getCells(row);
     if (!cells.length) return;
 
+    // Cell index mapping: 0 -> Icon, 1 -> List Title, 2 -> List Description
+    const iconCell = cells[0];
+    const titleCell = cells[1];
+    const descCell = cells[2];
+
+    const cardTitle = getCellValue(titleCell);
+    const cardDesc = descCell?.innerHTML?.trim() || getCellValue(descCell);
+    const iconImg = iconCell?.querySelector('img')?.cloneNode(true);
+    const iconSrc = iconImg?.src || getCellValue(iconCell);
+
+    // CRITICAL FIX: Skip rendering empty card shells if no content exists in this row
+    const hasContent = cardTitle || cardDesc || iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i));
+    if (!hasContent) return;
+
     // Extract item level properties
     const cardColor = row.dataset.cardColor || row.getAttribute('data-card-color') || 'light';
     const motionType = row.dataset.motionType || row.getAttribute('data-motion-type') || 'none';
@@ -74,24 +88,15 @@ export default function decorate(block) {
     if (cardImageTop) card.classList.add('image-top');
     if (motionType !== 'none') card.classList.add(`motion-${motionType}`);
 
-    // Cell index mapping: 0 -> Icon, 1 -> List Title, 2 -> List Description
-    const iconCell = cells[0];
-    const titleCell = cells[1];
-    const descCell = cells[2];
-
     // 1. Icon Element
-    if (displayElements.includes('icon')) {
-      const iconImg = iconCell?.querySelector('img')?.cloneNode(true);
-      const iconSrc = iconImg?.src || getCellValue(iconCell);
-      if (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i))) {
-        const iconWrapper = document.createElement('div');
-        iconWrapper.className = 'icon-list-icon';
-        const imgNode = iconImg || document.createElement('img');
-        if (!imgNode.src) imgNode.src = iconSrc;
-        imgNode.alt = '';
-        iconWrapper.appendChild(imgNode);
-        card.appendChild(iconWrapper);
-      }
+    if (displayElements.includes('icon') && (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)))) {
+      const iconWrapper = document.createElement('div');
+      iconWrapper.className = 'icon-list-icon';
+      const imgNode = iconImg || document.createElement('img');
+      if (!imgNode.src) imgNode.src = iconSrc;
+      imgNode.alt = '';
+      iconWrapper.appendChild(imgNode);
+      card.appendChild(iconWrapper);
     }
 
     // 2. Card Body Container (Title & Description)
@@ -99,25 +104,19 @@ export default function decorate(block) {
     cardBody.className = 'icon-list-body';
 
     // List Title Element
-    if (displayElements.includes('title')) {
-      const cardTitle = getCellValue(titleCell);
-      if (cardTitle) {
-        const h3 = document.createElement('h3');
-        h3.className = 'icon-list-item-title';
-        h3.textContent = cardTitle;
-        cardBody.appendChild(h3);
-      }
+    if (displayElements.includes('title') && cardTitle) {
+      const h3 = document.createElement('h3');
+      h3.className = 'icon-list-item-title';
+      h3.textContent = cardTitle;
+      cardBody.appendChild(h3);
     }
 
     // List Description Element
-    if (displayElements.includes('description')) {
-      const cardDesc = descCell?.innerHTML || getCellValue(descCell);
-      if (cardDesc) {
-        const p = document.createElement('div');
-        p.className = 'icon-list-item-desc';
-        p.innerHTML = cardDesc;
-        cardBody.appendChild(p);
-      }
+    if (displayElements.includes('description') && cardDesc) {
+      const p = document.createElement('div');
+      p.className = 'icon-list-item-desc';
+      p.innerHTML = cardDesc;
+      cardBody.appendChild(p);
     }
 
     if (cardBody.children.length) {
@@ -129,7 +128,11 @@ export default function decorate(block) {
   });
 
   if (header.children.length) container.appendChild(header);
-  container.appendChild(grid);
+
+  // Only append grid if actual authored items exist
+  if (grid.children.length) {
+    container.appendChild(grid);
+  }
 
   block.classList.add('icon-list-wrapper');
   block.replaceChildren(container);
