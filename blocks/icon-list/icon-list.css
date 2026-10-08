@@ -1,4 +1,4 @@
-/* Block Outer Section Wrapper & Inter-Block Vertical Spacing */
+/* Block Outer Section Wrapper */
 .icon-list-wrapper {
   display: flex;
   flex-direction: column;
@@ -7,7 +7,7 @@
   gap: 80px;
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto 80px;
+  margin: 0 auto;
   background: #fff;
   box-sizing: border-box;
 }
@@ -19,7 +19,6 @@
   gap: 80px;
   width: 100%;
   max-width: 1280px;
-  margin-bottom: 40px;
 }
 
 /* Header Text Lockup */
@@ -53,7 +52,7 @@
   margin: 0;
 }
 
-/* Dynamic CSS Grid Container (Default 4 columns) */
+/* CSS Grid Container (Default 4 Columns) */
 .icon-list-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -64,28 +63,7 @@
   box-sizing: border-box;
 }
 
-/* Dynamic Column Layouts per Author Option */
-.icon-list-cards-grid.cols-2,
-.icon-list.cols-2 .icon-list-cards-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.icon-list-cards-grid.cols-3,
-.icon-list.cols-3 .icon-list-cards-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.icon-list-cards-grid.cols-4,
-.icon-list.cols-4 .icon-list-cards-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.icon-list-cards-grid.cols-5,
-.icon-list.cols-5 .icon-list-cards-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-/* Base Individual Card Styling */
+/* Base Card Styling */
 .icon-card {
   box-sizing: border-box;
   display: flex;
@@ -102,6 +80,27 @@
   isolation: isolate;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
+}
+
+/* Dynamic Cards Per Row Layouts */
+.icon-list-cards-grid.grid-cols-2,
+.icon-list.grid-cols-2 .icon-list-cards-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.icon-list-cards-grid.grid-cols-3,
+.icon-list.grid-cols-3 .icon-list-cards-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.icon-list-cards-grid.grid-cols-4,
+.icon-list.grid-cols-4 .icon-list-cards-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.icon-list-cards-grid.grid-cols-5,
+.icon-list.grid-cols-5 .icon-list-cards-grid {
+  grid-template-columns: repeat(5, 1fr);
 }
 
 /* Color Variations */
@@ -215,23 +214,18 @@
   color: #303030;
 }
 
-/* Responsive Viewport Breakpoints */
+/* Responsive Breakpoints */
 @media (width <= 1024px) {
   .icon-list-wrapper {
     padding: 60px 32px;
     gap: 40px;
-    margin-bottom: 40px;
   }
 
   .icon-list-cards-grid,
-  .icon-list-cards-grid.cols-2,
-  .icon-list-cards-grid.cols-3,
-  .icon-list-cards-grid.cols-4,
-  .icon-list-cards-grid.cols-5,
-  .icon-list.cols-2 .icon-list-cards-grid,
-  .icon-list.cols-3 .icon-list-cards-grid,
-  .icon-list.cols-4 .icon-list-cards-grid,
-  .icon-list.cols-5 .icon-list-cards-grid {
+  .icon-list-cards-grid.grid-cols-2,
+  .icon-list-cards-grid.grid-cols-3,
+  .icon-list-cards-grid.grid-cols-4,
+  .icon-list-cards-grid.grid-cols-5 {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -247,14 +241,10 @@
   }
 
   .icon-list-cards-grid,
-  .icon-list-cards-grid.cols-2,
-  .icon-list-cards-grid.cols-3,
-  .icon-list-cards-grid.cols-4,
-  .icon-list-cards-grid.cols-5,
-  .icon-list.cols-2 .icon-list-cards-grid,
-  .icon-list.cols-3 .icon-list-cards-grid,
-  .icon-list.cols-4 .icon-list-cards-grid,
-  .icon-list.cols-5 .icon-list-cards-grid {
+  .icon-list-cards-grid.grid-cols-2,
+  .icon-list-cards-grid.grid-cols-3,
+  .icon-list-cards-grid.grid-cols-4,
+  .icon-list-cards-grid.grid-cols-5 {
     grid-template-columns: 1fr;
   }
 
