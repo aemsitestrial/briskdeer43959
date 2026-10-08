@@ -1,4 +1,4 @@
-/* Block Outer Section Wrapper */
+/* Outer Block Section Wrapper & Inter-Block Spacing */
 .icon-list-wrapper {
   display: flex;
   flex-direction: column;
@@ -7,7 +7,7 @@
   gap: 80px;
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto;
+  margin: 0 auto 80px; /* Adds spacing between multiple icon-list blocks */
   background: #fff;
   box-sizing: border-box;
 }
@@ -19,6 +19,7 @@
   gap: 80px;
   width: 100%;
   max-width: 1280px;
+  margin-bottom: 40px;
 }
 
 /* Header Text Lockup */
@@ -52,10 +53,11 @@
   margin: 0;
 }
 
-/* CSS Grid Container (Default 4 Columns) */
+/* Base Justified CSS Grid Container */
 .icon-list-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  justify-content: space-between;
   gap: 24px;
   width: 100%;
   max-width: 1280px;
@@ -63,7 +65,7 @@
   box-sizing: border-box;
 }
 
-/* Base Card Styling */
+/* Base Card Sizing */
 .icon-card {
   box-sizing: border-box;
   display: flex;
@@ -82,7 +84,7 @@
   overflow: hidden;
 }
 
-/* Dynamic Cards Per Row Layouts */
+/* Dynamic Cards Per Row Justified Column Definitions */
 .icon-list-cards-grid.grid-cols-2,
 .icon-list.grid-cols-2 .icon-list-cards-grid {
   grid-template-columns: repeat(2, 1fr);
@@ -103,7 +105,7 @@
   grid-template-columns: repeat(5, 1fr);
 }
 
-/* Color Variations */
+/* Card Color Variations */
 .icon-card.card-color-blue {
   background-color: #4673db;
   color: #fff;
@@ -219,13 +221,18 @@
   .icon-list-wrapper {
     padding: 60px 32px;
     gap: 40px;
+    margin-bottom: 40px;
   }
 
   .icon-list-cards-grid,
   .icon-list-cards-grid.grid-cols-2,
   .icon-list-cards-grid.grid-cols-3,
   .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5 {
+  .icon-list-cards-grid.grid-cols-5,
+  .icon-list.grid-cols-2 .icon-list-cards-grid,
+  .icon-list.grid-cols-3 .icon-list-cards-grid,
+  .icon-list.grid-cols-4 .icon-list-cards-grid,
+  .icon-list.grid-cols-5 .icon-list-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -244,7 +251,11 @@
   .icon-list-cards-grid.grid-cols-2,
   .icon-list-cards-grid.grid-cols-3,
   .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5 {
+  .icon-list-cards-grid.grid-cols-5,
+  .icon-list.grid-cols-2 .icon-list-cards-grid,
+  .icon-list.grid-cols-3 .icon-list-cards-grid,
+  .icon-list.grid-cols-4 .icon-list-cards-grid,
+  .icon-list.grid-cols-5 .icon-list-cards-grid {
     grid-template-columns: 1fr;
   }
 
