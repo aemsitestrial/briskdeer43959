@@ -5,10 +5,10 @@ export default function decorate(block) {
   const cardsGrid = document.createElement('div');
   cardsGrid.classList.add('icon-list-cards-grid');
 
-  // Extract Cards Per Row setting from block dataset, attributes, or inner element
   let cardsPerRow = '4';
-  const cprAttr = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row');
 
+  // Read authored Cards Per Row selection
+  const cprAttr = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row');
   if (cprAttr) {
     const matched = cprAttr.match(/\d+/);
     if (matched) [cardsPerRow] = matched;
@@ -21,7 +21,7 @@ export default function decorate(block) {
   }
 
   [...block.children].forEach((row) => {
-    // Ignore setting rows
+    // Skip row if it only holds setting data
     if (row.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]')) {
       return;
     }
@@ -34,7 +34,6 @@ export default function decorate(block) {
       const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]');
       const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]');
 
-      // ESLint-compliant title fallback extraction
       let rawTitle = '';
       if (titleEl) {
         rawTitle = titleEl.textContent.trim();
@@ -42,7 +41,6 @@ export default function decorate(block) {
         rawTitle = row.children[0].textContent.trim();
       }
 
-      // ESLint-compliant description fallback extraction
       let rawDesc = '';
       if (descEl) {
         rawDesc = descEl.textContent.trim();
