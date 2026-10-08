@@ -5886,6 +5886,12 @@
         "name": "listDescription",
         "label": "List Description",
         "valueType": "string"
+      },
+      {
+        "component": "reference",
+        "name": "cardBgImage",
+        "label": "Card BG Image",
+        "valueType": "string"
       }
     ]
   },

@@ -120,6 +120,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  z-index: 1;
 }
 
 .icon-list-icon img {
@@ -133,6 +134,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  z-index: 1;
 }
 
 .icon-list-item-title {
@@ -152,7 +154,20 @@
   margin: 0;
 }
 
-/* Motion Animations (Configurable per Card) */
+/* Card Background Image */
+.icon-list-bg-image {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Motion Animations */
 .icon-list-item.motion-fade {
   animation: icon-list-fade-in 600ms ease-out both;
 }
@@ -185,10 +200,7 @@
 
 /* Responsive Grid Rules */
 @media (width <= 1024px) {
-  .icon-list-grid.grid-cols-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  .icon-list-grid.grid-cols-4,
   .icon-list-grid.grid-cols-3 {
     grid-template-columns: repeat(2, 1fr);
   }
