@@ -341,69 +341,60 @@
   appearance: none;
 }
 
-/* Microphone Icon inside Search */
-.footer-sai-hero .search-icon {
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3v6.75a3 3 0 003 3z'/%3E%3C/svg%3E") no-repeat center center;
-  cursor: pointer;
-}
-
-/* Main Navigation & Logos Row */
+/* Main Content Wrapper */
 .footer-sai-main-content {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 100%;
-  min-height: 281px;
-  padding: 80px;
-  gap: 40px;
+  padding: 60px 80px;
+  gap: 32px;
   background-color: var(--footer-bg);
 }
 
+/* Top Row: Logos & Navigation */
 .footer-sai-main-row {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   max-width: 1280px;
-  gap: 40px;
+  gap: 32px;
   margin: 0 auto;
 }
 
 .footer-sai-logos {
   display: flex;
-  flex: 1 1 567px;
   align-items: center;
-  min-width: 480px;
   gap: 32px;
 }
 
 .footer-sai-logos img {
   width: auto;
-  height: 30px;
+  height: 28px;
   object-fit: contain;
 }
 
 .footer-sai-nav {
   display: flex;
-  flex: 0 1 673px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  min-width: 480px;
-  gap: 24px;
-  white-space: nowrap;
+  justify-content: flex-start;
+  width: 100%;
+  gap: 16px 32px;
 }
 
 .footer-sai-nav a {
   color: var(--footer-link);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.4;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   text-decoration: none;
   transition: opacity 0.2s ease;
 }
 
-/* Separator Line */
+/* Horizontal Separator Line */
 .footer-sai hr {
   box-sizing: border-box;
   width: 100%;
@@ -414,69 +405,55 @@
   margin: 0 auto;
 }
 
-/* Bottom Legal & Copyright Row */
+/* Bottom Row: Legal & Copyright */
 .footer-sai-legal-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  align-content: flex-start;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   max-width: 1280px;
-  gap: 40px;
+  gap: 16px 24px;
   margin: 0 auto;
   color: var(--footer-text);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 500;
-  line-height: 1.4;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .footer-sai-copyright {
-  flex: 0 1 350px;
+  font-size: 10px;
   text-transform: uppercase;
+  color: var(--footer-muted);
 }
 
 .footer-sai-legal-links {
   display: flex;
-  flex: 0 1 324px;
   flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 12px 24px;
 }
 
 .footer-sai-legal-links a {
   color: var(--footer-link);
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 500;
-  line-height: 1.4;
   text-decoration: none;
   text-transform: uppercase;
   transition: color 0.2s ease;
+}
+
+/* Hover States Placed After Base Selectors to Satisfy no-descending-specificity */
+.footer-sai-nav a:hover {
+  opacity: 0.7;
 }
 
 .footer-sai-legal-links a:hover {
   color: var(--footer-link-hover);
 }
 
-.footer-sai-nav a:hover {
-  opacity: 0.7;
-}
-
 /* Responsive adjustments */
 @media (width <= 1100px) {
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-content {
-    min-height: 0;
-    padding: 72px 24px;
-  }
-
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-settings {
-    gap: 40px;
-  }
-
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-heading {
-    min-height: 76px;
-    font-size: 36px;
-  }
-
   .footer-sai .footer-sai-hero {
     min-height: 0;
     padding: 72px 24px;
@@ -492,53 +469,20 @@
   }
 
   .footer-sai-main-content {
-    min-height: 0;
     padding: 40px 24px;
     gap: 28px;
   }
 
   .footer-sai-main-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 28px;
-  }
-
-  .footer-sai-logos {
-    flex-basis: auto;
-    min-width: 0;
-    justify-content: center;
+    gap: 24px;
   }
 
   .footer-sai-nav {
-    display: grid;
-    flex: none;
-    width: 100%;
-    min-width: 0;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    justify-items: center;
-    gap: 18px 16px;
-    white-space: normal;
-  }
-
-  .footer-sai-legal-row {
-    gap: 16px 24px;
+    gap: 14px 24px;
   }
 }
 
 @media (width <= 540px) {
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-content {
-    padding: 64px 20px;
-  }
-
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-settings {
-    gap: 28px;
-  }
-
-  .footer-sai .footer-sai-hero.footer-sai-hero-canvas .canvas-search-hero-heading {
-    min-height: 68px;
-    font-size: 28px;
-  }
-
   .footer-sai .footer-sai-hero {
     padding: 64px 20px 56px;
   }
@@ -546,7 +490,6 @@
   .footer-sai .footer-sai-hero h2,
   .footer-sai .footer-sai-hero h1 {
     font-size: 28px;
-    line-height: 1.2;
   }
 
   .footer-sai .search-container {
@@ -554,61 +497,26 @@
     padding: 6px 8px;
   }
 
-  .footer-sai .search-container input {
-    height: 44px;
-    padding-left: 12px;
-    font-size: 15px;
-  }
-
-  .footer-sai .mic-icon {
-    height: 40px;
-  }
-
   .footer-sai-main-content {
     padding: 32px 20px 36px;
-    gap: 24px;
-  }
-
-  .footer-sai-main-row {
-    gap: 24px;
-  }
-
-  .footer-sai-logos {
-    gap: 24px;
-  }
-
-  .footer-sai-logos img {
-    height: 28px;
+    gap: 20px;
   }
 
   .footer-sai-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 12px;
+    gap: 12px 20px;
   }
 
   .footer-sai-nav a {
-    font-size: 13px;
+    font-size: 10px;
   }
 
   .footer-sai-legal-row {
     flex-direction: column;
-    gap: 16px;
-  }
-
-  .footer-sai-copyright {
-    flex: none;
-    font-size: 9px;
-  }
-
-  .footer-sai-legal-links {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    flex: none;
-    width: 100%;
+    align-items: flex-start;
     gap: 12px;
   }
 
-  .footer-sai-legal-links a {
-    font-size: 9px;
+  .footer-sai-legal-links {
+    gap: 10px 16px;
   }
 }

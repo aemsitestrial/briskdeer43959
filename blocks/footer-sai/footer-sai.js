@@ -15,6 +15,12 @@ function getCellValue(cell) {
   return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
 }
 
+function isLegalLink(text) {
+  const lower = (text || '').toLowerCase();
+  const legalKeywords = ['privacy', 'cookie', 'disclaimer', 'security', 'legal', 'terms', 'copyright', 'policy'];
+  return legalKeywords.some((keyword) => lower.includes(keyword));
+}
+
 function getItemType(row) {
   const explicitType = row.dataset.aueComponent
     || [...row.classList].find((className) => (
@@ -24,27 +30,34 @@ function getItemType(row) {
 
   const cells = getCells(row);
   const values = cells.map((cell) => cell.textContent.trim());
+  const combinedText = values.join(' ').toLowerCase();
 
-  if (row.querySelector('[data-aue-prop="heading"], [data-aue-prop="backgroundStyle"]')
-    || cells.length >= 8) {
+  if (row.querySelector('[data-aue-prop="heading"], [data-aue-prop="backgroundStyle"]') || cells.length >= 8) {
     return 'canvas-search-hero-settings';
   }
-  if (row.querySelector('img')) {
-    const combinedText = values.join(' ').toLowerCase();
+
+  if (row.querySelector('img') || combinedText.includes('tata') || combinedText.includes('tcs')) {
     if (combinedText.includes('tata') && !combinedText.includes('tcs')) {
       return 'footer-sai-tata-logo';
     }
-    return 'footer-sai-tcs-logo';
+    if (combinedText.includes('tcs') || row.querySelector('img')) {
+      return 'footer-sai-tcs-logo';
+    }
   }
+
   if (cells.length >= 5 || (cells.length >= 2 && /^(true|false)$/i.test(values[1] || ''))) {
     return 'footer-sai-hero';
   }
-  if (cells.length === 3 || (cells.length >= 2 && values[0] && !values[2])) {
+
+  // Legal vs Nav classification
+  if (isLegalLink(values[0]) || isLegalLink(values[1])) {
     return 'footer-sai-legal-item';
   }
+
   if (cells.length >= 2 && values[0]) {
     return 'footer-sai-nav-item';
   }
+
   return '';
 }
 
@@ -163,7 +176,6 @@ export default function decorate(block) {
     .replace(/^fade-in$/, 'fade')
     .replace(/\s+/g, '-');
 
-  // Extract block-level copyrightText richtext field if present
   const copyrightPropNode = block.matches('[data-aue-prop="copyrightText"]')
     ? block
     : block.querySelector('[data-aue-prop="copyrightText"]');
@@ -177,15 +189,13 @@ export default function decorate(block) {
   logosContainer.className = 'footer-sai-logos';
   const navContainer = document.createElement('nav');
   navContainer.className = 'footer-sai-nav';
-  navContainer.setAttribute('aria-label', 'Footer');
+  navContainer.setAttribute('aria-label', 'Footer Navigation');
   const legalRowContainer = document.createElement('div');
   legalRowContainer.className = 'footer-sai-legal-row';
   const legalLinksContainer = document.createElement('nav');
   legalLinksContainer.className = 'footer-sai-legal-links';
   legalLinksContainer.setAttribute('aria-label', 'Legal');
   const canvasHeroRows = [];
-
-  let copyrightTextElement = null;
 
   [...block.children].forEach((row) => {
     const itemType = getItemType(row);
@@ -195,7 +205,6 @@ export default function decorate(block) {
     if (itemType === 'canvas-search-hero-settings') {
       canvasHeroRows.push(row);
     } else if (itemType === 'footer-sai-hero') {
-      // Fields: heading, enableSearch, searchMode, searchPlaceholder, searchActionUrl
       const heroItem = document.createElement('div');
       heroItem.className = 'footer-sai-hero-item';
       const heading = document.createElement('h2');
@@ -214,7 +223,6 @@ export default function decorate(block) {
       moveInstrumentation(row, heroItem);
       heroContainer.appendChild(heroItem);
     } else if (itemType === 'footer-sai-tcs-logo' || itemType === 'footer-sai-tata-logo') {
-      // Fields: logo (reference), logoAlt (text), logoLink (aem-content)
       const logoItem = document.createElement('div');
       logoItem.className = 'footer-sai-logo-item';
       const [imageCell] = cells;
@@ -244,7 +252,6 @@ export default function decorate(block) {
       moveInstrumentation(row, logoItem);
       logosContainer.appendChild(logoItem);
     } else if (itemType === 'footer-sai-nav-item') {
-      // Fields: linkText, linkCta, linkTarget
       const navItem = document.createElement('div');
       navItem.className = 'footer-sai-nav-item';
       const link = createLink(values[0], values[1], values[2]);
@@ -252,7 +259,6 @@ export default function decorate(block) {
       moveInstrumentation(row, navItem);
       navContainer.appendChild(navItem);
     } else if (itemType === 'footer-sai-legal-item') {
-      // Fields: label, linkCta, linkTarget
       const link = createLink(values[0], values[1], values[2]);
       if (link) {
         moveInstrumentation(row, link);
@@ -261,15 +267,14 @@ export default function decorate(block) {
     }
   });
 
-  // Render copyright from the main model field if present
   if (blockCopyrightHtml) {
-    copyrightTextElement = document.createElement('div');
+    const copyrightTextElement = document.createElement('div');
     copyrightTextElement.className = 'footer-sai-copyright';
     copyrightTextElement.innerHTML = blockCopyrightHtml;
+    legalRowContainer.appendChild(copyrightTextElement);
   }
 
   mainRowContainer.append(logosContainer, navContainer);
-  if (copyrightTextElement) legalRowContainer.appendChild(copyrightTextElement);
   legalRowContainer.appendChild(legalLinksContainer);
 
   const mainContentContainer = document.createElement('div');
@@ -293,6 +298,9 @@ export default function decorate(block) {
   if (selectedTheme) block.classList.add(`footer-sai-theme-${selectedTheme}`);
   if (motionOptions.includes(motionValue)) block.classList.add(`footer-sai-motion-${motionValue}`);
 
-  wrapper.append(heroContainer, mainContentContainer);
+  if (heroContainer.children.length > 0) {
+    wrapper.appendChild(heroContainer);
+  }
+  wrapper.appendChild(mainContentContainer);
   block.replaceChildren(wrapper);
 }
