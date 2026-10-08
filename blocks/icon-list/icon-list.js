@@ -1,180 +1,126 @@
-export default function decorate(block) {
-  const headerWrapper = document.createElement('div');
-  headerWrapper.classList.add('icon-list-header');
+import { moveInstrumentation } from '../../scripts/scripts.js';
 
-  const cardsGrid = document.createElement('div');
-  cardsGrid.classList.add('icon-list-cards-grid');
-
-  let cardsPerRow = '4';
-
-  // Read authored Cards Per Row selection
-  const cprAttr = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row');
-  if (cprAttr) {
-    const matched = cprAttr.match(/\d+/);
-    if (matched) [cardsPerRow] = matched;
-  } else {
-    const cprEl = block.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]');
-    if (cprEl) {
-      const matched = cprEl.textContent.trim().match(/\d+/);
-      if (matched) [cardsPerRow] = matched;
-    }
+function getCells(row) {
+  let cells = [...row.children];
+  while (cells.length === 1 && cells[0].children.length > 1) {
+    cells = [...cells[0].children];
   }
+  return cells;
+}
+
+function getCellValue(cell) {
+  const linkHref = cell?.querySelector('a')?.getAttribute('href');
+  const valueNode = cell?.matches('[data-value]') ? cell : cell?.querySelector('[data-value]');
+  return linkHref || valueNode?.dataset?.value || cell?.textContent?.trim() || '';
+}
+
+export default function decorate(block) {
+  const container = document.createElement('div');
+  container.className = 'icon-list-content';
+
+  // Extract block properties
+  const eyebrowVal = block.querySelector('[data-aue-prop="eyebrow"]')?.textContent?.trim() || '';
+  const titleVal = block.querySelector('[data-aue-prop="title"]')?.textContent?.trim() || '';
+  const descVal = block.querySelector('[data-aue-prop="description"]')?.innerHTML || '';
+  const colorVal = block.dataset.defaultCardColor || 'light';
+  const motionVal = block.dataset.motionType || 'none';
+  const cardImageTop = block.dataset.cardImageTop !== 'false';
+
+  // Build Block Header
+  const header = document.createElement('div');
+  header.className = 'icon-list-header';
+
+  if (eyebrowVal) {
+    const eyebrow = document.createElement('span');
+    eyebrow.className = 'icon-list-eyebrow';
+    eyebrow.textContent = eyebrowVal;
+    header.appendChild(eyebrow);
+  }
+
+  if (titleVal) {
+    const title = document.createElement('h2');
+    title.className = 'icon-list-title';
+    title.textContent = titleVal;
+    header.appendChild(title);
+  }
+
+  if (descVal) {
+    const desc = document.createElement('div');
+    desc.className = 'icon-list-description';
+    desc.innerHTML = descVal;
+    header.appendChild(desc);
+  }
+
+  // Build Grid for Items
+  const grid = document.createElement('div');
+  grid.className = 'icon-list-grid';
 
   [...block.children].forEach((row) => {
-    // Skip row if it holds setting data
-    if (row.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]')) {
-      return;
-    }
+    // Skip header row if it contains block properties
+    if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
 
-    const modelName = row.dataset.aueModel || row.dataset.model || '';
-    const isHeaderRow = modelName === 'icon-list'
-      || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
+    const cells = getCells(row);
+    if (!cells.length) return;
 
-    if (isHeaderRow) {
-      const titleEl = row.querySelector('[data-aue-prop="title"], [data-name="title"]');
-      const descEl = row.querySelector('[data-aue-prop="description"], [data-name="description"]');
-
-      let rawTitle = '';
-      if (titleEl) {
-        rawTitle = titleEl.textContent.trim();
-      } else if (row.children[0]) {
-        rawTitle = row.children[0].textContent.trim();
-      }
-
-      let rawDesc = '';
-      if (descEl) {
-        rawDesc = descEl.textContent.trim();
-      } else if (row.children[1]) {
-        rawDesc = row.children[1].textContent.trim();
-      }
-
-      if (rawTitle && !/^\d+$/.test(rawTitle)) {
-        const h2 = document.createElement('h2');
-        h2.classList.add('icon-list-title');
-        h2.textContent = rawTitle;
-        if (titleEl) {
-          [...titleEl.attributes].forEach((attr) => h2.setAttribute(attr.name, attr.value));
-        }
-        headerWrapper.appendChild(h2);
-      }
-
-      if (rawDesc && !/^\d+$/.test(rawDesc)) {
-        const p = document.createElement('p');
-        p.classList.add('icon-list-description');
-        p.textContent = rawDesc;
-        if (descEl) {
-          [...descEl.attributes].forEach((attr) => p.setAttribute(attr.name, attr.value));
-        }
-        headerWrapper.appendChild(p);
-      }
-      return;
-    }
-
-    // Individual Card Item Setup
     const card = document.createElement('div');
-    card.classList.add('icon-card');
-    [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
+    card.className = `icon-list-item card-color-${colorVal}`;
+    if (cardImageTop) card.classList.add('image-top');
 
-    const getVal = (name) => {
-      const field = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
-      if (field) return field.textContent.trim();
-      return '';
-    };
+    const iconCell = cells[0];
+    const titleCell = cells[1];
+    const descCell = cells[2];
+    const bgImgCell = cells[3];
 
-    const getImg = (name) => {
-      const propContainer = row.querySelector(`[data-aue-prop="${name}"], [data-name="${name}"]`);
-      if (propContainer) {
-        return propContainer.querySelector('img');
-      }
-      return null;
-    };
-
-    const colorVal = getVal('defaultCardColor').toLowerCase();
-    const motionVal = getVal('motionType').toLowerCase();
-    const showIcon = getVal('showIcon') !== 'false';
-    const showTitle = getVal('showTitle') !== 'false';
-    const showDesc = getVal('showDesc') !== 'false';
-
-    const eyebrow = getVal('eyebrow');
-    const title = getVal('title');
-    const desc = getVal('description');
-
-    let cardColorClass = 'grey';
-    if (colorVal.includes('blue')) {
-      cardColorClass = 'blue';
-    } else if (colorVal.includes('black')) {
-      cardColorClass = 'black';
-    } else {
-      const rawText = row.textContent.toLowerCase();
-      if (rawText.includes('blue')) {
-        cardColorClass = 'blue';
-      } else if (rawText.includes('black')) {
-        cardColorClass = 'black';
-      }
-    }
-    card.classList.add(`card-color-${cardColorClass}`);
-
-    if (motionVal && motionVal !== 'none') {
-      card.classList.add(`motion-${motionVal}`);
+    // Icon Rendering
+    const iconImg = iconCell?.querySelector('img')?.cloneNode(true) || null;
+    if (iconImg) {
+      const iconWrapper = document.createElement('div');
+      iconWrapper.className = 'icon-list-icon';
+      iconWrapper.appendChild(iconImg);
+      card.appendChild(iconWrapper);
     }
 
-    const bgImg = getImg('cardBgImage');
-    if (bgImg) {
-      card.style.backgroundImage = `url('${bgImg.src}')`;
-      card.classList.add('has-bg-image');
+    // Text Container
+    const cardBody = document.createElement('div');
+    cardBody.className = 'icon-list-body';
+
+    const cardTitle = getCellValue(titleCell);
+    if (cardTitle) {
+      const h3 = document.createElement('h3');
+      h3.className = 'icon-list-item-title';
+      h3.textContent = cardTitle;
+      cardBody.appendChild(h3);
     }
 
-    const iconImg = getImg('icon') || row.querySelector('img:not([data-aue-prop="cardBgImage"] img)');
-    if (showIcon && iconImg) {
-      const iconWrap = document.createElement('div');
-      iconWrap.classList.add('icon-card-icon');
-      const pictureParent = iconImg.closest('picture');
-      if (pictureParent) {
-        iconWrap.appendChild(pictureParent.cloneNode(true));
-      } else {
-        iconWrap.appendChild(iconImg.cloneNode(true));
-      }
-      card.appendChild(iconWrap);
+    const cardDesc = descCell?.innerHTML || getCellValue(descCell);
+    if (cardDesc) {
+      const p = document.createElement('div');
+      p.className = 'icon-list-item-desc';
+      p.innerHTML = cardDesc;
+      cardBody.appendChild(p);
     }
 
-    const content = document.createElement('div');
-    content.classList.add('icon-card-content');
+    card.appendChild(cardBody);
 
-    if (eyebrow) {
-      const eb = document.createElement('span');
-      eb.classList.add('icon-card-eyebrow');
-      eb.textContent = eyebrow;
-      content.appendChild(eb);
+    // Background Image / Pattern
+    const bgImgSrc = bgImgCell?.querySelector('img')?.src || getCellValue(bgImgCell);
+    if (bgImgSrc && bgImgSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) {
+      const bgImg = document.createElement('img');
+      bgImg.className = 'icon-list-bg-image';
+      bgImg.src = bgImgSrc;
+      bgImg.alt = '';
+      card.appendChild(bgImg);
     }
 
-    if (showTitle && title) {
-      const t = document.createElement('div');
-      t.classList.add('icon-card-title');
-      t.textContent = title;
-      content.appendChild(t);
-    }
-
-    if (showDesc && desc) {
-      const d = document.createElement('p');
-      d.classList.add('icon-card-desc');
-      d.textContent = desc;
-      content.appendChild(d);
-    }
-
-    card.appendChild(content);
-    cardsGrid.appendChild(card);
+    moveInstrumentation(row, card);
+    grid.appendChild(card);
   });
 
-  // Apply grid modifier class
-  const gridClass = `grid-cols-${cardsPerRow}`;
-  cardsGrid.classList.add(gridClass);
-  block.classList.add(gridClass);
+  if (header.children.length) container.appendChild(header);
+  container.appendChild(grid);
 
-  const childrenToRender = [];
-  if (headerWrapper.children.length > 0) {
-    childrenToRender.push(headerWrapper);
-  }
-  childrenToRender.push(cardsGrid);
+  block.classList.add('icon-list-wrapper');
+  if (motionVal !== 'none') block.classList.add(`motion-${motionVal}`);
 
-  block.replaceChildren(...childrenToRender);
+  block.replaceChildren(container);
 }

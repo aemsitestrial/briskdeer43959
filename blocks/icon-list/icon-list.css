@@ -1,265 +1,198 @@
-/* Outer Block Section Wrapper & Inter-Block Spacing */
+/* Base Container */
 .icon-list-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 120px 80px;
-  gap: 80px;
-  width: 100%;
-  max-width: 1440px;
-  margin: 0 auto 80px; /* Spacing between multiple icon-list blocks */
-  background: #fff;
   box-sizing: border-box;
-}
-
-.icon-list {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 80px;
   width: 100%;
   max-width: 1280px;
-  margin-bottom: 40px;
+  padding: 60px 24px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #111827;
 }
 
-/* Header Text Lockup */
+.icon-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* Header Section */
 .icon-list-header {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  width: 100%;
-  max-width: 1280px;
+  max-width: 800px;
+  gap: 16px;
+}
+
+.icon-list-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #3b82f6;
 }
 
 .icon-list-title {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 36px;
-  line-height: 120%;
-  letter-spacing: -0.02em;
-  color: #0c0c0d;
   margin: 0;
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #111827;
 }
 
 .icon-list-description {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 140%;
-  color: #0c0c0d;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.icon-list-description p {
   margin: 0;
 }
 
-/* Base Justified CSS Grid Container */
-.icon-list-cards-grid {
+/* Grid Layout */
+.icon-list-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  justify-content: space-between;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  width: 100%;
-  max-width: 1280px;
-  min-height: 453px;
-  box-sizing: border-box;
 }
 
-/* Base Card Sizing */
-.icon-card {
-  box-sizing: border-box;
+/* Item Styling */
+.icon-list-item {
+  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding: 24px;
-  gap: 16px;
-  width: 100%;
-  height: 453px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  isolation: isolate;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+  min-height: 260px;
+  padding: 32px;
+  border-radius: 8px;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Dynamic Cards Per Row Justified Column Definitions */
-.icon-list-cards-grid.grid-cols-2,
-.icon-list.grid-cols-2 .icon-list-cards-grid {
-  grid-template-columns: repeat(2, 1fr);
+/* Color Themes */
+.icon-list-item.card-color-light {
+  background-color: #e5e7eb;
+  color: #111827;
 }
 
-.icon-list-cards-grid.grid-cols-3,
-.icon-list.grid-cols-3 .icon-list-cards-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.icon-list-cards-grid.grid-cols-4,
-.icon-list.grid-cols-4 .icon-list-cards-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.icon-list-cards-grid.grid-cols-5,
-.icon-list.grid-cols-5 .icon-list-cards-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-/* Card Color Variations */
-.icon-card.card-color-blue {
-  background-color: #4673db;
+.icon-list-item.card-color-blue {
+  background-color: #1d4ed8;
   color: #fff;
 }
 
-.icon-card.card-color-grey {
-  background-color: #d9d9d9;
-  color: #303030;
-}
-
-.icon-card.card-color-black {
-  background-color: #0c0c0d;
+.icon-list-item.card-color-black {
+  background-color: #111827;
   color: #fff;
 }
 
-/* Background Image Support */
-.icon-card.has-bg-image {
-  background-repeat: no-repeat;
+/* Image Top Layout State */
+.icon-list-item.image-top {
+  align-items: flex-start;
 }
 
-/* Motion Types */
-.icon-card.motion-hover-lift:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgb(0 0 0 / 15%);
-}
-
-/* Icon Dimensions */
-.icon-card-icon {
-  width: 48px;
-  height: 48px;
+/* Icon */
+.icon-list-icon {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  flex-shrink: 0;
-  margin-bottom: 8px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 20px;
 }
 
-.icon-card-icon img,
-.icon-card-icon picture {
-  width: 48px;
-  height: 48px;
+.icon-list-icon img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-.icon-card.card-color-blue .icon-card-icon img,
-.icon-card.card-color-black .icon-card-icon img {
-  filter: brightness(0) invert(1);
-}
-
-.icon-card.card-color-grey .icon-card-icon img {
-  filter: none;
-}
-
-/* Content Container Inside Card */
-.icon-card-content {
+/* Card Body */
+.icon-list-body {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 12px;
-  width: 100%;
+  z-index: 1;
 }
 
-.icon-card-eyebrow {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
+.icon-list-item-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.icon-list-item-desc {
   font-size: 14px;
-  line-height: 140%;
-  letter-spacing: 0.01em;
-  color: #cdcdcd;
+  line-height: 1.5;
+  opacity: 0.85;
 }
 
-.icon-card.card-color-grey .icon-card-eyebrow {
-  color: #5a5a5a;
-}
-
-.icon-card-title {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 44px;
-  line-height: 110%;
+.icon-list-item-desc p {
   margin: 0;
 }
 
-.icon-card.card-color-blue .icon-card-title {
-  color: #f3f3f3;
+/* Background Image / Pattern */
+.icon-list-bg-image {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 120px;
+  height: auto;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.icon-card.card-color-grey .icon-card-title {
-  color: #303030;
+/* Motion Animations */
+.icon-list-wrapper.motion-fade {
+  animation: icon-list-fade-in 600ms ease-out both;
 }
 
-.icon-card-desc {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 135%;
-  margin: 0;
+.icon-list-wrapper.motion-slide-up {
+  animation: icon-list-slide-up 600ms ease-out both;
 }
 
-.icon-card.card-color-blue .icon-card-desc {
-  color: #f3f3f3;
-}
-
-.icon-card.card-color-grey .icon-card-desc {
-  color: #303030;
-}
-
-/* Responsive Breakpoints */
-@media (width <= 1024px) {
-  .icon-list-wrapper {
-    padding: 60px 32px;
-    gap: 40px;
-    margin-bottom: 40px;
+@keyframes icon-list-fade-in {
+  from {
+    opacity: 0;
   }
 
-  .icon-list-cards-grid,
-  .icon-list-cards-grid.grid-cols-2,
-  .icon-list-cards-grid.grid-cols-3,
-  .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5,
-  .icon-list.grid-cols-2 .icon-list-cards-grid,
-  .icon-list.grid-cols-3 .icon-list-cards-grid,
-  .icon-list.grid-cols-4 .icon-list-cards-grid,
-  .icon-list.grid-cols-5 .icon-list-cards-grid {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes icon-list-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Layout */
+@media (width <= 1024px) {
+  .icon-list-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .icon-card {
-    height: auto;
-    min-height: 420px;
-  }
 }
 
-@media (width <= 600px) {
-  .icon-list-wrapper {
-    padding: 40px 16px;
-  }
-
-  .icon-list-cards-grid,
-  .icon-list-cards-grid.grid-cols-2,
-  .icon-list-cards-grid.grid-cols-3,
-  .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5,
-  .icon-list.grid-cols-2 .icon-list-cards-grid,
-  .icon-list.grid-cols-3 .icon-list-cards-grid,
-  .icon-list.grid-cols-4 .icon-list-cards-grid,
-  .icon-list.grid-cols-5 .icon-list-cards-grid {
+@media (width <= 640px) {
+  .icon-list-grid {
     grid-template-columns: 1fr;
   }
 
-  .icon-card {
-    min-height: 380px;
+  .icon-list-title {
+    font-size: 28px;
+  }
+
+  .icon-list-wrapper {
+    padding: 40px 16px;
   }
 }

@@ -119,7 +119,7 @@
   {
     "id": "icon-list",
     "components": [
-      "icon-cards"
+      "icon-list-item"
     ]
   },
   {
