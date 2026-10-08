@@ -22,15 +22,16 @@ function getCellRichText(cell) {
 }
 
 function getItemType(row) {
-  // 1. Check for explicit AUE or CSS class matching
+  // 1. Explicit Universal Editor data attribute or class match
   const explicitType = row.dataset.aueComponent
+    || row.getAttribute('data-aue-model')
     || [...row.classList].find((className) => (
       className.startsWith('footer-sai-') || className.startsWith('canvas-search-hero-')
     ));
   if (explicitType) return explicitType;
 
-  // 2. Explicitly check for Copyright model property or single copyright cell
-  if (row.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]')) {
+  // 2. Check explicitly for the copyright field attribute
+  if (row.querySelector('[data-aue-prop="copyrightText"], [data-name="copyrightText"]') || row.matches('[data-aue-prop="copyrightText"]')) {
     return 'footer-sai-copyright';
   }
 
@@ -52,12 +53,12 @@ function getItemType(row) {
 
   if (cells.length >= 5 && /^(true|false)$/i.test(values[1] || '')) return 'footer-sai-hero';
 
-  // 3. Fallback check for single cell carrying copyright content
-  if (cells.length === 1 && (values[0].toLowerCase().includes('copyright') || values[0].includes('©'))) {
+  // 3. Fallback check for single-cell copyright row
+  if (cells.length === 1 && values[0] && (values[0].toLowerCase().includes('copyright') || values[0].includes('©') || values[0].length > 0)) {
     return 'footer-sai-copyright';
   }
 
-  // 4. Legal item check
+  // 4. Legal items
   if (cells.length >= 4 || (cells.length === 3 && !values[0])) {
     return 'footer-sai-legal-item';
   }
