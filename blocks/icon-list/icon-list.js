@@ -5,27 +5,15 @@ export default function decorate(block) {
   const cardsGrid = document.createElement('div');
   cardsGrid.classList.add('icon-list-cards-grid');
 
-  let cardsPerRow = '4';
-
-  // Read authored Cards Per Row selection
-  const cprAttr = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row');
-  if (cprAttr) {
-    const matched = cprAttr.match(/\d+/);
-    if (matched) [cardsPerRow] = matched;
-  } else {
-    const cprEl = block.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]');
-    if (cprEl) {
-      const matched = cprEl.textContent.trim().match(/\d+/);
-      if (matched) [cardsPerRow] = matched;
+  // Detect column count class from block class list (defaults to cols-4)
+  let colsClass = 'cols-4';
+  [...block.classList].forEach((cls) => {
+    if (cls.startsWith('cols-')) {
+      colsClass = cls;
     }
-  }
+  });
 
   [...block.children].forEach((row) => {
-    // Skip row if it holds setting data
-    if (row.querySelector('[data-aue-prop="cardsPerRow"], [data-name="cardsPerRow"]')) {
-      return;
-    }
-
     const modelName = row.dataset.aueModel || row.dataset.model || '';
     const isHeaderRow = modelName === 'icon-list'
       || (!modelName && row.children.length <= 2 && !row.querySelector('[data-aue-prop="defaultCardColor"]'));
@@ -48,7 +36,7 @@ export default function decorate(block) {
         rawDesc = row.children[1].textContent.trim();
       }
 
-      if (rawTitle && !/^\d+$/.test(rawTitle)) {
+      if (rawTitle && !/^cols-\d$/.test(rawTitle)) {
         const h2 = document.createElement('h2');
         h2.classList.add('icon-list-title');
         h2.textContent = rawTitle;
@@ -58,7 +46,7 @@ export default function decorate(block) {
         headerWrapper.appendChild(h2);
       }
 
-      if (rawDesc && !/^\d+$/.test(rawDesc)) {
+      if (rawDesc && !/^cols-\d$/.test(rawDesc)) {
         const p = document.createElement('p');
         p.classList.add('icon-list-description');
         p.textContent = rawDesc;
@@ -70,7 +58,7 @@ export default function decorate(block) {
       return;
     }
 
-    // Individual Card Item Setup
+    // Individual Card Component
     const card = document.createElement('div');
     card.classList.add('icon-card');
     [...row.attributes].forEach((attr) => card.setAttribute(attr.name, attr.value));
@@ -165,10 +153,9 @@ export default function decorate(block) {
     cardsGrid.appendChild(card);
   });
 
-  // Apply grid modifier class
-  const gridClass = `grid-cols-${cardsPerRow}`;
-  cardsGrid.classList.add(gridClass);
-  block.classList.add(gridClass);
+  // Apply dynamic grid class based on selected block option
+  cardsGrid.classList.add(colsClass);
+  block.classList.add(colsClass);
 
   const childrenToRender = [];
   if (headerWrapper.children.length > 0) {

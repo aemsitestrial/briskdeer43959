@@ -5758,25 +5758,25 @@
       },
       {
         "component": "select",
-        "name": "cardsPerRow",
+        "name": "classes",
         "label": "Cards Per Row",
-        "value": "4",
+        "value": "cols-4",
         "options": [
           {
             "name": "2 Cards Per Row",
-            "value": "2"
+            "value": "cols-2"
           },
           {
             "name": "3 Cards Per Row",
-            "value": "3"
+            "value": "cols-3"
           },
           {
             "name": "4 Cards Per Row",
-            "value": "4"
+            "value": "cols-4"
           },
           {
             "name": "5 Cards Per Row",
-            "value": "5"
+            "value": "cols-5"
           }
         ]
       }

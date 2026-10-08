@@ -1,4 +1,4 @@
-/* Outer Block Section Wrapper & Inter-Block Spacing */
+/* Block Outer Section Wrapper & Inter-Block Vertical Spacing */
 .icon-list-wrapper {
   display: flex;
   flex-direction: column;
@@ -7,7 +7,7 @@
   gap: 80px;
   width: 100%;
   max-width: 1440px;
-  margin: 0 auto 80px; /* Adds spacing between multiple icon-list blocks */
+  margin: 0 auto 80px;
   background: #fff;
   box-sizing: border-box;
 }
@@ -53,11 +53,10 @@
   margin: 0;
 }
 
-/* Base Justified CSS Grid Container */
+/* Dynamic CSS Grid Container (Default 4 columns) */
 .icon-list-cards-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  justify-content: space-between;
   gap: 24px;
   width: 100%;
   max-width: 1280px;
@@ -65,7 +64,28 @@
   box-sizing: border-box;
 }
 
-/* Base Card Sizing */
+/* Dynamic Column Layouts per Author Option */
+.icon-list-cards-grid.cols-2,
+.icon-list.cols-2 .icon-list-cards-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.icon-list-cards-grid.cols-3,
+.icon-list.cols-3 .icon-list-cards-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.icon-list-cards-grid.cols-4,
+.icon-list.cols-4 .icon-list-cards-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.icon-list-cards-grid.cols-5,
+.icon-list.cols-5 .icon-list-cards-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* Base Individual Card Styling */
 .icon-card {
   box-sizing: border-box;
   display: flex;
@@ -84,28 +104,7 @@
   overflow: hidden;
 }
 
-/* Dynamic Cards Per Row Justified Column Definitions */
-.icon-list-cards-grid.grid-cols-2,
-.icon-list.grid-cols-2 .icon-list-cards-grid {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.icon-list-cards-grid.grid-cols-3,
-.icon-list.grid-cols-3 .icon-list-cards-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.icon-list-cards-grid.grid-cols-4,
-.icon-list.grid-cols-4 .icon-list-cards-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.icon-list-cards-grid.grid-cols-5,
-.icon-list.grid-cols-5 .icon-list-cards-grid {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-/* Card Color Variations */
+/* Color Variations */
 .icon-card.card-color-blue {
   background-color: #4673db;
   color: #fff;
@@ -216,7 +215,7 @@
   color: #303030;
 }
 
-/* Responsive Breakpoints */
+/* Responsive Viewport Breakpoints */
 @media (width <= 1024px) {
   .icon-list-wrapper {
     padding: 60px 32px;
@@ -225,14 +224,14 @@
   }
 
   .icon-list-cards-grid,
-  .icon-list-cards-grid.grid-cols-2,
-  .icon-list-cards-grid.grid-cols-3,
-  .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5,
-  .icon-list.grid-cols-2 .icon-list-cards-grid,
-  .icon-list.grid-cols-3 .icon-list-cards-grid,
-  .icon-list.grid-cols-4 .icon-list-cards-grid,
-  .icon-list.grid-cols-5 .icon-list-cards-grid {
+  .icon-list-cards-grid.cols-2,
+  .icon-list-cards-grid.cols-3,
+  .icon-list-cards-grid.cols-4,
+  .icon-list-cards-grid.cols-5,
+  .icon-list.cols-2 .icon-list-cards-grid,
+  .icon-list.cols-3 .icon-list-cards-grid,
+  .icon-list.cols-4 .icon-list-cards-grid,
+  .icon-list.cols-5 .icon-list-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -248,14 +247,14 @@
   }
 
   .icon-list-cards-grid,
-  .icon-list-cards-grid.grid-cols-2,
-  .icon-list-cards-grid.grid-cols-3,
-  .icon-list-cards-grid.grid-cols-4,
-  .icon-list-cards-grid.grid-cols-5,
-  .icon-list.grid-cols-2 .icon-list-cards-grid,
-  .icon-list.grid-cols-3 .icon-list-cards-grid,
-  .icon-list.grid-cols-4 .icon-list-cards-grid,
-  .icon-list.grid-cols-5 .icon-list-cards-grid {
+  .icon-list-cards-grid.cols-2,
+  .icon-list-cards-grid.cols-3,
+  .icon-list-cards-grid.cols-4,
+  .icon-list-cards-grid.cols-5,
+  .icon-list.cols-2 .icon-list-cards-grid,
+  .icon-list.cols-3 .icon-list-cards-grid,
+  .icon-list.cols-4 .icon-list-cards-grid,
+  .icon-list.cols-5 .icon-list-cards-grid {
     grid-template-columns: 1fr;
   }
 
