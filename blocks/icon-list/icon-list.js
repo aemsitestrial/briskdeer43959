@@ -4,32 +4,28 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const blockChildren = [...block.children];
 
-  // 1. Process Header Fields (First 4 rows of the block model)
-  // Row 0: Columns, Row 1: Eyebrow, Row 2: Title, Row 3: Description
   let columnCount = 3;
   const headerWrapper = document.createElement('div');
   headerWrapper.className = 'icon-list-header';
 
   const fields = ['eyebrow', 'title', 'description'];
-
-  // Identify item rows vs main block field rows
   const itemRows = [];
 
   blockChildren.forEach((row) => {
     // Check if the row is an authored item component
     const isItem = row.getAttribute('data-aue-model') === 'icon-list-item'
       || row.dataset.aueModel === 'icon-list-item'
-      || row.children.length >= 8; // Card items have 10 columns
+      || row.children.length >= 8;
 
     if (isItem) {
       itemRows.push(row);
     } else {
-      // Process main block fields
       const cellText = row.textContent.trim();
 
-      // If it's the column configuration row
+      // Read column value and immediately remove row so it doesn't render
       if ([2, 3, 4, 5].includes(Number(cellText))) {
         columnCount = Number(cellText);
+        row.remove();
       } else if (cellText || row.querySelector('img')) {
         const classSuffix = fields.shift() || 'extra';
         row.className = `icon-list-header-${classSuffix}`;
