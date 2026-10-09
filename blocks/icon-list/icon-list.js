@@ -6,7 +6,7 @@ export default function decorate(block) {
 
   // 1. Process Header & Column Config
   const headerRow = blockChildren.shift();
-  let columnCount = 3;
+  let columnCount = 0;
 
   if (headerRow) {
     const headerCells = [...headerRow.children];
