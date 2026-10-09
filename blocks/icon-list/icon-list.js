@@ -2,24 +2,25 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 export default function decorate(block) {
-  const blockChildren = [...block.children];
+  const blockRows = [...block.children];
 
-  // 1. Process Header & Column Config
-  const headerRow = blockChildren.shift();
-  let columnCount = 0;
+  // 1. Process Header Row (Columns + Eyebrow + Block Title + Block Desc)
+  const headerRow = blockRows.shift();
+  let columnCount = 3;
+  let headerWrapper = null;
 
   if (headerRow) {
     const headerCells = [...headerRow.children];
 
-    // Get column count
+    // Read column setting from first cell
     const colValue = Number(headerCells[0]?.textContent.trim());
     if ([2, 3, 4, 5].includes(colValue)) {
       columnCount = colValue;
     }
-    headerCells.shift(); // Exclude columns cell from header rendering
+    headerCells.shift(); // Remove column configuration cell from header rendering
 
-    // Render Eyebrow, Title, Description
-    const headerWrapper = document.createElement('div');
+    // Construct Header block if content exists
+    headerWrapper = document.createElement('div');
     headerWrapper.className = 'icon-list-header';
 
     const fields = ['eyebrow', 'title', 'description'];
@@ -30,39 +31,41 @@ export default function decorate(block) {
         headerWrapper.append(child);
       }
     });
-
-    block.append(headerWrapper);
-    headerRow.remove();
   }
 
-  // Set block layout class
-  block.classList.add(`col-${columnCount}`);
-
-  // 2. Process List Items
+  // 2. Process Only Valid Card Item Rows
   const ul = document.createElement('ul');
   ul.className = 'icon-list-items';
 
-  blockChildren.forEach((row) => {
+  blockRows.forEach((row) => {
+    const rowCells = [...row.children];
+
+    // Content fields (indices match model definition)
+    const iconCell = rowCells[5];
+    const bgImageCell = rowCells[6];
+    const titleCell = rowCells[8];
+    const descCell = rowCells[9];
+
+    // Verification check: Only create a card if title, desc, icon, or bgImage exist
+    const hasContent = titleCell?.textContent.trim()
+      || descCell?.textContent.trim()
+      || iconCell?.querySelector('a, img')
+      || bgImageCell?.querySelector('a, img');
+
+    if (!hasContent) return; // Skip empty/placeholder rows
+
     const li = document.createElement('li');
     moveInstrumentation(row, li);
 
-    const rowCells = [...row.children];
-
-    // Read toggles & config (omitted from DOM structure)
+    // Read functional toggles
     const viewCardImageTop = rowCells[0]?.textContent.trim().toLowerCase() === 'true';
     const cardColor = rowCells[1]?.textContent.trim().toLowerCase() || 'light';
     const displayIcon = rowCells[2]?.textContent.trim().toLowerCase() !== 'false';
     const displayTitle = rowCells[3]?.textContent.trim().toLowerCase() !== 'false';
     const displayDesc = rowCells[4]?.textContent.trim().toLowerCase() !== 'false';
-
-    // Content fields
-    const iconCell = rowCells[5];
-    const bgImageCell = rowCells[6];
     const motionType = rowCells[7]?.textContent.trim().toLowerCase() || 'none';
-    const titleCell = rowCells[8];
-    const descCell = rowCells[9];
 
-    // Apply configuration classes
+    // Apply item configuration classes
     li.classList.add(`card-color-${cardColor}`);
     if (viewCardImageTop) li.classList.add('card-img-top');
     if (motionType !== 'none') li.classList.add(`motion-${motionType}`);
@@ -83,7 +86,7 @@ export default function decorate(block) {
     const contentDiv = document.createElement('div');
     contentDiv.className = 'icon-list-item-content';
 
-    // Icon (if toggle is enabled)
+    // Render Icon
     if (displayIcon && iconCell) {
       const iconWrapper = document.createElement('div');
       iconWrapper.className = 'icon-list-item-icon';
@@ -97,7 +100,7 @@ export default function decorate(block) {
       }
     }
 
-    // Title (if toggle is enabled)
+    // Render Title
     if (displayTitle && titleCell && titleCell.textContent.trim()) {
       const titleDiv = document.createElement('div');
       titleDiv.className = 'icon-list-item-title';
@@ -105,7 +108,7 @@ export default function decorate(block) {
       contentDiv.append(titleDiv);
     }
 
-    // Description (if toggle is enabled)
+    // Render Description
     if (displayDesc && descCell && descCell.textContent.trim()) {
       const descDiv = document.createElement('div');
       descDiv.className = 'icon-list-item-desc';
@@ -115,8 +118,18 @@ export default function decorate(block) {
 
     li.append(contentDiv);
     ul.append(li);
-    row.remove();
   });
 
-  block.append(ul);
+  // 3. Clear existing DOM contents completely before attaching generated tree
+  block.textContent = '';
+  block.classList.add(`col-${columnCount}`);
+
+  if (headerWrapper && headerWrapper.children.length > 0) {
+    block.append(headerWrapper);
+  }
+
+  // Only append UL if items were authored
+  if (ul.children.length > 0) {
+    block.append(ul);
+  }
 }
