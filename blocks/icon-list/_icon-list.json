@@ -73,10 +73,9 @@
       "id": "icon-list-item",
       "fields": [
         {
-          "component": "checkbox",
+          "component": "boolean",
           "name": "viewCardImageTop",
           "label": "View - Card Image Top",
-          "valueType": "boolean",
           "value": "true"
         },
         {
@@ -92,24 +91,21 @@
           ]
         },
         {
-          "component": "checkbox",
+          "component": "boolean",
           "name": "displayIcon",
           "label": "Display Icon",
-          "valueType": "boolean",
           "value": "true"
         },
         {
-          "component": "checkbox",
+          "component": "boolean",
           "name": "displayTitle",
           "label": "Display Title",
-          "valueType": "boolean",
           "value": "true"
         },
         {
-          "component": "checkbox",
+          "component": "boolean",
           "name": "displayDesc",
           "label": "Display Description",
-          "valueType": "boolean",
           "value": "true"
         },
         {
