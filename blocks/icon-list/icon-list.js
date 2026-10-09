@@ -1,152 +1,89 @@
+import { createOptimizedPicture } from '../../scripts/aem.js';
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-function getPropValue(row, propName, fallbackCell) {
-  const propNode = row.querySelector(`[data-aue-prop="${propName}"]`);
-  if (propNode) {
-    return propNode.dataset.value || propNode.getAttribute('data-value') || propNode.textContent?.trim() || '';
-  }
-
-  if (row.dataset[propName] || row.getAttribute(`data-${propName}`)) {
-    return row.dataset[propName] || row.getAttribute(`data-${propName}`);
-  }
-
-  if (fallbackCell) {
-    const linkHref = fallbackCell.querySelector('a')?.getAttribute('href');
-    const valueNode = fallbackCell.matches('[data-value]') ? fallbackCell : fallbackCell.querySelector('[data-value]');
-    return linkHref || valueNode?.dataset?.value || fallbackCell.textContent?.trim() || '';
-  }
-
-  return '';
-}
+const FIELD_CLASSES = [
+  'icon-list-card-image',
+  'icon-list-card-category',
+  'icon-list-card-heading',
+  'icon-list-card-body',
+  'icon-list-card-cta',
+];
 
 export default function decorate(block) {
-  const container = document.createElement('div');
-  container.className = 'icon-list-content';
+  let columnCount = 3;
 
-  // Extract block-level properties
-  const eyebrowVal = block.querySelector('[data-aue-prop="eyebrow"]')?.textContent?.trim() || '';
-  const titleVal = block.querySelector('[data-aue-prop="title"]')?.textContent?.trim() || '';
-  const descVal = block.querySelector('[data-aue-prop="description"]')?.innerHTML || '';
-
-  const cardsPerRowProp = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row') || '3';
-  const cardsPerRow = ['1', '2', '3', '4'].includes(cardsPerRowProp) ? cardsPerRowProp : '3';
-
-  // Build Block Header
-  const header = document.createElement('div');
-  header.className = 'icon-list-header';
-
-  if (eyebrowVal) {
-    const eyebrow = document.createElement('span');
-    eyebrow.className = 'icon-list-eyebrow';
-    eyebrow.setAttribute('data-aue-prop', 'eyebrow');
-    eyebrow.textContent = eyebrowVal;
-    header.appendChild(eyebrow);
+  // Read block header and column config if authored
+  const configRow = block.firstElementChild;
+  if (configRow) {
+    const value = Number(configRow.textContent.trim());
+    if ([2, 3, 4].includes(value)) {
+      columnCount = value;
+      configRow.remove();
+    }
   }
 
-  if (titleVal) {
-    const title = document.createElement('h2');
-    title.className = 'icon-list-title';
-    title.setAttribute('data-aue-prop', 'title');
-    title.textContent = titleVal;
-    header.appendChild(title);
+  const cardsPerRowAttr = block.dataset.cardsPerRow || block.getAttribute('data-cards-per-row');
+  if (cardsPerRowAttr && [2, 3, 4].includes(Number(cardsPerRowAttr))) {
+    columnCount = Number(cardsPerRowAttr);
   }
 
-  if (descVal) {
-    const desc = document.createElement('div');
-    desc.className = 'icon-list-description';
-    desc.setAttribute('data-aue-prop', 'description');
-    desc.innerHTML = descVal;
-    header.appendChild(desc);
-  }
+  block.classList.add(`col-${columnCount}`);
 
-  // Build Grid Container with UE Container Instrumentations
-  const grid = document.createElement('div');
-  grid.className = `icon-list-grid grid-cols-${cardsPerRow}`;
-  grid.setAttribute('data-aue-type', 'container');
-  grid.setAttribute('data-aue-filter', 'icon-list');
+  const ul = document.createElement('ul');
 
   [...block.children].forEach((row) => {
+    // Skip row if it contains main header metadata
     if (row.querySelector('[data-aue-prop="eyebrow"], [data-aue-prop="title"]')) return;
 
-    const cardColor = getPropValue(row, 'cardColor') || 'light';
-    const motionType = getPropValue(row, 'motionType') || 'none';
-    const cardImageTopVal = getPropValue(row, 'cardImageTop');
+    const li = document.createElement('li');
+    moveInstrumentation(row, li);
+
+    const cardColor = row.dataset.cardColor || row.getAttribute('data-card-color') || 'light';
+    const motionType = row.dataset.motionType || row.getAttribute('data-motion-type') || 'none';
+    const cardImageTopVal = row.dataset.cardImageTop || row.getAttribute('data-card-image-top');
     const cardImageTop = cardImageTopVal !== 'false' && cardImageTopVal !== 'none';
 
-    const displayElementsVal = getPropValue(row, 'displayElements') || 'icon,title,description';
-    const displayElements = displayElementsVal.toLowerCase();
+    li.classList.add(`card-color-${cardColor}`);
+    if (cardImageTop) li.classList.add('image-top');
+    if (motionType !== 'none') li.classList.add(`motion-${motionType}`);
 
-    const iconNode = row.querySelector('[data-aue-prop="icon"]') || row.querySelector('img')?.closest('td, div') || row.querySelector('img');
-    const iconImg = iconNode?.tagName === 'IMG' ? iconNode.cloneNode(true) : iconNode?.querySelector('img')?.cloneNode(true);
-    const iconSrc = iconImg?.src || getPropValue(row, 'icon');
-
-    const titleNode = row.querySelector('[data-aue-prop="listTitle"]');
-    const cardTitle = titleNode?.textContent?.trim() || getPropValue(row, 'listTitle');
-
-    const descNode = row.querySelector('[data-aue-prop="listDescription"]');
-    const cardDesc = descNode?.innerHTML?.trim() || getPropValue(row, 'listDescription');
-
-    const bgImgNode = row.querySelector('[data-aue-prop="cardBgImage"]');
-    const bgImgSrc = bgImgNode?.querySelector('img')?.src || getPropValue(row, 'cardBgImage');
-
-    const card = document.createElement('div');
-    card.className = `icon-list-item card-color-${cardColor}`;
-    card.setAttribute('data-aue-resource', row.getAttribute('data-aue-resource') || '');
-    card.setAttribute('data-aue-type', 'component');
-    card.setAttribute('data-aue-label', 'Icon List Item');
-
-    if (cardImageTop) card.classList.add('image-top');
-    if (motionType !== 'none') card.classList.add(`motion-${motionType}`);
-
-    // Icon
-    if (displayElements.includes('icon') && (iconImg || (iconSrc && iconSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)))) {
-      const iconWrapper = document.createElement('div');
-      iconWrapper.className = 'icon-list-icon';
-      const imgNode = iconImg || document.createElement('img');
-      if (!imgNode.src) imgNode.src = iconSrc;
-      imgNode.alt = '';
-      iconWrapper.appendChild(imgNode);
-      card.appendChild(iconWrapper);
+    while (row.firstElementChild) {
+      li.append(row.firstElementChild);
     }
 
-    // Card Body
-    const cardBody = document.createElement('div');
-    cardBody.className = 'icon-list-body';
+    [...li.children].forEach((div, i) => {
+      div.className = FIELD_CLASSES[i] || 'icon-list-card-body';
+    });
 
-    if (displayElements.includes('title') && cardTitle) {
-      const h3 = document.createElement('h3');
-      h3.className = 'icon-list-item-title';
-      h3.textContent = cardTitle;
-      cardBody.appendChild(h3);
-    }
-
-    if (displayElements.includes('description') && cardDesc) {
-      const p = document.createElement('div');
-      p.className = 'icon-list-item-desc';
-      p.innerHTML = cardDesc;
-      cardBody.appendChild(p);
-    }
-
-    if (cardBody.children.length) {
-      card.appendChild(cardBody);
-    }
-
-    // Background Image
-    if (bgImgSrc && bgImgSrc.match(/\.(png|jpg|jpeg|svg|webp)/i)) {
-      const bgImg = document.createElement('img');
-      bgImg.className = 'icon-list-bg-image';
-      bgImg.src = bgImgSrc;
-      bgImg.alt = '';
-      card.appendChild(bgImg);
-    }
-
-    moveInstrumentation(row, card);
-    grid.appendChild(card);
+    ul.append(li);
   });
 
-  if (header.children.length) container.appendChild(header);
-  container.appendChild(grid);
+  // Optimize background images / card images
+  ul.querySelectorAll('.icon-list-card-image a[href]').forEach((link) => {
+    const img = document.createElement('img');
+    img.src = link.href;
+    img.alt = link.title || link.textContent.trim() || '';
 
-  block.classList.add('icon-list-wrapper');
-  block.replaceChildren(container);
+    moveInstrumentation(link, img);
+
+    const picture = document.createElement('picture');
+    picture.append(img);
+
+    (link.closest('.button-container') || link).replaceWith(picture);
+  });
+
+  ul.querySelectorAll('picture > img').forEach((img) => {
+    const optimizedPic = createOptimizedPicture(
+      img.src,
+      img.alt,
+      false,
+      [{ width: '750' }],
+    );
+
+    moveInstrumentation(img, optimizedPic.querySelector('img'));
+    img.closest('picture').replaceWith(optimizedPic);
+  });
+
+  block.textContent = '';
+  block.append(ul);
 }

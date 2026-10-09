@@ -60,7 +60,6 @@
           "label": "Cards Per Row",
           "value": "3",
           "options": [
-            { "name": "1 Card Per Row", "value": "1" },
             { "name": "2 Cards Per Row", "value": "2" },
             { "name": "3 Cards Per Row", "value": "3" },
             { "name": "4 Cards Per Row", "value": "4" }
@@ -137,6 +136,12 @@
     }
   ],
   "filters": [
+    {
+      "id": "section",
+      "components": [
+        "icon-list"
+      ]
+    },
     {
       "id": "icon-list",
       "components": [

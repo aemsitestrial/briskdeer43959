@@ -5782,10 +5782,6 @@
         "value": "3",
         "options": [
           {
-            "name": "1 Card Per Row",
-            "value": "1"
-          },
-          {
             "name": "2 Cards Per Row",
             "value": "2"
           },
