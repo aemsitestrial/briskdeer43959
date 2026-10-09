@@ -1,9 +1,63 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+/**
+ * Fetches site hierarchy from /query-index.json
+ */
+async function fetchNavigationData() {
+  try {
+    const response = await fetch('/query-index.json');
+    if (!response.ok) return [];
+    const json = await response.json();
+    const data = json.data || json;
+
+    const navMap = {};
+
+    data.forEach((item) => {
+      const path = item.path || '';
+      const segments = path.split('/').filter(Boolean);
+
+      // Level 1: Top-level section (e.g., /services)
+      if (segments.length === 1) {
+        const key = segments[0];
+        if (!navMap[key]) {
+          navMap[key] = {
+            title: item.title || key.replace(/-/g, ' '),
+            path: item.path,
+            children: [],
+          };
+        } else {
+          navMap[key].title = item.title || navMap[key].title;
+          navMap[key].path = item.path;
+        }
+      } else if (segments.length === 2) {
+        // Level 2: Sub-pages (e.g., /services/cloud)
+        const parentKey = segments[0];
+        if (!navMap[parentKey]) {
+          navMap[parentKey] = {
+            title: parentKey.replace(/-/g, ' '),
+            path: `/${parentKey}`,
+            children: [],
+          };
+        }
+        navMap[parentKey].children.push({
+          title: item.title || segments[1].replace(/-/g, ' '),
+          path: item.path,
+        });
+      }
+    });
+
+    return Object.values(navMap);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load navigation index:', error);
+    return [];
+  }
+}
+
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title (First row in block model)
+  // 1. Heading Title
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -21,6 +75,12 @@ export default function decorate(block) {
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
+  const navPillsRow = document.createElement('div');
+  navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
+
+  const subMenuPanel = document.createElement('div');
+  subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
+
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
 
@@ -30,12 +90,14 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
-  // Helper to reliably identify child model in Universal Editor
+  let hamburgerBtnNode = null;
+  let isNavOpen = false;
+  let activePillKey = null;
+
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (model) return model;
 
-    // Direct field length matching fallbacks
     const cells = row.children.length;
     if (cells === 1) {
       if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
@@ -52,7 +114,7 @@ export default function decorate(block) {
     return null;
   };
 
-  // 2. Decorate authored child rows while preserving Universal Editor DOM bindings
+  // 2. Process Authored Items
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
@@ -69,6 +131,7 @@ export default function decorate(block) {
           </svg>
         </button>
       `;
+      hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.append(row);
     } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
@@ -111,7 +174,6 @@ export default function decorate(block) {
       const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-cta-item';
-
       const ctaBtn = document.createElement('a');
       ctaBtn.className = 'tcs-footer-cta-btn';
       ctaBtn.href = link;
@@ -124,15 +186,13 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      const textHtml = cells[0]?.innerHTML || '©TATA Consultancy Services';
-      row.innerHTML = textHtml;
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
       const link = cells[1]?.querySelector('a')?.href || '#';
 
       row.className = 'tcs-footer-legal-item-wrapper';
-
       const legalLink = document.createElement('a');
       legalLink.className = 'tcs-footer-legal-link';
       legalLink.href = link;
@@ -145,16 +205,92 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating & bottom regions
+  // Assemble Floating Bar
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
+  floatingNav.append(navPillsRow);
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
-  if (floatingNav.children.length > 0) footerContainer.append(floatingNav);
+
+  if (floatingNav.children.length > 0) {
+    footerContainer.append(subMenuPanel);
+    footerContainer.append(floatingNav);
+  }
 
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
 
   block.textContent = '';
   block.append(footerContainer);
+
+  // 3. Hamburger Click Event & Dynamic Nav Generation
+  if (hamburgerBtnNode) {
+    hamburgerBtnNode.addEventListener('click', async () => {
+      isNavOpen = !isNavOpen;
+
+      if (isNavOpen) {
+        hamburgerBtnNode.classList.add('active');
+        searchRow.querySelector('.tcs-footer-search-box')?.classList.add('hidden');
+        ctaRow.classList.add('hidden');
+
+        if (!navPillsRow.hasChildNodes()) {
+          const navItems = await fetchNavigationData();
+
+          navItems.forEach((section) => {
+            const pill = document.createElement('button');
+            pill.className = 'tcs-nav-pill';
+            const hasChildren = section.children && section.children.length > 0;
+
+            pill.innerHTML = `
+              <span>${section.title}</span>
+              ${hasChildren ? '<span class="chevron">∨</span>' : ''}
+            `;
+
+            pill.addEventListener('click', () => {
+              if (activePillKey === section.title) {
+                pill.classList.remove('active');
+                subMenuPanel.classList.add('hidden');
+                activePillKey = null;
+              } else {
+                navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+                pill.classList.add('active');
+                activePillKey = section.title;
+
+                if (hasChildren) {
+                  subMenuPanel.innerHTML = `
+                    <div class="tcs-submenu-grid">
+                      ${section.children
+    .map(
+      (child) => `
+                        <a href="${child.path}" class="tcs-submenu-item">
+                          <span>${child.title}</span>
+                          <span class="arrow">→</span>
+                        </a>
+                      `,
+    )
+    .join('')}
+                    </div>
+                  `;
+                  subMenuPanel.classList.remove('hidden');
+                } else {
+                  window.location.href = section.path;
+                }
+              }
+            });
+
+            navPillsRow.append(pill);
+          });
+        }
+
+        navPillsRow.classList.remove('hidden');
+      } else {
+        hamburgerBtnNode.classList.remove('active');
+        searchRow.querySelector('.tcs-footer-search-box')?.classList.remove('hidden');
+        ctaRow.classList.remove('hidden');
+        navPillsRow.classList.add('hidden');
+        subMenuPanel.classList.add('hidden');
+        activePillKey = null;
+      }
+    });
+  }
 
   // Floating behavior algorithm
   const handleScroll = () => {
@@ -163,8 +299,10 @@ export default function decorate(block) {
 
     if (footerRect.top < windowHeight - 140) {
       floatingNav.classList.remove('is-fixed');
+      subMenuPanel.classList.remove('is-fixed');
     } else {
       floatingNav.classList.add('is-fixed');
+      subMenuPanel.classList.add('is-fixed');
     }
   };
 
