@@ -6514,20 +6514,51 @@
         "label": "Heading Title",
         "valueType": "string",
         "value": "Let's build the future together"
+      }
+    ]
+  },
+  {
+    "id": "tcs-footer-hamburger",
+    "fields": [
+      {
+        "component": "text",
+        "name": "ariaLabel",
+        "label": "Aria Label",
+        "valueType": "string",
+        "value": "Open navigation menu"
+      }
+    ]
+  },
+  {
+    "id": "tcs-footer-search",
+    "fields": [
+      {
+        "component": "select",
+        "name": "searchVariation",
+        "label": "Search Variation",
+        "valueType": "string",
+        "value": "both",
+        "options": [
+          {
+            "name": "Text & Voice",
+            "value": "both"
+          },
+          {
+            "name": "Text Only",
+            "value": "text-only"
+          },
+          {
+            "name": "Voice Only",
+            "value": "voice-only"
+          }
+        ]
       },
       {
         "component": "text",
-        "name": "searchPlaceholder",
-        "label": "Search Bar Placeholder",
+        "name": "placeholder",
+        "label": "Placeholder Text",
         "valueType": "string",
         "value": "Ask us a question"
-      },
-      {
-        "component": "richtext",
-        "name": "copyright",
-        "label": "Copyright Text",
-        "valueType": "string",
-        "value": "©TATA Consultancy Services 2027"
       }
     ]
   },
@@ -6561,6 +6592,17 @@
             "value": "_blank"
           }
         ]
+      }
+    ]
+  },
+  {
+    "id": "tcs-footer-copyright",
+    "fields": [
+      {
+        "component": "richtext",
+        "name": "text",
+        "label": "Copyright Rich Text",
+        "valueType": "string"
       }
     ]
   },
