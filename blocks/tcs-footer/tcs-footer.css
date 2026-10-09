@@ -1,0 +1,200 @@
+.tcs-footer {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(180deg, #fff 0%, #f4f6fa 60%, #e8eef8 100%);
+  padding: 120px 24px 40px;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  color: #111;
+  overflow: hidden;
+}
+
+.tcs-footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Heading */
+.tcs-footer-heading {
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #111827;
+  margin: 0 0 60px;
+  max-width: 700px;
+}
+
+/* Floating Navigation Controls */
+.tcs-footer-floating-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 120px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  z-index: 99;
+}
+
+/* Fixed Floating State throughout viewport scroll */
+.tcs-footer-floating-nav.is-fixed {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0;
+}
+
+/* Search Row */
+.tcs-footer-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.tcs-footer-hamburger {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #111827;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+
+.tcs-footer-hamburger:hover {
+  background-color: #f3f4f6;
+}
+
+.tcs-footer-search-box {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.tcs-footer-search-box input {
+  width: 100%;
+  height: 48px;
+  border-radius: 24px;
+  border: 1px solid #111827;
+  padding: 0 90px 0 20px;
+  font-size: 15px;
+  outline: none;
+  background-color: #fff;
+  box-shadow: 0 4px 20px rgb(0 0 0 / 4%);
+}
+
+.tcs-footer-search-actions {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tcs-footer-search-actions .mic-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #374151;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.tcs-footer-search-actions .submit-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background-color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* CTA Buttons Row */
+.tcs-footer-cta-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tcs-footer-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 20px;
+  border: 1px solid #111827;
+  background-color: #fff;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.tcs-footer-cta-btn:hover {
+  background-color: #111827;
+  color: #fff;
+}
+
+/* Bottom Legal & Copyright */
+.tcs-footer-bottom-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #374151;
+  padding-top: 20px;
+}
+
+.tcs-footer-copyright p,
+.tcs-footer-copyright {
+  margin: 0;
+  font-weight: 600;
+}
+
+.tcs-footer-legal-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.tcs-footer-legal-nav a {
+  color: #374151;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.tcs-footer-legal-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Responsiveness */
+@media (width <= 768px) {
+  .tcs-footer-heading {
+    font-size: 40px;
+  }
+
+  .tcs-footer-bottom-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

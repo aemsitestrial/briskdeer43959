@@ -32,7 +32,8 @@
       "video",
       "footer-sai",
       "canvas-search-hero",
-      "icon-list"
+      "icon-list",
+      "tcs-footer"
     ]
   },
   {
@@ -150,6 +151,13 @@
     "id": "tabs",
     "components": [
       "tabs-item"
+    ]
+  },
+  {
+    "id": "tcs-footer",
+    "components": [
+      "tcs-footer-cta",
+      "tcs-footer-legal-item"
     ]
   },
   {

@@ -6506,6 +6506,81 @@
     ]
   },
   {
+    "id": "tcs-footer",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Heading Title",
+        "valueType": "string",
+        "value": "Let's build the future together"
+      },
+      {
+        "component": "text",
+        "name": "searchPlaceholder",
+        "label": "Search Bar Placeholder",
+        "valueType": "string",
+        "value": "Ask us a question"
+      },
+      {
+        "component": "richtext",
+        "name": "copyright",
+        "label": "Copyright Text",
+        "valueType": "string",
+        "value": "©TATA Consultancy Services 2027"
+      }
+    ]
+  },
+  {
+    "id": "tcs-footer-cta",
+    "fields": [
+      {
+        "component": "text",
+        "name": "label",
+        "label": "CTA Label",
+        "valueType": "string"
+      },
+      {
+        "component": "aem-content",
+        "name": "link",
+        "label": "CTA Link"
+      },
+      {
+        "component": "select",
+        "name": "target",
+        "label": "Target Type",
+        "valueType": "string",
+        "value": "_self",
+        "options": [
+          {
+            "name": "Same Tab (_self)",
+            "value": "_self"
+          },
+          {
+            "name": "New Tab (_blank)",
+            "value": "_blank"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tcs-footer-legal-item",
+    "fields": [
+      {
+        "component": "text",
+        "name": "label",
+        "label": "Legal Link Label",
+        "valueType": "string"
+      },
+      {
+        "component": "aem-content",
+        "name": "link",
+        "label": "Legal Link"
+      }
+    ]
+  },
+  {
     "id": "teaser",
     "fields": [
       {
