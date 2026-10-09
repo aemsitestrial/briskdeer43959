@@ -3,7 +3,7 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Process Main Block Title (First Row)
+  // 1. Process Block Title
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -15,7 +15,6 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Containers for Floating Bar and Bottom Bar
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -31,9 +30,31 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
-  // 2. Iterate dynamically over authored child blocks
-  blockRows.forEach((row) => {
+  // Helper function to detect child model type
+  const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (model) return model;
+
+    // Fallback detection logic if attributes aren't present during drag-and-drop
+    const cells = row.children.length;
+    if (cells === 1) {
+      if (row.querySelector('p, span')?.textContent.includes('©')) return 'tcs-footer-copyright';
+      return 'tcs-footer-hamburger';
+    }
+    if (cells === 2) {
+      const text = row.textContent.toLowerCase();
+      if (text.includes('both') || text.includes('text-only') || text.includes('voice-only')) {
+        return 'tcs-footer-search';
+      }
+      return 'tcs-footer-legal-item';
+    }
+    if (cells >= 3) return 'tcs-footer-cta';
+    return null;
+  };
+
+  // 2. Process All Authored Children
+  blockRows.forEach((row) => {
+    const model = getModelType(row);
     const cells = [...row.children];
 
     if (model === 'tcs-footer-hamburger') {
@@ -42,12 +63,15 @@ export default function decorate(block) {
       hamburgerBtn.className = 'tcs-footer-hamburger';
       hamburgerBtn.setAttribute('aria-label', ariaLabel);
       moveInstrumentation(row, hamburgerBtn);
+
+      // SVG Icon explicitly rendered in circle
       hamburgerBtn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <line x1="3" y1="6" x2="21" y2="6"></line>
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>`;
+        </svg>
+      `;
       searchRow.append(hamburgerBtn);
     } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
@@ -59,14 +83,12 @@ export default function decorate(block) {
 
       let innerHTML = '';
 
-      // Text Input (If both or text-only)
       if (variation !== 'voice-only') {
         innerHTML += `<input type="text" placeholder="${placeholder}" aria-label="Search">`;
       }
 
       innerHTML += '<div class="tcs-footer-search-actions">';
 
-      // Voice Mic Icon (If both or voice-only)
       if (variation === 'both' || variation === 'voice-only') {
         innerHTML += `
           <button class="mic-btn" aria-label="Voice Search">
@@ -79,7 +101,6 @@ export default function decorate(block) {
           </button>`;
       }
 
-      // Submit Button
       innerHTML += `
         <button class="submit-btn" aria-label="Submit Search">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
@@ -116,6 +137,7 @@ export default function decorate(block) {
 
       if (label) {
         const legalLink = document.createElement('a');
+        legalLink.className = 'tcs-footer-legal-link';
         legalLink.href = link;
         legalLink.textContent = label;
         moveInstrumentation(row, legalLink);
@@ -124,20 +146,18 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble Floating Bar
+  // Assemble layout sections
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
   if (floatingNav.children.length > 0) footerContainer.append(floatingNav);
 
-  // Assemble Bottom Bar
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
 
-  // Clear original DOM and attach final layout
   block.textContent = '';
   block.append(footerContainer);
 
-  // 3. Floating Scroll Handler (Floats fixed above viewport bottom until scrolled to footer)
+  // Floating scroll handler
   const handleScroll = () => {
     const footerRect = block.getBoundingClientRect();
     const windowHeight = window.innerHeight;

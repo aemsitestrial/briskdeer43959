@@ -40,7 +40,7 @@
   z-index: 99;
 }
 
-/* Floating Fixed State */
+/* Fixed state while scrolling page */
 .tcs-footer-floating-nav.is-fixed {
   position: fixed;
   bottom: 30px;
@@ -56,6 +56,7 @@
   width: 100%;
 }
 
+/* Hamburger Circle Button & SVG Icon */
 .tcs-footer-hamburger {
   width: 48px;
   height: 48px;
@@ -67,8 +68,20 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
+  color: #111827;
+  transition: background-color 0.2s;
 }
 
+.tcs-footer-hamburger svg {
+  display: block;
+  stroke: #111827;
+}
+
+.tcs-footer-hamburger:hover {
+  background-color: #f3f4f6;
+}
+
+/* Search Box */
 .tcs-footer-search-box {
   position: relative;
   flex: 1;
@@ -86,11 +99,6 @@
   outline: none;
   background-color: #fff;
   box-shadow: 0 4px 20px rgb(0 0 0 / 4%);
-}
-
-/* Voice Only Mode */
-.tcs-footer-search-box.mode-voice-only {
-  justify-content: flex-end;
 }
 
 .tcs-footer-search-actions {
@@ -144,6 +152,7 @@
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  transition: all 0.2s;
 }
 
 .tcs-footer-cta-btn:hover {
@@ -151,7 +160,7 @@
   color: #fff;
 }
 
-/* Bottom Row */
+/* Bottom Copyright & Legal Items */
 .tcs-footer-bottom-row {
   width: 100%;
   display: flex;
@@ -159,6 +168,7 @@
   align-items: center;
   font-size: 14px;
   color: #374151;
+  padding-top: 20px;
 }
 
 .tcs-footer-legal-nav {
@@ -166,9 +176,14 @@
   gap: 16px;
 }
 
-.tcs-footer-legal-nav a {
+.tcs-footer-legal-link {
   color: #374151;
   text-decoration: none;
+  font-weight: 500;
+}
+
+.tcs-footer-legal-link:hover {
+  text-decoration: underline;
 }
 
 @media (width <= 768px) {
