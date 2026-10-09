@@ -1,190 +1,160 @@
-.icon-list > ul {
-  display: grid;
-  gap: 25px;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  padding: 0;
-  margin: 0;
-  list-style: none;
+.icon-list {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  color: #111;
 }
 
-.icon-list > ul > li {
+/* Header Section */
+.icon-list-header {
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.icon-list-header-eyebrow {
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.icon-list-header-title h2,
+.icon-list-header-title {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+.icon-list-header-description p,
+.icon-list-header-description {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #4b5563;
+  margin: 0;
+  max-width: 720px;
+}
+
+/* Base Grid Styles */
+.icon-list-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.icon-list-items > li {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 455px;
+  justify-content: flex-start;
+  padding: 32px 28px;
+  border-radius: 8px;
   overflow: hidden;
-  border-radius: 6px;
-  background-color: var(--dark-color, #111827);
-  isolation: isolate;
+  box-sizing: border-box;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.icon-list > ul > li::before {
+/* Card Color Variants */
+.icon-list-items > li.card-color-light {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.icon-list-items > li.card-color-blue {
+  background-color: #0f172a;
+  color: #fff;
+}
+
+.icon-list-items > li.card-color-black {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Background Image */
+.icon-list-item-bg {
   position: absolute;
   inset: 0;
-  z-index: -1;
-  content: '';
-  background: linear-gradient(
-    180deg,
-    rgb(0 0 0 / 55%) 0%,
-    rgb(0 0 0 / 70%) 35%,
-    rgb(0 0 0 / 35%) 60%,
-    rgb(0 0 0 / 0%) 85%
-  );
+  z-index: 0;
 }
 
-/* Card Image Overlay */
-.icon-list .icon-list-card-image {
-  position: absolute;
-  inset: 0;
-  z-index: -2;
-  line-height: 0;
-}
-
-.icon-list .icon-list-card-image img {
+.icon-list-item-bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Card Content Fields */
-.icon-list .icon-list-card-category {
-  flex: 0 0 auto;
-  min-height: 1.2em;
-  margin: 20px 60px 0 20px;
-  opacity: 0.85;
-  color: rgb(255 255 255 / 70%);
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 140%;
-  letter-spacing: 0;
-  text-align: left;
-  text-decoration: none;
-  text-transform: uppercase;
+/* View: Card Image Top Variant */
+.icon-list-items > li.card-img-top .icon-list-item-bg {
+  position: relative;
+  height: 180px;
+  margin: -32px -28px 24px;
 }
 
-.icon-list .icon-list-card-heading {
-  flex: 0 0 auto;
-  min-height: 1.2em;
-  margin: -5% 5%;
-  color: #f3f3f3;
-  font-family: Inter, sans-serif;
-  line-height: 120%;
-  letter-spacing: 0;
+/* Content Layout */
+.icon-list-item-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.icon-list .icon-list-card-body {
-  flex: 1 1 auto;
-  min-height: 2.4em;
-  margin: 12px 20px 24px;
-  color: var(--background-color, #fff);
+.icon-list-item-icon {
+  margin-bottom: 20px;
+  width: 40px;
+  height: 40px;
 }
 
-.icon-list .icon-list-card-body p {
-  margin: 0 0 14px;
-  color: rgb(255 255 255 / 85%);
+.icon-list-item-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.icon-list-item-title h3,
+.icon-list-item-title {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 12px;
+}
+
+.icon-list-item-desc p,
+.icon-list-item-desc {
   font-size: 14px;
   line-height: 1.5;
-}
-
-.icon-list .icon-list-card-body p:last-child {
-  margin-bottom: 0;
-}
-
-.icon-list .icon-list-card-body .button-container {
-  margin: 4px 0 0;
-}
-
-.icon-list .icon-list-card-cta {
-  margin: 4px 20px 20px;
-}
-
-.icon-list .icon-list-card-body a.button,
-.icon-list .icon-list-card-cta a.button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0.55em 1em;
   margin: 0;
-  border: 1px solid rgb(255 255 255 / 55%);
-  border-radius: 3px;
-  background-color: transparent;
-  color: var(--background-color, #fff);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: normal;
+  opacity: 0.85;
 }
 
-.icon-list .icon-list-card-body a.button::after,
-.icon-list .icon-list-card-cta a.button::after {
-  content: '→';
+/* Motion Variants */
+.icon-list-items > li.motion-hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgb(0 0 0 / 12%);
 }
 
-/* Hover States */
-.icon-list .icon-list-card-body a.button:hover,
-.icon-list .icon-list-card-body a.button:focus,
-.icon-list .icon-list-card-cta a.button:hover,
-.icon-list .icon-list-card-cta a.button:focus {
-  border-color: var(--background-color, #fff);
-  background-color: var(--background-color, #fff);
-  color: var(--text-color, #1d2430);
-}
-
-/* Card Color Variations */
-.icon-list > ul > li.card-color-light {
-  background-color: #e5e7eb;
-}
-
-.icon-list > ul > li.card-color-blue {
-  background-color: #1d4ed8;
-}
-
-.icon-list > ul > li.card-color-black {
-  background-color: #111827;
-}
-
-/* Motion Animation */
-.icon-list > ul > li.motion-fade {
-  animation: icon-list-fade-in 600ms ease-out both;
-}
-
-.icon-list > ul > li.motion-slide-up {
-  animation: icon-list-slide-up 600ms ease-out both;
-}
-
-@keyframes icon-list-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes icon-list-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Desktop Grid Column Layouts */
+/* Responsive Column Overrides */
 @media (width >= 900px) {
-  .icon-list.col-2 > ul {
+  .icon-list.col-2 > .icon-list-items {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .icon-list.col-3 > ul {
+  .icon-list.col-3 > .icon-list-items {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .icon-list.col-4 > ul {
+  .icon-list.col-4 > .icon-list-items {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .icon-list.col-5 > .icon-list-items {
+    grid-template-columns: repeat(5, 1fr);
   }
 }

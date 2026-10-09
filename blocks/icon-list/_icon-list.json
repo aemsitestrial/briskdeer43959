@@ -9,8 +9,8 @@
             "resourceType": "core/franklin/components/block/v1/block",
             "template": {
               "name": "Icon List",
-              "filter": "icon-list",
-              "model": "icon-list"
+              "model": "icon-list",
+              "filter": "icon-list"
             }
           }
         }
@@ -37,33 +37,35 @@
       "id": "icon-list",
       "fields": [
         {
+          "component": "select",
+          "name": "columns",
+          "label": "Cards Per Row",
+          "valueType": "string",
+          "value": "3",
+          "options": [
+            { "name": "2 Columns", "value": "2" },
+            { "name": "3 Columns", "value": "3" },
+            { "name": "4 Columns", "value": "4" },
+            { "name": "5 Columns", "value": "5" }
+          ]
+        },
+        {
           "component": "text",
           "name": "eyebrow",
-          "label": "Eyebrow",
+          "label": "Eyebrow Text",
           "valueType": "string"
         },
         {
           "component": "text",
           "name": "title",
-          "label": "Title",
+          "label": "Block Title",
           "valueType": "string"
         },
         {
           "component": "richtext",
           "name": "description",
-          "label": "Description",
+          "label": "Block Description",
           "valueType": "string"
-        },
-        {
-          "component": "select",
-          "name": "cardsPerRow",
-          "label": "Cards Per Row",
-          "value": "3",
-          "options": [
-            { "name": "2 Cards Per Row", "value": "2" },
-            { "name": "3 Cards Per Row", "value": "3" },
-            { "name": "4 Cards Per Row", "value": "4" }
-          ]
         }
       ]
     },
@@ -71,48 +73,70 @@
       "id": "icon-list-item",
       "fields": [
         {
+          "component": "checkbox",
+          "name": "viewCardImageTop",
+          "label": "View - Card Image Top",
+          "valueType": "boolean",
+          "value": "true"
+        },
+        {
           "component": "select",
           "name": "cardColor",
           "label": "Card Color",
+          "valueType": "string",
           "value": "light",
           "options": [
-            { "name": "Light / Grey", "value": "light" },
+            { "name": "Light Gray", "value": "light" },
             { "name": "Blue", "value": "blue" },
-            { "name": "Dark / Black", "value": "black" }
+            { "name": "Black", "value": "black" }
           ]
+        },
+        {
+          "component": "checkbox",
+          "name": "displayIcon",
+          "label": "Display Icon",
+          "valueType": "boolean",
+          "value": "true"
+        },
+        {
+          "component": "checkbox",
+          "name": "displayTitle",
+          "label": "Display Title",
+          "valueType": "boolean",
+          "value": "true"
+        },
+        {
+          "component": "checkbox",
+          "name": "displayDesc",
+          "label": "Display Description",
+          "valueType": "boolean",
+          "value": "true"
+        },
+        {
+          "component": "reference",
+          "name": "icon",
+          "label": "Icon Image",
+          "valueType": "string",
+          "multi": false
+        },
+        {
+          "component": "reference",
+          "name": "cardBgImage",
+          "label": "Card BG Image",
+          "valueType": "string",
+          "multi": false
         },
         {
           "component": "select",
           "name": "motionType",
           "label": "Motion Type",
+          "valueType": "string",
           "value": "none",
           "options": [
             { "name": "None", "value": "none" },
-            { "name": "Fade In", "value": "fade" },
-            { "name": "Slide Up", "value": "slide-up" }
+            { "name": "Hover Lift", "value": "hover-lift" },
+            { "name": "Fade In", "value": "fade-in" }
           ]
-        },
-        {
-          "component": "boolean",
-          "name": "cardImageTop",
-          "label": "View - Card Image Top",
-          "value": true
-        },
-        {
-          "component": "multiselect",
-          "name": "displayElements",
-          "label": "Display Elements",
-          "options": [
-            { "name": "Display - Icon", "value": "icon" },
-            { "name": "Display - Title", "value": "title" },
-            { "name": "Display - Description", "value": "description" }
-          ]
-        },
-        {
-          "component": "reference",
-          "name": "icon",
-          "label": "Display - Icon",
-          "valueType": "string"
         },
         {
           "component": "text",
@@ -125,23 +149,11 @@
           "name": "listDescription",
           "label": "List Description",
           "valueType": "string"
-        },
-        {
-          "component": "reference",
-          "name": "cardBgImage",
-          "label": "Card BG Image",
-          "valueType": "string"
         }
       ]
     }
   ],
   "filters": [
-    {
-      "id": "section",
-      "components": [
-        "icon-list"
-      ]
-    },
     {
       "id": "icon-list",
       "components": [
