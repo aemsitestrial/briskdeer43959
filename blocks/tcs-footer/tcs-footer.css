@@ -27,7 +27,7 @@
   max-width: 700px;
 }
 
-/* Floating Bar Container */
+/* Floating Navigation Controls */
 .tcs-footer-floating-nav {
   display: flex;
   flex-direction: column;
@@ -40,7 +40,6 @@
   z-index: 99;
 }
 
-/* Fixed state while scrolling page */
 .tcs-footer-floating-nav.is-fixed {
   position: fixed;
   bottom: 30px;
@@ -56,10 +55,16 @@
   width: 100%;
 }
 
-/* Hamburger Circle Button & SVG Icon */
+/* Hamburger Circle Wrapper & Button */
+.tcs-footer-hamburger-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .tcs-footer-hamburger {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   border: 1px solid #111827;
   background-color: #fff;
@@ -68,20 +73,24 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  color: #111827;
-  transition: background-color 0.2s;
+  padding: 0;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
+/* Increased Icon Size */
 .tcs-footer-hamburger svg {
-  display: block;
+  width: 24px;
+  height: 24px;
   stroke: #111827;
+  display: block;
 }
 
 .tcs-footer-hamburger:hover {
   background-color: #f3f4f6;
+  transform: scale(1.03);
 }
 
-/* Search Box */
+/* Search Box Container */
 .tcs-footer-search-box {
   position: relative;
   flex: 1;
@@ -91,10 +100,10 @@
 
 .tcs-footer-search-box input {
   width: 100%;
-  height: 48px;
-  border-radius: 24px;
+  height: 52px;
+  border-radius: 26px;
   border: 1px solid #111827;
-  padding: 0 90px 0 20px;
+  padding: 0 95px 0 24px;
   font-size: 15px;
   outline: none;
   background-color: #fff;
@@ -114,14 +123,14 @@
   border: none;
   cursor: pointer;
   color: #374151;
-  padding: 6px;
+  padding: 8px;
   display: flex;
   align-items: center;
 }
 
 .tcs-footer-search-actions .submit-btn {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: none;
   background-color: #4f46e5;
@@ -143,9 +152,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 20px;
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 21px;
   border: 1px solid #111827;
   background-color: #fff;
   color: #111827;
@@ -171,9 +180,15 @@
   padding-top: 20px;
 }
 
+.tcs-footer-copyright p,
+.tcs-footer-copyright {
+  margin: 0;
+  font-weight: 600;
+}
+
 .tcs-footer-legal-nav {
   display: flex;
-  gap: 16px;
+  gap: 20px;
 }
 
 .tcs-footer-legal-link {
@@ -189,5 +204,10 @@
 @media (width <= 768px) {
   .tcs-footer-heading {
     font-size: 40px;
+  }
+
+  .tcs-footer-bottom-row {
+    flex-direction: column;
+    gap: 12px;
   }
 }
