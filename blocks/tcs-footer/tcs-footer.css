@@ -27,7 +27,7 @@
   max-width: 700px;
 }
 
-/* Floating Navigation Bar */
+/* Floating Navigation Control Bar */
 .tcs-footer-floating-nav {
   display: flex;
   flex-direction: column;
@@ -62,16 +62,17 @@
 }
 
 .tcs-footer-hamburger {
-  width: 52px;
+  min-width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 26px;
   border: 1px solid #111827;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
   cursor: pointer;
-  padding: 0;
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
@@ -80,17 +81,21 @@
   width: 24px;
   height: 24px;
   stroke: #111827;
+  display: block;
 }
 
-.tcs-footer-hamburger.active {
-  background-color: #111827;
+.tcs-footer-hamburger.has-active-l2 {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #fff;
 }
 
-.tcs-footer-hamburger.active svg {
-  stroke: #fff;
+.tcs-footer-hamburger.has-active-l2 .active-l2-label {
+  font-size: 15px;
+  font-weight: 600;
 }
 
-/* Standalone Horizontal Navigation Row directly below search bar */
+/* Standalone Horizontal Pill Navigation Row */
 .tcs-footer-nav-pills-row {
   display: flex;
   justify-content: center;
@@ -99,6 +104,13 @@
   flex-wrap: wrap;
   width: 100%;
   padding: 4px 0;
+}
+
+.tcs-l2-pills-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .tcs-nav-pill {
@@ -135,18 +147,18 @@
   transform: rotate(180deg);
 }
 
-/* Glassmorphism Floating Submenu Grid Panel */
+/* Glassmorphism Submenu Grid Panel */
 .tcs-footer-submenu-panel {
   width: 100%;
   max-width: 780px;
-  background: rgb(220 225 235 / 88%);
+  background: rgb(220 225 235 / 92%);
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 28px;
   box-shadow: 0 16px 48px rgb(0 0 0 / 14%);
   margin-bottom: 16px;
   z-index: 100;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
   box-sizing: border-box;
 }
 
@@ -190,7 +202,7 @@
   display: none !important;
 }
 
-/* Search Box & Action Centering */
+/* Search Box & Centering Rules */
 .tcs-footer-search-box {
   position: relative;
   flex: 1;
