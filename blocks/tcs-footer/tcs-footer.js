@@ -1,7 +1,7 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
- * Parses query-index.json into localized L1 -> L2 -> L3 tree structure
+ * Fetches site hierarchy from /query-index.json into an L1 -> L2 -> L3 tree structure
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -16,7 +16,7 @@ async function fetchHierarchicalNavData() {
       const path = item.path || '';
       const segments = path.split('/').filter(Boolean);
 
-      // Support optional locale prefix (e.g., /en/what-we-do/services/cloud)
+      // Handle optional locale prefix (e.g., /en/what-we-do/services/cloud)
       let locale = '';
       if (segments[0] && segments[0].length === 2) {
         locale = segments.shift();
@@ -67,7 +67,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Process Main Block Title
+  // 1. Heading Title
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -79,29 +79,20 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar
+  // Floating Bar Containers
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
-  // Navigation Panel Containers (L1, L2, L3)
-  const navContainer = document.createElement('nav');
-  navContainer.className = 'tcs-footer-nav-container hidden';
-  navContainer.setAttribute('aria-label', 'Footer Hierarchical Navigation');
+  // Horizontal Navigation Pill Bar
+  const navPillsRow = document.createElement('div');
+  navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
-  const l1List = document.createElement('ul');
-  l1List.className = 'tcs-l1-list';
-
-  const l2List = document.createElement('ul');
-  l2List.className = 'tcs-l2-list hidden';
-
-  const l3Panel = document.createElement('div');
-  l3Panel.className = 'tcs-l3-panel hidden';
-
-  navContainer.append(l1List);
-  navContainer.append(l2List);
+  // Floating Glassmorphism Submenu Grid Panel
+  const subMenuPanel = document.createElement('div');
+  subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
@@ -112,9 +103,9 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
-  let hamburgerBtn = null;
-  let activeL2Title = null;
+  let hamburgerBtnNode = null;
   let isNavOpen = false;
+  let activePillTitle = null;
 
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
@@ -146,23 +137,22 @@ export default function decorate(block) {
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
         <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false">
-          <span class="icon-hamburger" aria-hidden="true">
+          <span class="icon-hamburger">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </span>
-          <span class="icon-close hidden" aria-hidden="true">
+          <span class="icon-close hidden">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </span>
-          <span class="active-l2-label hidden"></span>
         </button>
       `;
-      hamburgerBtn = row.querySelector('.tcs-footer-hamburger');
+      hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.append(row);
     } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
@@ -236,13 +226,12 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating and bottom structures
+  // Assemble floating structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
-  floatingNav.append(navContainer);
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
-    footerContainer.append(l3Panel);
+    footerContainer.append(subMenuPanel);
     footerContainer.append(floatingNav);
   }
 
@@ -252,144 +241,109 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  // Helper Functions for State Management
-  const resetNavState = () => {
-    isNavOpen = false;
-    hamburgerBtn.setAttribute('aria-expanded', 'false');
-    hamburgerBtn.querySelector('.icon-hamburger').classList.remove('hidden');
-    hamburgerBtn.querySelector('.icon-close').classList.add('hidden');
+  // 3. Render Horizontal L1/L2 Navigation Pills & Glassmorphism Submenu Grid
+  const renderNavPills = async () => {
+    navPillsRow.innerHTML = '';
+    const navData = await fetchHierarchicalNavData();
 
-    if (activeL2Title) {
-      const label = hamburgerBtn.querySelector('.active-l2-label');
-      label.textContent = activeL2Title;
-      label.classList.remove('hidden');
-      hamburgerBtn.classList.add('has-active-l2');
-    } else {
-      hamburgerBtn.querySelector('.active-l2-label').classList.add('hidden');
-      hamburgerBtn.classList.remove('has-active-l2');
-    }
+    navData.forEach((l1) => {
+      const pill = document.createElement('button');
+      pill.className = 'tcs-nav-pill';
+      const hasL2 = l1.l2List && l1.l2List.length > 0;
 
-    navContainer.classList.add('hidden');
-    l2List.classList.add('hidden');
-    l3Panel.classList.add('hidden');
-  };
+      pill.innerHTML = `
+        <span>${l1.title}</span>
+        ${hasL2 ? '<span class="chevron">∨</span>' : ''}
+      `;
 
-  const openL1Nav = async () => {
-    isNavOpen = true;
-    hamburgerBtn.setAttribute('aria-expanded', 'true');
-    hamburgerBtn.querySelector('.icon-hamburger').classList.add('hidden');
-    hamburgerBtn.querySelector('.icon-close').classList.remove('hidden');
-    hamburgerBtn.querySelector('.active-l2-label').classList.add('hidden');
-    hamburgerBtn.classList.remove('has-active-l2');
+      // Hover / Click L1 -> Show L2 items in floating glass panel
+      const handleL1Interaction = () => {
+        if (activePillTitle === l1.title) {
+          pill.classList.remove('active');
+          subMenuPanel.classList.add('hidden');
+          activePillTitle = null;
+        } else {
+          navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+          activePillTitle = l1.title;
 
-    navContainer.classList.remove('hidden');
-
-    if (!l1List.hasChildNodes()) {
-      const navData = await fetchHierarchicalNavData();
-
-      navData.forEach((l1) => {
-        const l1Li = document.createElement('li');
-        l1Li.className = 'tcs-l1-item';
-        l1Li.setAttribute('tabindex', '0');
-        l1Li.innerHTML = `<span>${l1.title}</span>`;
-
-        // Hover L1 -> Show L2
-        l1Li.addEventListener('mouseenter', () => {
-          l1List.querySelectorAll('.tcs-l1-item').forEach((item) => item.classList.remove('active'));
-          l1Li.classList.add('active');
-
-          l2List.innerHTML = '';
-          if (l1.l2List && l1.l2List.length > 0) {
-            l1.l2List.forEach((l2) => {
-              const l2Li = document.createElement('li');
-              l2Li.className = 'tcs-l2-item';
-              l2Li.setAttribute('tabindex', '0');
-              l2Li.innerHTML = `<span>${l2.title}</span>`;
-
-              // Click L2 -> Become active L2
-              l2Li.addEventListener('click', (e) => {
-                e.stopPropagation();
-                activeL2Title = l2.title;
-                resetNavState();
-              });
-
-              // Hover L2 -> Show L3
-              l2Li.addEventListener('mouseenter', () => {
-                l2List.querySelectorAll('.tcs-l2-item').forEach((item) => item.classList.remove('active'));
-                l2Li.classList.add('active');
-
-                if (l2.l3List && l2.l3List.length > 0) {
-                  l3Panel.innerHTML = `
-                    <div class="tcs-l3-grid">
-                      ${l2.l3List
+          if (hasL2) {
+            subMenuPanel.innerHTML = `
+              <div class="tcs-submenu-grid">
+                ${l1.l2List
     .map(
-      (l3) => `
-                        <a href="${l3.path}" class="tcs-l3-link">
-                          <span>${l3.title}</span>
-                          <span class="arrow">→</span>
-                        </a>
-                      `,
+      (l2) => `
+                  <a href="${l2.path}" class="tcs-submenu-item" data-path="${l2.path}">
+                    <span>${l2.title}</span>
+                    <span class="arrow">→</span>
+                  </a>
+                `,
     )
     .join('')}
-                    </div>
-                  `;
-                  l3Panel.classList.remove('hidden');
-                } else {
-                  l3Panel.classList.add('hidden');
-                }
-              });
-
-              l2List.append(l2Li);
-            });
-
-            l2List.classList.remove('hidden');
+              </div>
+            `;
+            subMenuPanel.classList.remove('hidden');
           } else {
-            l2List.classList.add('hidden');
-            l3Panel.classList.add('hidden');
+            subMenuPanel.classList.add('hidden');
           }
-        });
+        }
+      };
 
-        l1List.append(l1Li);
-      });
-    }
-  };
+      pill.addEventListener('click', handleL1Interaction);
+      pill.addEventListener('mouseenter', handleL1Interaction);
 
-  // 3. Hamburger Click Event Listener
-  if (hamburgerBtn) {
-    hamburgerBtn.addEventListener('click', () => {
-      if (isNavOpen) {
-        resetNavState();
-      } else {
-        openL1Nav();
-      }
+      navPillsRow.append(pill);
     });
 
-    // Hover Active L2 -> Show L3 directly
-    hamburgerBtn.addEventListener('mouseenter', () => {
-      if (!isNavOpen && activeL2Title && l3Panel.hasChildNodes()) {
-        l3Panel.classList.remove('hidden');
+    // Append horizontal pill row directly next to search
+    searchRow.append(navPillsRow);
+  };
+
+  // 4. Hamburger Click Event
+  if (hamburgerBtnNode) {
+    hamburgerBtnNode.addEventListener('click', async () => {
+      isNavOpen = !isNavOpen;
+
+      if (isNavOpen) {
+        hamburgerBtnNode.setAttribute('aria-expanded', 'true');
+        hamburgerBtnNode.querySelector('.icon-hamburger').classList.add('hidden');
+        hamburgerBtnNode.querySelector('.icon-close').classList.remove('hidden');
+
+        if (!navPillsRow.hasChildNodes()) {
+          await renderNavPills();
+        }
+
+        navPillsRow.classList.remove('hidden');
+      } else {
+        hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+        hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+        hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+
+        navPillsRow.classList.add('hidden');
+        subMenuPanel.classList.add('hidden');
+        activePillTitle = null;
       }
     });
   }
 
-  // Hide L3 when mouse leaves navigation zone
+  // Hide floating panel when mouse leaves the footer
   footerContainer.addEventListener('mouseleave', () => {
-    if (!isNavOpen) {
-      l3Panel.classList.add('hidden');
-    }
+    subMenuPanel.classList.add('hidden');
+    navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+    activePillTitle = null;
   });
 
-  // 4. Scroll Behavior Algorithm
+  // Floating behavior on scroll
   const handleScroll = () => {
     const footerRect = block.getBoundingClientRect();
     const windowHeight = window.innerHeight;
 
     if (footerRect.top < windowHeight - 140) {
       floatingNav.classList.remove('is-fixed');
-      l3Panel.classList.remove('is-fixed');
+      subMenuPanel.classList.remove('is-fixed');
     } else {
       floatingNav.classList.add('is-fixed');
-      l3Panel.classList.add('is-fixed');
+      subMenuPanel.classList.add('is-fixed');
     }
   };
 
