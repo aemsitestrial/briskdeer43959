@@ -282,7 +282,7 @@
   transform: rotate(180deg);
 }
 
-/* Glassmorphism Submenu Grid Panel with Frosted Overlay (Image 2 Style) */
+/* Glassmorphism Submenu Grid Panel with Frosted Overlay */
 .tcs-footer-submenu-panel {
   width: 100%;
   max-width: 720px;
@@ -401,7 +401,7 @@
   text-decoration: none !important;
 }
 
-/* Bottom Links Row */
+/* Bottom Legal Links Row */
 .tcs-footer-bottom-row {
   display: flex;
   flex-flow: row wrap;
@@ -432,6 +432,7 @@
 .tcs-footer-legal-link {
   color: #0c0c0d;
   text-decoration: none !important;
+  font-weight: 500;
 }
 
 .tcs-footer-legal-link:hover {

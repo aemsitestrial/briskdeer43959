@@ -36,7 +36,6 @@ async function fetchHierarchicalNavData() {
       'tcs-footer',
       'tcs-header',
       'blocks',
-      'test',
       'home',
       'home-page',
       'homepage',
@@ -126,7 +125,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar
+  // Floating Control Bar (ONLY Search & Navigation Pills Float)
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -141,6 +140,7 @@ export default function decorate(block) {
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
+  // Static Rows in Footer Content (Do NOT float)
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
 
@@ -176,8 +176,8 @@ export default function decorate(block) {
       return 'tcs-footer-legal-item';
     }
     if (cells >= 3) {
-      const firstCellVal = cells[0]?.textContent.trim().toLowerCase() || '';
-      if (firstCellVal.includes('http') || firstCellVal.includes('/') || cells.length === 3) {
+      const textVal = row.textContent.toLowerCase();
+      if (textVal.includes('privacy') || textVal.includes('terms') || textVal.includes('cookie') || textVal.includes('legal')) {
         return 'tcs-footer-legal-item';
       }
       return 'tcs-footer-cta';
@@ -354,15 +354,17 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating structure
+  // Assemble floating search bar structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
-  if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
     footerContainer.append(subMenuPanel);
     footerContainer.append(floatingNav);
   }
+
+  // Add static CTAs and Legal items below the floating control bar
+  if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
 
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
