@@ -158,32 +158,38 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Precise Model Classification Logic
+  // Replace the getModelType function with this:
   const getModelType = (row) => {
-    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    const explicitModel = row.getAttribute('data-aue-model') || row.dataset?.aueModel;
     if (explicitModel) return explicitModel;
 
     const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
 
+    // Search Bar: Match explicitly if model ID/class is present OR contains search text
     if (
-      text.includes('both')
-      || text.includes('text-only')
-      || text.includes('voice-only')
-      || text.includes('ask canvas')
-      || text.includes('ask us')
+      row.querySelector('[data-aue-model="tcs-footer-search"]')
+    || text.includes('both')
+    || text.includes('text-only')
+    || text.includes('voice-only')
+    || text.includes('search')
+    || text.includes('ask canvas')
+    || text.includes('ask us')
     ) {
       return 'tcs-footer-search';
     }
 
+    // Copyright
     if (text.includes('©') || text.includes('tata consultancy') || text.includes('all rights reserved')) {
       return 'tcs-footer-copyright';
     }
 
+    // Legal Item
     if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
 
+    // Hamburger
     if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text === '')) {
       return 'tcs-footer-hamburger';
     }
