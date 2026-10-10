@@ -20,6 +20,7 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
+ * Excludes header, footer, tcs-header, and tcs-footer utility pages.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -29,6 +30,7 @@ async function fetchHierarchicalNavData() {
     const data = json.data || json;
 
     const navTree = {};
+    const excludedPages = ['footer', 'header', 'tcs-footer', 'tcs-header'];
 
     data.forEach((item) => {
       const rawPath = item.path || '';
@@ -41,7 +43,13 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length === 0) return;
 
+      // Filter out footer, header, tcs-footer, and tcs-header pages
+      const lastSegment = segments[segments.length - 1].toLowerCase();
+      if (excludedPages.includes(lastSegment)) return;
+
       const l1Key = segments[0];
+      if (excludedPages.includes(l1Key.toLowerCase())) return;
+
       if (!navTree[l1Key]) {
         navTree[l1Key] = {
           key: l1Key,
@@ -53,6 +61,8 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length >= 2) {
         const l2Key = segments[1];
+        if (excludedPages.includes(l2Key.toLowerCase())) return;
+
         if (!navTree[l1Key].children[l2Key]) {
           navTree[l1Key].children[l2Key] = {
             key: l2Key,
@@ -64,6 +74,8 @@ async function fetchHierarchicalNavData() {
 
         if (segments.length >= 3) {
           const l3Key = segments[2];
+          if (excludedPages.includes(l3Key.toLowerCase())) return;
+
           navTree[l1Key].children[l2Key].children.push({
             key: l3Key,
             title: item.title || l3Key.replace(/-/g, ' '),
