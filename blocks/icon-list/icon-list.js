@@ -50,7 +50,7 @@ export default function decorate(block) {
     const rowCells = [...row.children];
 
     // Read toggles & config
-    const cardColor = rowCells[1]?.textContent.trim().toLowerCase() || 'light';
+    const cardColorRaw = rowCells[1]?.textContent.trim().toLowerCase().replace(/\s+/g, '-') || 'blue';
     const displayIcon = rowCells[2]?.textContent.trim().toLowerCase() !== 'false';
     const displayTitle = rowCells[3]?.textContent.trim().toLowerCase() !== 'false';
     const displayDesc = rowCells[4]?.textContent.trim().toLowerCase() !== 'false';
@@ -63,7 +63,7 @@ export default function decorate(block) {
     const descCell = rowCells[9];
 
     // Apply configuration classes
-    li.classList.add(`card-color-${cardColor}`);
+    li.classList.add(`card-color-${cardColorRaw}`);
     if (motionType !== 'none') li.classList.add(`motion-${motionType}`);
 
     // Card BG Image (positioned at bottom-right)
