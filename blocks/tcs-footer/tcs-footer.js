@@ -39,8 +39,8 @@ async function fetchHierarchicalNavData() {
       'homepage',
       'demo',
       'nav',
-      'test',
       'qa',
+      'test',
       'iconlist',
     ];
 
@@ -125,7 +125,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar
+  // Floating Control Bar Container
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -156,6 +156,7 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
+  // Strict Model Type Classification
   const getModelType = (row) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (explicitModel) return explicitModel;
@@ -163,14 +164,12 @@ export default function decorate(block) {
     const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
 
-    // Strict detection for Search Bar
     if (
       text.includes('both')
       || text.includes('text-only')
       || text.includes('voice-only')
-      || text.includes('ask')
-      || text.includes('search')
-      || text.includes('question')
+      || text.includes('ask canvas')
+      || text.includes('ask us')
     ) {
       return 'tcs-footer-search';
     }
@@ -183,14 +182,14 @@ export default function decorate(block) {
       return 'tcs-footer-legal-item';
     }
 
-    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text.length === 0)) {
+    if (cells === 1) {
       return 'tcs-footer-hamburger';
     }
 
     return 'tcs-footer-cta';
   };
 
-  // 2. Process Authored Component Rows
+  // 2. Process Authored Component Rows Only
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
@@ -356,35 +355,7 @@ export default function decorate(block) {
     }
   });
 
-  // Default fallback if Search Bar was omitted in authoring data
-  if (!searchBoxWrapperNode) {
-    const fallbackSearchBox = document.createElement('div');
-    fallbackSearchBox.className = 'tcs-footer-search-box mode-both';
-    fallbackSearchBox.innerHTML = `
-      <form class="tcs-search-form" action="#">
-        <input type="text" class="tcs-search-input" placeholder="Ask us a question" aria-label="Ask Canvas Search">
-        <div class="tcs-footer-search-actions">
-          <button type="button" class="mic-btn" aria-label="Voice Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-          </button>
-          <button type="submit" class="submit-btn" aria-label="Submit Search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-        </div>
-      </form>
-    `;
-    searchBoxWrapperNode = fallbackSearchBox;
-  }
-
-  // Assemble Floating Bar: Hamburger on left + Search Box beside it
+  // Assemble Floating Bar conditionally based on authored items
   if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
   if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
 
@@ -396,7 +367,7 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
-  // Static Rows (CTA & Copyright/Legal Links)
+  // Static Bottom Content
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
@@ -429,16 +400,18 @@ export default function decorate(block) {
 
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
+    if (!hamburgerBtnNode) return;
+
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      searchRow.prepend(hamburgerWrapperNode);
+      if (hamburgerWrapperNode) searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      navPillsRow.prepend(hamburgerWrapperNode);
+      if (hamburgerWrapperNode) navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
@@ -533,11 +506,14 @@ export default function decorate(block) {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
-    searchRow.prepend(hamburgerWrapperNode);
+    if (hamburgerWrapperNode) searchRow.prepend(hamburgerWrapperNode);
     if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-    hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-    hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
-    hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+
+    if (hamburgerBtnNode) {
+      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+    }
 
     navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
