@@ -36,6 +36,7 @@ async function fetchHierarchicalNavData() {
       'tcs-footer',
       'tcs-header',
       'blocks',
+      'test',
       'home',
       'home-page',
       'homepage',
