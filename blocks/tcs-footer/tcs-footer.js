@@ -127,7 +127,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar
+  // Floating Control Bar Containers
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -158,48 +158,41 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Replace the getModelType function with this:
-  const getModelType = (row) => {
+  /**
+   * Fail-Safe Model Classification Logic
+   * Uses explicit data-aue-model attributes first, content string matching second,
+   * and strict row position index as the ultimate fallback.
+   */
+  const getModelType = (row, index) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset?.aueModel;
     if (explicitModel) return explicitModel;
 
     const text = row.textContent.trim().toLowerCase();
-    const cells = row.children.length;
 
-    // Search Bar: Match explicitly if model ID/class is present OR contains search text
-    if (
-      row.querySelector('[data-aue-model="tcs-footer-search"]')
-    || text.includes('both')
-    || text.includes('text-only')
-    || text.includes('voice-only')
-    || text.includes('search')
-    || text.includes('ask canvas')
-    || text.includes('ask us')
-    ) {
+    // Explicit string checks
+    if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask canvas') || text.includes('ask us')) {
       return 'tcs-footer-search';
     }
-
-    // Copyright
     if (text.includes('©') || text.includes('tata consultancy') || text.includes('all rights reserved')) {
       return 'tcs-footer-copyright';
     }
-
-    // Legal Item
     if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
 
-    // Hamburger
-    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text === '')) {
-      return 'tcs-footer-hamburger';
-    }
+    // Index-based structural map fallback matching your AEM authoring tree (image_04f79f.png)
+    if (index === 0) return 'tcs-footer-hamburger';
+    if (index === 1) return 'tcs-footer-search';
+    if (index === 2) return 'tcs-footer-cta';
+    if (index === 3) return 'tcs-footer-copyright';
+    if (index === 4) return 'tcs-footer-legal-item';
 
     return 'tcs-footer-cta';
   };
 
   // Process Authored Rows
-  blockRows.forEach((row) => {
-    const model = getModelType(row);
+  blockRows.forEach((row, index) => {
+    const model = getModelType(row, index);
     const cells = [...row.children];
 
     if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
@@ -349,13 +342,9 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble Control Bar
-  if (hamburgerWrapperNode && !searchRow.contains(hamburgerWrapperNode)) {
-    searchRow.append(hamburgerWrapperNode);
-  }
-  if (searchBoxWrapperNode && !searchRow.contains(searchBoxWrapperNode)) {
-    searchRow.append(searchBoxWrapperNode);
-  }
+  // Assemble Floating Bar
+  if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
+  if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
 
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
@@ -365,6 +354,7 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
+  // Static Bottom Items
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
@@ -533,7 +523,7 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Optimized Scroll Handling using requestAnimationFrame
+  // Smooth Scroll Fixed Position Monitor
   let ticking = false;
   const handleScroll = () => {
     if (!ticking) {
