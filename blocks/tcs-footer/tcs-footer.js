@@ -20,7 +20,6 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
- * Supports direct parent-child relationships for any path depth.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -110,11 +109,11 @@ export default function decorate(block) {
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
-  // Navigation Pill Row (Horizontal bar below search)
+  // Navigation Pill Row
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
-  // Floating Submenu Panel (L3 Items Grid Card)
+  // Submenu Panel
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
@@ -132,8 +131,7 @@ export default function decorate(block) {
   let isNavOpen = false;
   let navTreeData = null;
 
-  // Active Level State Tracking
-  let currentViewLevel = 'L1'; // 'L1' | 'L2' | 'L3'
+  let currentViewLevel = 'L1';
 
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
@@ -191,7 +189,7 @@ export default function decorate(block) {
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
@@ -217,6 +215,82 @@ export default function decorate(block) {
         </button></div>`;
 
       row.innerHTML = contentHtml;
+
+      // 3. Search & Voice Submission Logic
+      const inputEl = row.querySelector('.tcs-search-input');
+      const submitBtn = row.querySelector('.submit-btn');
+      const micBtn = row.querySelector('.mic-btn');
+
+      const executeSearch = (query, source = 'Text Search') => {
+        const trimmedQuery = query.trim();
+        if (!trimmedQuery) return;
+
+        // eslint-disable-next-line no-console
+        console.log(`[TCS Search Submitted] Source: ${source} | Query: "${trimmedQuery}"`);
+
+        // Perform navigation/redirect (e.g. /search?q=...)
+        const searchUrl = formatHtmlPath(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+        window.location.href = searchUrl;
+      };
+
+      if (submitBtn && inputEl) {
+        submitBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          executeSearch(inputEl.value, 'Button Click');
+        });
+
+        inputEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            executeSearch(inputEl.value, 'Enter Keypress');
+          }
+        });
+      }
+
+      // Voice Input Handler (SpeechRecognition API)
+      if (micBtn && inputEl) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          micBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            micBtn.classList.add('listening');
+            // eslint-disable-next-line no-console
+            console.log('[TCS Search] Listening for voice input...');
+            recognition.start();
+          });
+
+          recognition.onresult = (e) => {
+            micBtn.classList.remove('listening');
+            const { transcript } = e.results[0][0];
+            inputEl.value = transcript;
+            // eslint-disable-next-line no-console
+            console.log(`[TCS Voice Captured]: "${transcript}"`);
+            executeSearch(transcript, 'Voice Recognition');
+          };
+
+          recognition.onerror = (e) => {
+            micBtn.classList.remove('listening');
+            // eslint-disable-next-line no-console
+            console.error('[TCS Voice Error]:', e.error);
+          };
+
+          recognition.onend = () => {
+            micBtn.classList.remove('listening');
+          };
+        } else {
+          micBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // eslint-disable-next-line no-console
+            console.warn('Speech Recognition API is not supported in this browser.');
+          });
+        }
+      }
+
       searchRow.append(row);
     } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
@@ -295,26 +369,24 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  // Switch Button Icon State & Position (Beside Search vs Inline with Subpage Pills)
+  // Switch Button Icon State & Position
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      // Return Hamburger button to search bar row
       searchRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      // Position Hamburger button right beside subpage pills (dummy-1)
       navPillsRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
   };
 
-  // Render Level 2 Navigation Bar (Subpage level beside Hamburger)
+  // Render Level 2 Navigation Bar
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
     updateButtonStateAndPosition('L2');
@@ -414,17 +486,14 @@ export default function decorate(block) {
     subMenuPanel.classList.add('hidden');
   };
 
-  // 3. Hamburger Button Event Handler
+  // Hamburger Button Event Handler
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
-      // RULE: If user is inside L2 or L3 subpage view,
-      // clicking Hamburger (☰) beside subpage returns to L1 Parent
       if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
         await renderL1ParentNavigation();
         return;
       }
 
-      // Toggle main L1 parent menu
       if (!isNavOpen) {
         isNavOpen = true;
         hamburgerBtnNode.setAttribute('aria-expanded', 'true');
