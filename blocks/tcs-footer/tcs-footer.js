@@ -1,27 +1,16 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
-/**
- * Resolves content paths for AEM authoring/publishing environments
- * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
- */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
-
   let resolvedPath = path;
-
   if (!resolvedPath.startsWith('/content/')) {
     resolvedPath = `/content/2026/39/briskdeer43959${
       resolvedPath.startsWith('/') ? '' : '/'
     }${resolvedPath}`;
   }
-
   return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
 
-/**
- * Parses query-index.json into a flexible multi-level tree structure.
- * Filters out utility, test, block, header, and home pages.
- */
 async function fetchHierarchicalNavData() {
   try {
     const response = await fetch('/query-index.json');
@@ -31,19 +20,8 @@ async function fetchHierarchicalNavData() {
 
     const navTree = {};
     const excludedPages = [
-      'footer',
-      'header',
-      'tcs-footer',
-      'tcs-header',
-      'blocks',
-      'home',
-      'home-page',
-      'homepage',
-      'demo',
-      'nav',
-      'qa',
-      'test',
-      'iconlist',
+      'footer', 'header', 'tcs-footer', 'tcs-header', 'blocks',
+      'home', 'home-page', 'homepage', 'demo', 'nav', 'qa', 'test', 'iconlist',
     ];
 
     data.forEach((item) => {
@@ -106,7 +84,6 @@ async function fetchHierarchicalNavData() {
       })),
     }));
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Failed to load navigation index:', error);
     return [];
   }
@@ -129,18 +106,16 @@ export default function decorate(block) {
 
   // Floating Control Bar
   const floatingNav = document.createElement('div');
-  floatingNav.className = 'tcs-footer-floating-nav';
+  floatingNav.className = 'tcs-footer-floating-nav is-fixed';
 
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
-  // Navigation Pill Row
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
-  // Submenu Panel
   const subMenuPanel = document.createElement('div');
-  subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
+  subMenuPanel.className = 'tcs-footer-submenu-panel hidden is-fixed';
 
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
@@ -151,39 +126,41 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
-  let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
-  let searchBoxWrapperNode = null;
   let isNavOpen = false;
   let navTreeData = null;
-
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
+  // Improved Model Type Detection to avoid incorrect misclassifications
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (model) return model;
 
-    const cells = row.children.length;
-    if (cells === 1) {
-      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
-      return 'tcs-hamburger';
+    const textContent = row.textContent.trim().toLowerCase();
+    const hasLink = row.querySelector('a') !== null;
+
+    if (textContent.includes('©') || textContent.includes('copyright')) {
+      return 'tcs-footer-copyright';
     }
-    if (cells === 2) {
-      const val = row.textContent.toLowerCase();
-      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
-        return 'tcs-search';
-      }
+
+    if (textContent.includes('both') || textContent.includes('text-only') || textContent.includes('voice-only')) {
+      return 'tcs-search';
+    }
+
+    if (hasLink && (textContent.includes('privacy') || textContent.includes('terms') || textContent.includes('legal') || textContent.includes('cookie'))) {
       return 'tcs-footer-legal-item';
     }
-    if (cells >= 3) {
-      const firstCellVal = cells[0]?.textContent.trim().toLowerCase() || '';
-      if (firstCellVal.includes('http') || firstCellVal.includes('/') || cells.length === 3) {
-        return 'tcs-footer-legal-item';
-      }
+
+    if (hasLink && row.children.length >= 2) {
       return 'tcs-cta';
     }
-    return null;
+
+    if (row.children.length === 1 && !hasLink) {
+      return 'tcs-hamburger';
+    }
+
+    return 'tcs-footer-legal-item';
   };
 
   // 2. Process Authored Items
@@ -211,7 +188,6 @@ export default function decorate(block) {
           </span>
         </button>
       `;
-      hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.prepend(row);
     } else if (model === 'tcs-search') {
@@ -219,20 +195,17 @@ export default function decorate(block) {
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
-      searchBoxWrapperNode = row;
 
       const formEl = document.createElement('form');
       formEl.className = 'tcs-search-form';
       formEl.action = '#';
 
       let contentHtml = '';
-
       if (variation !== 'voice-only') {
         contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
-
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
           <button type="button" class="mic-btn" aria-label="Voice Search">
@@ -258,8 +231,6 @@ export default function decorate(block) {
       row.append(formEl);
 
       const inputEl = formEl.querySelector('.tcs-search-input');
-      const micBtn = formEl.querySelector('.mic-btn');
-
       if (inputEl) {
         inputEl.addEventListener('input', (e) => {
           searchQueryVariable = e.target.value;
@@ -268,52 +239,9 @@ export default function decorate(block) {
 
       formEl.addEventListener('submit', (e) => {
         e.preventDefault();
-
-        if (inputEl) {
-          searchQueryVariable = inputEl.value;
-        }
-
-        // eslint-disable-next-line no-console
-        console.log('Search Query Variable:', searchQueryVariable);
-
-        window.location.hash = '#';
+        if (inputEl) searchQueryVariable = inputEl.value;
+        console.log('Search Query:', searchQueryVariable);
       });
-
-      if (micBtn && inputEl) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (SpeechRecognition) {
-          const recognition = new SpeechRecognition();
-          recognition.continuous = false;
-          recognition.interimResults = false;
-
-          micBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            micBtn.classList.add('listening');
-            recognition.start();
-          });
-
-          recognition.onresult = (e) => {
-            micBtn.classList.remove('listening');
-            const { transcript } = e.results[0][0];
-            inputEl.value = transcript;
-            searchQueryVariable = transcript;
-
-            // eslint-disable-next-line no-console
-            console.log('Search Query Variable (Voice):', searchQueryVariable);
-
-            window.location.hash = '#';
-          };
-
-          recognition.onerror = () => {
-            micBtn.classList.remove('listening');
-          };
-
-          recognition.onend = () => {
-            micBtn.classList.remove('listening');
-          };
-        }
-      }
 
       searchRow.append(row);
     } else if (model === 'tcs-cta') {
@@ -334,11 +262,12 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
+      row.innerHTML = cells[0]?.innerHTML || '<p>©TATA Consultancy Services</p>';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
-      const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
-      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
+      const linkEl = row.querySelector('a');
+      const label = linkEl?.textContent.trim() || cells[0]?.textContent.trim() || 'Privacy & Terms';
+      const link = formatHtmlPath(linkEl?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-legal-item-wrapper';
@@ -355,7 +284,7 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating structure
+  // Assemble footer DOM
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
@@ -394,19 +323,17 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  const updateButtonStateAndPosition = (level) => {
+  const updateButtonState = (level) => {
     currentViewLevel = level;
+    if (!hamburgerBtnNode) return;
+
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      searchRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      navPillsRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
@@ -414,7 +341,7 @@ export default function decorate(block) {
 
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
-    updateButtonStateAndPosition('L2');
+    updateButtonState('L2');
 
     const l2Group = document.createElement('div');
     l2Group.className = 'tcs-l2-pills-group';
@@ -442,11 +369,8 @@ export default function decorate(block) {
       };
 
       l2Pill.addEventListener('mouseenter', triggerL3View);
-
       const chevronBtn = l2Pill.querySelector('.chevron-btn');
-      if (chevronBtn) {
-        chevronBtn.addEventListener('click', triggerL3View);
-      }
+      if (chevronBtn) chevronBtn.addEventListener('click', triggerL3View);
 
       l2Group.append(l2Pill);
     });
@@ -458,7 +382,7 @@ export default function decorate(block) {
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-    updateButtonStateAndPosition('L1');
+    updateButtonState('L1');
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
@@ -476,9 +400,7 @@ export default function decorate(block) {
 
       const enterSubPageNavigation = (e) => {
         if (e) e.stopPropagation();
-        if (!hasL2) return;
-
-        renderL2SubNavigation(l1);
+        if (hasL2) renderL2SubNavigation(l1);
       };
 
       l1Pill.addEventListener('mouseenter', () => {
@@ -486,9 +408,7 @@ export default function decorate(block) {
       });
 
       const chevronBtn = l1Pill.querySelector('.chevron-btn');
-      if (chevronBtn) {
-        chevronBtn.addEventListener('click', enterSubPageNavigation);
-      }
+      if (chevronBtn) chevronBtn.addEventListener('click', enterSubPageNavigation);
 
       navPillsRow.append(l1Pill);
     });
@@ -500,11 +420,11 @@ export default function decorate(block) {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
-    searchRow.prepend(hamburgerWrapperNode);
-    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-    hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-    hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
-    hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+    if (hamburgerBtnNode) {
+      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+    }
 
     navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
@@ -532,11 +452,12 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
+  // Smooth floating handler sticking to bottom until footer in viewport
   const handleScroll = () => {
     const footerRect = block.getBoundingClientRect();
     const windowHeight = window.innerHeight;
 
-    if (footerRect.top < windowHeight - 140) {
+    if (footerRect.top <= windowHeight - 100) {
       floatingNav.classList.remove('is-fixed');
       subMenuPanel.classList.remove('is-fixed');
     } else {
