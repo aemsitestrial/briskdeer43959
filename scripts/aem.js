@@ -628,10 +628,10 @@ async function loadHeader(header) {
  * @returns {Promise}
  */
 async function loadFooter(footer) {
-  const pageFooterBlock = document.querySelector('main .footer-sai');
+  const pageFooterBlock = document.querySelector('main .tcs-footer');
   if (pageFooterBlock) return;
 
-  const footerPath = (getMetadata('footer') || '/praneeth').replace(/(\.plain)?\.html$/, '');
+  const footerPath = (getMetadata('footer') || '/tcs-footer').replace(/(\.plain)?\.html$/, '');
   const resp = await fetch(`${footerPath}.plain.html`);
 
   if (!resp.ok) {
@@ -641,7 +641,7 @@ async function loadFooter(footer) {
 
   const html = await resp.text();
   const fragment = new DOMParser().parseFromString(html, 'text/html');
-  const footerBlock = fragment.querySelector('.footer-sai');
+  const footerBlock = fragment.querySelector('.tcs-footer');
   if (!footerBlock) {
     console.error(`Footer block not found in ${footerPath}`);
     return;
@@ -657,7 +657,7 @@ async function loadFooter(footer) {
   resetMediaPath('img', 'src');
   resetMediaPath('source', 'srcset');
 
-  const loadedFooterBlock = footer.querySelector('.footer-sai');
+  const loadedFooterBlock = footer.querySelector('.tcs-footer');
   decorateBlock(loadedFooterBlock);
   await loadBlock(loadedFooterBlock);
 }
