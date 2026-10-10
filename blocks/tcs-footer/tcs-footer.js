@@ -2,6 +2,7 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
  * Resolves content paths for AEM authoring/publishing environments
+ * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
@@ -40,6 +41,8 @@ async function fetchHierarchicalNavData() {
       'homepage',
       'demo',
       'nav',
+      'test',
+      'qa',
       'iconlist',
     ];
 
@@ -112,7 +115,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Main Heading Title
+  // 1. Heading Title
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -124,7 +127,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar (Search & Dynamic Navigation Pills)
+  // Floating Control Bar
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -139,7 +142,6 @@ export default function decorate(block) {
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
-  // Static Bottom Section
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
 
@@ -158,48 +160,32 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Robust Model Classification Strategy
   const getModelType = (row) => {
-    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
-    if (explicitModel) return explicitModel;
+    const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (model) return model;
 
-    const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
-
-    // Detect Search Bar
-    if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask canvas') || text.includes('ask us')) {
-      return 'tcs-footer-search';
-    }
-
-    // Detect Copyright
-    if (text.includes('©') || text.includes('tata consultancy services')) {
-      return 'tcs-footer-copyright';
-    }
-
-    // Detect Legal Items
-    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
-      return 'tcs-footer-legal-item';
-    }
-
-    // Detect Hamburger
-    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text.length === 0)) {
+    if (cells === 1) {
+      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
       return 'tcs-footer-hamburger';
     }
-
-    // Default CTA
-    if (row.querySelector('a') || cells >= 2) {
-      return 'tcs-footer-cta';
+    if (cells === 2) {
+      const val = row.textContent.toLowerCase();
+      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
+        return 'tcs-footer-search';
+      }
+      return 'tcs-footer-legal-item';
     }
-
+    if (cells >= 3) return 'tcs-footer-cta';
     return null;
   };
 
-  // 2. Process Authored Component Rows
+  // 2. Process Authored Items
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
+    if (model === 'tcs-footer-hamburger') {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -222,7 +208,7 @@ export default function decorate(block) {
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.prepend(row);
-    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
+    } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -342,18 +328,16 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
-      const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-legal-item-wrapper';
       const legalLink = document.createElement('a');
       legalLink.className = 'tcs-footer-legal-link';
       legalLink.href = link;
-      legalLink.target = target;
       legalLink.textContent = label;
 
       moveInstrumentation(cells[0], legalLink);
@@ -363,17 +347,15 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating control bar
+  // Assemble floating structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
+  if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
     footerContainer.append(subMenuPanel);
     footerContainer.append(floatingNav);
   }
-
-  // Static bottom rows
-  if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
 
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
@@ -404,6 +386,7 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
+  // State & Position Controller: Covers Search Box when in Sub-page View (Image 2)
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
