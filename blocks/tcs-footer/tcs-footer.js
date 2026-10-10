@@ -1,16 +1,26 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+/**
+ * Resolves content paths for AEM authoring/publishing environments
+ * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
+ */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
+
   let resolvedPath = path;
+
   if (!resolvedPath.startsWith('/content/')) {
     resolvedPath = `/content/2026/39/briskdeer43959${
       resolvedPath.startsWith('/') ? '' : '/'
     }${resolvedPath}`;
   }
+
   return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
 
+/**
+ * Parses query-index.json into a flexible multi-level tree structure.
+ */
 async function fetchHierarchicalNavData() {
   try {
     const response = await fetch('/query-index.json');
@@ -19,10 +29,6 @@ async function fetchHierarchicalNavData() {
     const data = json.data || json;
 
     const navTree = {};
-    const excludedPages = [
-      'footer', 'header', 'tcs-footer', 'tcs-header', 'blocks',
-      'home', 'home-page', 'homepage', 'demo', 'nav', 'qa', 'test', 'iconlist',
-    ];
 
     data.forEach((item) => {
       const rawPath = item.path || '';
@@ -35,12 +41,7 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length === 0) return;
 
-      const lastSegment = segments[segments.length - 1].toLowerCase().replace(/\s+/g, '-');
-      if (excludedPages.includes(lastSegment)) return;
-
       const l1Key = segments[0];
-      if (excludedPages.includes(l1Key.toLowerCase())) return;
-
       if (!navTree[l1Key]) {
         navTree[l1Key] = {
           key: l1Key,
@@ -52,8 +53,6 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length >= 2) {
         const l2Key = segments[1];
-        if (excludedPages.includes(l2Key.toLowerCase())) return;
-
         if (!navTree[l1Key].children[l2Key]) {
           navTree[l1Key].children[l2Key] = {
             key: l2Key,
@@ -65,8 +64,6 @@ async function fetchHierarchicalNavData() {
 
         if (segments.length >= 3) {
           const l3Key = segments[2];
-          if (excludedPages.includes(l3Key.toLowerCase())) return;
-
           navTree[l1Key].children[l2Key].children.push({
             key: l3Key,
             title: item.title || l3Key.replace(/-/g, ' '),
@@ -84,6 +81,7 @@ async function fetchHierarchicalNavData() {
       })),
     }));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to load navigation index:', error);
     return [];
   }
@@ -106,16 +104,18 @@ export default function decorate(block) {
 
   // Floating Control Bar
   const floatingNav = document.createElement('div');
-  floatingNav.className = 'tcs-footer-floating-nav is-fixed';
+  floatingNav.className = 'tcs-footer-floating-nav';
 
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
+  // Navigation Pill Row
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
+  // Submenu Panel
   const subMenuPanel = document.createElement('div');
-  subMenuPanel.className = 'tcs-footer-submenu-panel hidden is-fixed';
+  subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
@@ -126,41 +126,34 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
+  let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let isNavOpen = false;
   let navTreeData = null;
+
   let currentViewLevel = 'L1';
+
+  // Variable to store search query
   let searchQueryVariable = '';
 
-  // Improved Model Type Detection to avoid incorrect misclassifications
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (model) return model;
 
-    const textContent = row.textContent.trim().toLowerCase();
-    const hasLink = row.querySelector('a') !== null;
-
-    if (textContent.includes('©') || textContent.includes('copyright')) {
-      return 'tcs-footer-copyright';
+    const cells = row.children.length;
+    if (cells === 1) {
+      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
+      return 'tcs-footer-hamburger';
     }
-
-    if (textContent.includes('both') || textContent.includes('text-only') || textContent.includes('voice-only')) {
-      return 'tcs-search';
-    }
-
-    if (hasLink && (textContent.includes('privacy') || textContent.includes('terms') || textContent.includes('legal') || textContent.includes('cookie'))) {
+    if (cells === 2) {
+      const val = row.textContent.toLowerCase();
+      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
+        return 'tcs-footer-search';
+      }
       return 'tcs-footer-legal-item';
     }
-
-    if (hasLink && row.children.length >= 2) {
-      return 'tcs-cta';
-    }
-
-    if (row.children.length === 1 && !hasLink) {
-      return 'tcs-hamburger';
-    }
-
-    return 'tcs-footer-legal-item';
+    if (cells >= 3) return 'tcs-footer-cta';
+    return null;
   };
 
   // 2. Process Authored Items
@@ -168,7 +161,7 @@ export default function decorate(block) {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-hamburger') {
+    if (model === 'tcs-footer-hamburger') {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -188,24 +181,28 @@ export default function decorate(block) {
           </span>
         </button>
       `;
+      hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-      searchRow.prepend(row);
-    } else if (model === 'tcs-search') {
+      searchRow.append(row);
+    } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
 
+      // Form wrapper to catch submit event cleanly
       const formEl = document.createElement('form');
       formEl.className = 'tcs-search-form';
       formEl.action = '#';
 
       let contentHtml = '';
+
       if (variation !== 'voice-only') {
         contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
+
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
           <button type="button" class="mic-btn" aria-label="Voice Search">
@@ -230,21 +227,71 @@ export default function decorate(block) {
       row.innerHTML = '';
       row.append(formEl);
 
+      // 3. Search Variable Capture & Console Display
       const inputEl = formEl.querySelector('.tcs-search-input');
+      const micBtn = formEl.querySelector('.mic-btn');
+
+      // Capture Input Event into Variable
       if (inputEl) {
         inputEl.addEventListener('input', (e) => {
           searchQueryVariable = e.target.value;
         });
       }
 
+      // Handle Form Submit Event
       formEl.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (inputEl) searchQueryVariable = inputEl.value;
-        console.log('Search Query:', searchQueryVariable);
+
+        if (inputEl) {
+          searchQueryVariable = inputEl.value;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('Search Query Variable:', searchQueryVariable);
+
+        // Update location hash to '#' without full page refresh
+        window.location.hash = '#';
       });
 
+      // Voice Input Handler (SpeechRecognition API)
+      if (micBtn && inputEl) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          micBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            micBtn.classList.add('listening');
+            recognition.start();
+          });
+
+          recognition.onresult = (e) => {
+            micBtn.classList.remove('listening');
+            const { transcript } = e.results[0][0];
+            inputEl.value = transcript;
+            searchQueryVariable = transcript;
+
+            // eslint-disable-next-line no-console
+            console.log('Search Query Variable (Voice):', searchQueryVariable);
+
+            window.location.hash = '#';
+          };
+
+          recognition.onerror = () => {
+            micBtn.classList.remove('listening');
+          };
+
+          recognition.onend = () => {
+            micBtn.classList.remove('listening');
+          };
+        }
+      }
+
       searchRow.append(row);
-    } else if (model === 'tcs-cta') {
+    } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
@@ -262,19 +309,16 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '<p>©TATA Consultancy Services</p>';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
-      const linkEl = row.querySelector('a');
-      const label = linkEl?.textContent.trim() || cells[0]?.textContent.trim() || 'Privacy & Terms';
-      const link = formatHtmlPath(linkEl?.href || '#');
-      const target = cells[2]?.textContent.trim() || '_self';
+      const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
+      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
 
       row.className = 'tcs-footer-legal-item-wrapper';
       const legalLink = document.createElement('a');
       legalLink.className = 'tcs-footer-legal-link';
       legalLink.href = link;
-      legalLink.target = target;
       legalLink.textContent = label;
 
       moveInstrumentation(cells[0], legalLink);
@@ -284,7 +328,7 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble footer DOM
+  // Assemble floating structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
@@ -300,6 +344,7 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
+  // Render Glassmorphism Grid Panel (L3 Items)
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
       subMenuPanel.classList.add('hidden');
@@ -323,25 +368,27 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  const updateButtonState = (level) => {
+  // Switch Button Icon State & Position
+  const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
-    if (!hamburgerBtnNode) return;
-
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
+      searchRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
+      navPillsRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
   };
 
+  // Render Level 2 Navigation Bar
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
-    updateButtonState('L2');
+    updateButtonStateAndPosition('L2');
 
     const l2Group = document.createElement('div');
     l2Group.className = 'tcs-l2-pills-group';
@@ -369,8 +416,11 @@ export default function decorate(block) {
       };
 
       l2Pill.addEventListener('mouseenter', triggerL3View);
+
       const chevronBtn = l2Pill.querySelector('.chevron-btn');
-      if (chevronBtn) chevronBtn.addEventListener('click', triggerL3View);
+      if (chevronBtn) {
+        chevronBtn.addEventListener('click', triggerL3View);
+      }
 
       l2Group.append(l2Pill);
     });
@@ -379,10 +429,11 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
+  // Render Top-Level L1 Parent Navigation Bar
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-    updateButtonState('L1');
+    updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
@@ -400,7 +451,9 @@ export default function decorate(block) {
 
       const enterSubPageNavigation = (e) => {
         if (e) e.stopPropagation();
-        if (hasL2) renderL2SubNavigation(l1);
+        if (!hasL2) return;
+
+        renderL2SubNavigation(l1);
       };
 
       l1Pill.addEventListener('mouseenter', () => {
@@ -408,7 +461,9 @@ export default function decorate(block) {
       });
 
       const chevronBtn = l1Pill.querySelector('.chevron-btn');
-      if (chevronBtn) chevronBtn.addEventListener('click', enterSubPageNavigation);
+      if (chevronBtn) {
+        chevronBtn.addEventListener('click', enterSubPageNavigation);
+      }
 
       navPillsRow.append(l1Pill);
     });
@@ -416,20 +471,21 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
+  // Close Navigation Completely
   const closeAllNavigation = () => {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
-    if (hamburgerBtnNode) {
-      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
-      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
-    }
+    searchRow.prepend(hamburgerWrapperNode);
+    hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+    hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+    hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
 
     navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
   };
 
+  // Hamburger Button Event Handler
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
       if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
@@ -447,17 +503,18 @@ export default function decorate(block) {
     });
   }
 
+  // Hide floating panel when mouse leaves footer zone
   footerContainer.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Smooth floating handler sticking to bottom until footer in viewport
+  // Floating behavior on scroll
   const handleScroll = () => {
     const footerRect = block.getBoundingClientRect();
     const windowHeight = window.innerHeight;
 
-    if (footerRect.top <= windowHeight - 100) {
+    if (footerRect.top < windowHeight - 140) {
       floatingNav.classList.remove('is-fixed');
       subMenuPanel.classList.remove('is-fixed');
     } else {

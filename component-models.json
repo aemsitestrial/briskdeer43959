@@ -6518,7 +6518,7 @@
     ]
   },
   {
-    "id": "tcs-hamburger",
+    "id": "tcs-footer-hamburger",
     "fields": [
       {
         "component": "text",
@@ -6530,7 +6530,7 @@
     ]
   },
   {
-    "id": "tcs-search",
+    "id": "tcs-footer-search",
     "fields": [
       {
         "component": "select",
@@ -6563,7 +6563,7 @@
     ]
   },
   {
-    "id": "tcs-cta",
+    "id": "tcs-footer-cta",
     "fields": [
       {
         "component": "text",
@@ -6619,23 +6619,6 @@
         "component": "aem-content",
         "name": "link",
         "label": "Legal Link"
-      },
-      {
-        "component": "select",
-        "name": "target",
-        "label": "Target Type",
-        "valueType": "string",
-        "value": "_self",
-        "options": [
-          {
-            "name": "Same Tab (_self)",
-            "value": "_self"
-          },
-          {
-            "name": "New Tab (_blank)",
-            "value": "_blank"
-          }
-        ]
       }
     ]
   },
