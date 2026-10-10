@@ -133,6 +133,9 @@ export default function decorate(block) {
 
   let currentViewLevel = 'L1';
 
+  // Variable to store search query
+  let searchQueryVariable = '';
+
   const getModelType = (row) => {
     const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (model) return model;
@@ -186,6 +189,12 @@ export default function decorate(block) {
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
+
+      // Form wrapper to catch submit event cleanly
+      const formEl = document.createElement('form');
+      formEl.className = 'tcs-search-form';
+      formEl.action = '#';
+
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
@@ -196,7 +205,7 @@ export default function decorate(block) {
 
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
-          <button class="mic-btn" aria-label="Voice Search">
+          <button type="button" class="mic-btn" aria-label="Voice Search">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -207,45 +216,42 @@ export default function decorate(block) {
       }
 
       contentHtml += `
-        <button class="submit-btn" aria-label="Submit Search">
+        <button type="submit" class="submit-btn" aria-label="Submit Search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
         </button></div>`;
 
-      row.innerHTML = contentHtml;
+      formEl.innerHTML = contentHtml;
+      row.innerHTML = '';
+      row.append(formEl);
 
-      // 3. Search & Voice Submission Logic
-      const inputEl = row.querySelector('.tcs-search-input');
-      const submitBtn = row.querySelector('.submit-btn');
-      const micBtn = row.querySelector('.mic-btn');
+      // 3. Search Variable Capture & Console Display
+      const inputEl = formEl.querySelector('.tcs-search-input');
+      const micBtn = formEl.querySelector('.mic-btn');
 
-      const executeSearch = (query, source = 'Text Search') => {
-        const trimmedQuery = query.trim();
-        if (!trimmedQuery) return;
-
-        // eslint-disable-next-line no-console
-        console.log(`[TCS Search Submitted] Source: ${source} | Query: "${trimmedQuery}"`);
-
-        // Perform navigation/redirect (e.g. /search?q=...)
-        const searchUrl = formatHtmlPath(`/search?q=${encodeURIComponent(trimmedQuery)}`);
-        window.location.href = searchUrl;
-      };
-
-      if (submitBtn && inputEl) {
-        submitBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          executeSearch(inputEl.value, 'Button Click');
-        });
-
-        inputEl.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            executeSearch(inputEl.value, 'Enter Keypress');
-          }
+      // Capture Input Event into Variable
+      if (inputEl) {
+        inputEl.addEventListener('input', (e) => {
+          searchQueryVariable = e.target.value;
         });
       }
+
+      // Handle Form Submit Event
+      formEl.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        if (inputEl) {
+          searchQueryVariable = inputEl.value;
+        }
+
+        // eslint-disable-next-line no-console
+        console.log('Search Query Variable:', searchQueryVariable);
+
+        // Update location hash to '#' without full page refresh
+        window.location.hash = '#';
+      });
 
       // Voice Input Handler (SpeechRecognition API)
       if (micBtn && inputEl) {
@@ -259,8 +265,6 @@ export default function decorate(block) {
           micBtn.addEventListener('click', (e) => {
             e.preventDefault();
             micBtn.classList.add('listening');
-            // eslint-disable-next-line no-console
-            console.log('[TCS Search] Listening for voice input...');
             recognition.start();
           });
 
@@ -268,26 +272,21 @@ export default function decorate(block) {
             micBtn.classList.remove('listening');
             const { transcript } = e.results[0][0];
             inputEl.value = transcript;
+            searchQueryVariable = transcript;
+
             // eslint-disable-next-line no-console
-            console.log(`[TCS Voice Captured]: "${transcript}"`);
-            executeSearch(transcript, 'Voice Recognition');
+            console.log('Search Query Variable (Voice):', searchQueryVariable);
+
+            window.location.hash = '#';
           };
 
-          recognition.onerror = (e) => {
+          recognition.onerror = () => {
             micBtn.classList.remove('listening');
-            // eslint-disable-next-line no-console
-            console.error('[TCS Voice Error]:', e.error);
           };
 
           recognition.onend = () => {
             micBtn.classList.remove('listening');
           };
-        } else {
-          micBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            // eslint-disable-next-line no-console
-            console.warn('Speech Recognition API is not supported in this browser.');
-          });
         }
       }
 
