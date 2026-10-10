@@ -1,7 +1,7 @@
 .tcs-footer {
   position: relative;
   width: 100%;
-  background: linear-gradient(180deg, #fff 0%, #f4f6fa 60%, #e8eef8 100%);
+  background: rgb(255 255 255 / 100%);
   padding: 120px 24px 40px;
   box-sizing: border-box;
   font-family: Inter, system-ui, -apple-system, sans-serif;
@@ -27,7 +27,7 @@
   max-width: 700px;
 }
 
-/* Floating Navigation Control Bar */
+/* Floating Navigation Bar */
 .tcs-footer-floating-nav {
   display: flex;
   flex-direction: column;
@@ -62,40 +62,38 @@
 }
 
 .tcs-footer-hamburger {
-  min-width: 52px;
+  width: 52px;
   height: 52px;
-  border-radius: 26px;
+  border-radius: 50%;
   border: 1px solid #111827;
   background-color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 18px;
   cursor: pointer;
+  padding: 0;
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .tcs-footer-hamburger svg {
   width: 24px;
   height: 24px;
   stroke: #111827;
-  display: block;
 }
 
-.tcs-footer-hamburger.has-active-l2 {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
-  color: #fff;
+.tcs-footer-hamburger:hover,
+.tcs-footer-hamburger.active {
+  background-color: #f3f4f6;
+  border-color: #111827;
 }
 
-.tcs-footer-hamburger.has-active-l2 .active-l2-label {
-  font-size: 15px;
-  font-weight: 600;
+.tcs-footer-hamburger:hover svg,
+.tcs-footer-hamburger.active svg {
+  stroke: #111827;
 }
 
-/* Standalone Horizontal Pill Navigation Row */
+/* Standalone Horizontal Navigation Row directly below search bar */
 .tcs-footer-nav-pills-row {
   display: flex;
   justify-content: center;
@@ -131,34 +129,53 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 4%);
 }
 
-.tcs-nav-pill .chevron {
-  font-size: 11px;
-  transition: transform 0.2s ease;
+.tcs-nav-pill .tcs-pill-link {
+  color: #111827;
+  text-decoration: none;
+}
+
+.tcs-nav-pill .chevron-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: #111827;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .tcs-nav-pill:hover,
 .tcs-nav-pill.active {
-  background-color: #3b82f6;
-  color: #fff;
-  border-color: #3b82f6;
+  background-color: #f3f4f6;
+  color: #111827;
+  border-color: #111827;
 }
 
-.tcs-nav-pill.active .chevron {
+.tcs-nav-pill:hover .tcs-pill-link,
+.tcs-nav-pill.active .tcs-pill-link {
+  color: #111827;
+  text-decoration: none;
+}
+
+.tcs-nav-pill.active .chevron-btn {
   transform: rotate(180deg);
+  color: #111827;
 }
 
-/* Glassmorphism Submenu Grid Panel */
+/* Glassmorphism Floating Submenu Grid Panel */
 .tcs-footer-submenu-panel {
   width: 100%;
   max-width: 780px;
-  background: rgb(220 225 235 / 92%);
+  background: rgb(245 247 250 / 95%);
   backdrop-filter: blur(20px);
   border-radius: 24px;
   padding: 28px;
-  box-shadow: 0 16px 48px rgb(0 0 0 / 14%);
+  box-shadow: 0 16px 48px rgb(0 0 0 / 8%);
   margin-bottom: 16px;
   z-index: 100;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
   box-sizing: border-box;
 }
 
@@ -186,11 +203,13 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  transition: color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .tcs-submenu-item:hover {
-  color: #2563eb;
+  color: #111827;
+  text-decoration: none;
+  background-color: rgb(0 0 0 / 3%);
 }
 
 .tcs-submenu-item .arrow {
@@ -202,7 +221,7 @@
   display: none !important;
 }
 
-/* Search Box & Centering Rules */
+/* Search Box & Action Centering */
 .tcs-footer-search-box {
   position: relative;
   flex: 1;
@@ -249,7 +268,7 @@
   height: 40px;
   border-radius: 50%;
   border: none;
-  background-color: #4f46e5;
+  background-color: #111827;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -264,6 +283,7 @@
   stroke: #fff;
 }
 
+/* CTA Buttons */
 .tcs-footer-cta-row {
   display: flex;
   gap: 12px;
@@ -280,9 +300,19 @@
   background-color: #fff;
   color: #111827;
   font-size: 14px;
-  text-decoration: none;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
 }
 
+.tcs-footer-cta-btn:hover,
+.tcs-footer-cta-btn:focus,
+.tcs-footer-cta-btn:active {
+  background-color: #111827;
+  color: #fff;
+  text-decoration: none !important;
+}
+
+/* Bottom Legal Row */
 .tcs-footer-bottom-row {
   width: 100%;
   display: flex;
@@ -299,5 +329,10 @@
 
 .tcs-footer-legal-link {
   color: #374151;
-  text-decoration: none;
+  text-decoration: none !important;
+}
+
+.tcs-footer-legal-link:hover {
+  text-decoration: none !important;
+  color: #111827;
 }
