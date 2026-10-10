@@ -123,7 +123,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar
+  // Floating Control Bar Container
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -155,7 +155,7 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Precise Model Identifier Logic
+  // Strict Model Classification Logic
   const getModelType = (row) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (explicitModel) return explicitModel;
@@ -168,9 +168,8 @@ export default function decorate(block) {
       text.includes('both')
       || text.includes('text-only')
       || text.includes('voice-only')
-      || text.includes('ask')
-      || text.includes('search')
-      || text.includes('question')
+      || text.includes('ask canvas')
+      || text.includes('ask us')
     ) {
       return 'tcs-footer-search';
     }
@@ -190,13 +189,19 @@ export default function decorate(block) {
       return 'tcs-footer-hamburger';
     }
 
-    // CTA Item
-    return 'tcs-footer-cta';
+    // CTA Item: Must have anchor link or non-empty content
+    if (row.querySelector('a') || (cells >= 2 && text.length > 0)) {
+      return 'tcs-footer-cta';
+    }
+
+    return null; // Skip unpopulated / unknown rows
   };
 
   // 2. Process Authored Component Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
+    if (!model) return; // Skip invalid or empty rows
+
     const cells = [...row.children];
 
     if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
