@@ -19,7 +19,6 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
- * Filters out utility, test, block, header, and home pages.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -124,7 +123,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar Container
+  // Floating Control Bar
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -149,13 +148,14 @@ export default function decorate(block) {
   let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let searchBoxWrapperNode = null;
+  let copyrightWrapperNode = null;
   let isNavOpen = false;
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Strict Model Type Classification
+  // Precise Model Identifier Logic
   const getModelType = (row) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (explicitModel) return explicitModel;
@@ -163,39 +163,43 @@ export default function decorate(block) {
     const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
 
+    // Search Bar
     if (
       text.includes('both')
       || text.includes('text-only')
       || text.includes('voice-only')
-      || text.includes('ask canvas')
-      || text.includes('ask us')
+      || text.includes('ask')
+      || text.includes('search')
+      || text.includes('question')
     ) {
       return 'tcs-footer-search';
     }
 
-    if (text.includes('©') || text.includes('tata consultancy services')) {
+    // Copyright
+    if (text.includes('©') || text.includes('tata consultancy') || text.includes('all rights reserved')) {
       return 'tcs-footer-copyright';
     }
 
+    // Legal Items (Privacy, Terms, Cookies)
     if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
 
-    if (cells === 1) {
+    // Hamburger
+    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text === '')) {
       return 'tcs-footer-hamburger';
     }
 
+    // CTA Item
     return 'tcs-footer-cta';
   };
 
-  // 2. Process Authored Component Rows Only (with Duplicate Prevention)
+  // 2. Process Authored Component Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger') {
-      if (hamburgerWrapperNode) return; // Prevent duplicates
-
+    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -217,9 +221,7 @@ export default function decorate(block) {
       `;
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-    } else if (model === 'tcs-footer-search') {
-      if (searchBoxWrapperNode) return; // Prevent duplicates
-
+    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -338,6 +340,7 @@ export default function decorate(block) {
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
       row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
+      copyrightWrapperNode = row;
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
@@ -358,7 +361,15 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble Floating Search Control Bar
+  // Ensure Copyright exists even if omitted in authoring document
+  if (!copyrightWrapperNode) {
+    const defaultCopyright = document.createElement('div');
+    defaultCopyright.className = 'tcs-footer-copyright';
+    defaultCopyright.innerHTML = '©TATA Consultancy Services 2027';
+    bottomRow.prepend(defaultCopyright);
+  }
+
+  // Assemble Floating Navigation Row
   if (hamburgerWrapperNode && !searchRow.contains(hamburgerWrapperNode)) {
     searchRow.append(hamburgerWrapperNode);
   }
@@ -374,7 +385,7 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
-  // Static Bottom Rows
+  // Static Bottom Section
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
@@ -412,7 +423,7 @@ export default function decorate(block) {
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
-    hamburgerWrapperNode.remove(); // Guard against multiple DOM attachments
+    hamburgerWrapperNode.remove();
 
     if (level === 'L1') {
       searchRow.prepend(hamburgerWrapperNode);
