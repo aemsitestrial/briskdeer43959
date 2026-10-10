@@ -111,7 +111,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title
+  // 1. Heading Title (First row of block)
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -154,7 +154,7 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Robust Classification for AEM live publishing + UE editor
+  // Precise Model Classification Logic
   const getModelType = (row) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
     if (explicitModel) return explicitModel;
@@ -169,7 +169,6 @@ export default function decorate(block) {
       || text.includes('voice-only')
       || text.includes('ask canvas')
       || text.includes('ask us')
-      || text.includes('search')
     ) {
       return 'tcs-footer-search';
     }
@@ -179,7 +178,7 @@ export default function decorate(block) {
       return 'tcs-footer-copyright';
     }
 
-    // Legal Link
+    // Legal Item (Privacy, Terms, Legal, Cookies)
     if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
@@ -189,11 +188,11 @@ export default function decorate(block) {
       return 'tcs-footer-hamburger';
     }
 
-    // CTA Button
+    // CTA Item (Default for multi-cell rows or links)
     return 'tcs-footer-cta';
   };
 
-  // 2. Process Authored Component Rows
+  // 2. Process Only Authored Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
@@ -321,9 +320,7 @@ export default function decorate(block) {
         }
       }
     } else if (model === 'tcs-footer-cta') {
-      const label = cells[0]?.textContent.trim();
-      if (!label) return; // Ignore blank empty rows
-
+      const label = cells[0]?.textContent.trim() || 'Click here';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
 
@@ -340,7 +337,7 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
@@ -361,37 +358,13 @@ export default function decorate(block) {
     }
   });
 
-  // Always build Search Bar if missing from AEM rows
-  if (!searchBoxWrapperNode) {
-    const searchBox = document.createElement('div');
-    searchBox.className = 'tcs-footer-search-box mode-both';
-    searchBox.innerHTML = `
-      <form class="tcs-search-form" action="#">
-        <input type="text" class="tcs-search-input" placeholder="Ask Canvas Search" aria-label="Ask Canvas Search">
-        <div class="tcs-footer-search-actions">
-          <button type="button" class="mic-btn" aria-label="Voice Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-          </button>
-          <button type="submit" class="submit-btn" aria-label="Submit Search">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </button>
-        </div>
-      </form>
-    `;
-    searchBoxWrapperNode = searchBox;
+  // Assemble Floating Bar conditionally (NO fallbacks!)
+  if (hamburgerWrapperNode && !searchRow.contains(hamburgerWrapperNode)) {
+    searchRow.append(hamburgerWrapperNode);
   }
-
-  // Assemble Floating Bar: Hamburger (Left) + Search Bar (Right)
-  if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
-  if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
+  if (searchBoxWrapperNode && !searchRow.contains(searchBoxWrapperNode)) {
+    searchRow.append(searchBoxWrapperNode);
+  }
 
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
@@ -401,7 +374,7 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
-  // Static Bottom Section
+  // Static Bottom Items
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
