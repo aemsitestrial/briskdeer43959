@@ -1,6 +1,14 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
+ * Ensures path ends with .html for authoring environment compatibility
+ */
+function formatHtmlPath(path) {
+  if (!path || path === '/') return path || '#';
+  return path.endsWith('.html') ? path : `${path}.html`;
+}
+
+/**
  * Fetches site hierarchy from /query-index.json into an L1 -> L2 -> L3 tree structure
  */
 async function fetchHierarchicalNavData() {
@@ -16,7 +24,6 @@ async function fetchHierarchicalNavData() {
       const path = item.path || '';
       const segments = path.split('/').filter(Boolean);
 
-      // Handle optional locale prefix (e.g., /en/what-we-do/services/cloud)
       let locale = '';
       if (segments[0] && segments[0].length === 2) {
         locale = segments.shift();
@@ -28,7 +35,7 @@ async function fetchHierarchicalNavData() {
       if (!navTree[l1Key]) {
         navTree[l1Key] = {
           title: item.title && segments.length === 1 ? item.title : l1Key.replace(/-/g, ' '),
-          path: `/${locale ? `${locale}/` : ''}${l1Key}`,
+          path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
           l2Map: {},
         };
       }
@@ -38,7 +45,7 @@ async function fetchHierarchicalNavData() {
         if (!navTree[l1Key].l2Map[l2Key]) {
           navTree[l1Key].l2Map[l2Key] = {
             title: item.title && segments.length === 2 ? item.title : l2Key.replace(/-/g, ' '),
-            path: `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`,
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
             l3List: [],
           };
         }
@@ -47,7 +54,7 @@ async function fetchHierarchicalNavData() {
           const l3Key = segments[2];
           navTree[l1Key].l2Map[l2Key].l3List.push({
             title: item.title || l3Key.replace(/-/g, ' '),
-            path: `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`),
           });
         }
       }
@@ -191,7 +198,7 @@ export default function decorate(block) {
       searchRow.append(row);
     } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
-      const link = cells[1]?.querySelector('a')?.href || '#';
+      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-cta-item';
@@ -211,7 +218,7 @@ export default function decorate(block) {
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
-      const link = cells[1]?.querySelector('a')?.href || '#';
+      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
 
       row.className = 'tcs-footer-legal-item-wrapper';
       const legalLink = document.createElement('a');
@@ -256,7 +263,6 @@ export default function decorate(block) {
         ${hasL2 ? '<span class="chevron">∨</span>' : ''}
       `;
 
-      // Hover / Click L1 -> Show L2 items in floating glass panel
       const handleL1Interaction = () => {
         if (activePillTitle === l1.title) {
           pill.classList.remove('active');
@@ -295,7 +301,6 @@ export default function decorate(block) {
       navPillsRow.append(pill);
     });
 
-    // Append horizontal pill row directly next to search
     searchRow.append(navPillsRow);
   };
 
@@ -326,7 +331,7 @@ export default function decorate(block) {
     });
   }
 
-  // Hide floating panel when mouse leaves the footer
+  // Hide floating panel when mouse leaves footer
   footerContainer.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
