@@ -127,6 +127,7 @@ export default function decorate(block) {
   const legalNav = document.createElement('div');
   legalNav.className = 'tcs-footer-legal-nav';
 
+  let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let isNavOpen = false;
   let navTreeData = null;
@@ -179,6 +180,7 @@ export default function decorate(block) {
           </span>
         </button>
       `;
+      hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.append(row);
     } else if (model === 'tcs-footer-search') {
@@ -293,27 +295,29 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  // Switch Button Icon State between Close (✕) and Hamburger (☰)
-  const updateButtonIconState = (level) => {
+  // Switch Button Icon State & Position (Beside Search vs Inline with Subpage Pills)
+  const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      // Primary L1 Expansion -> Show Close (✕) Icon
+      // Return Hamburger button to search bar row
+      searchRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      // Subpage (L2 / L3) Navigation -> Show Hamburger (☰) Icon
+      // Position Hamburger button right beside subpage pills (dummy-1)
+      navPillsRow.prepend(hamburgerWrapperNode);
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
   };
 
-  // Render Level 2 Navigation Bar (e.g., Services, Industries, Products, etc.)
+  // Render Level 2 Navigation Bar (Subpage level beside Hamburger)
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
-    updateButtonIconState('L2');
+    updateButtonStateAndPosition('L2');
 
     const l2Group = document.createElement('div');
     l2Group.className = 'tcs-l2-pills-group';
@@ -328,7 +332,6 @@ export default function decorate(block) {
         ${hasL3 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
       `;
 
-      // Hover or Click Chevron -> Toggle Active Blue Pill & Show L3 Submenu Grid
       const triggerL3View = (e) => {
         if (e) e.stopPropagation();
         l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
@@ -359,7 +362,7 @@ export default function decorate(block) {
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-    updateButtonIconState('L1');
+    updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
@@ -375,7 +378,6 @@ export default function decorate(block) {
         ${hasL2 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
       `;
 
-      // Enter L2 Sub-navigation (Services, Industries, etc.)
       const enterSubPageNavigation = (e) => {
         if (e) e.stopPropagation();
         if (!hasL2) return;
@@ -403,6 +405,7 @@ export default function decorate(block) {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
+    searchRow.prepend(hamburgerWrapperNode);
     hamburgerBtnNode.setAttribute('aria-expanded', 'false');
     hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
     hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
@@ -415,7 +418,7 @@ export default function decorate(block) {
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
       // RULE: If user is inside L2 or L3 subpage view,
-      // clicking Hamburger (☰) returns to L1 Parent
+      // clicking Hamburger (☰) beside subpage returns to L1 Parent
       if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
         await renderL1ParentNavigation();
         return;
