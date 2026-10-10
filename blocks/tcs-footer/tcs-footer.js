@@ -20,7 +20,7 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
- * Excludes header, footer, tcs-header, and tcs-footer utility pages.
+ * Filters out utility, test, block, header, and home pages.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -30,7 +30,19 @@ async function fetchHierarchicalNavData() {
     const data = json.data || json;
 
     const navTree = {};
-    const excludedPages = ['footer', 'header', 'tcs-footer', 'tcs-header'];
+    const excludedPages = [
+      'footer',
+      'header',
+      'tcs-footer',
+      'tcs-header',
+      'blocks',
+      'home',
+      'home-page',
+      'homepage',
+      'demo',
+      'nav',
+      'iconlist',
+    ];
 
     data.forEach((item) => {
       const rawPath = item.path || '';
@@ -43,8 +55,7 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length === 0) return;
 
-      // Filter out footer, header, tcs-footer, and tcs-header pages
-      const lastSegment = segments[segments.length - 1].toLowerCase();
+      const lastSegment = segments[segments.length - 1].toLowerCase().replace(/\s+/g, '-');
       if (excludedPages.includes(lastSegment)) return;
 
       const l1Key = segments[0];
@@ -195,14 +206,14 @@ export default function decorate(block) {
       `;
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-      searchRow.append(row);
+      // Always prepend hamburger button so it stays on the left
+      searchRow.prepend(row);
     } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
 
-      // Form wrapper to catch submit event cleanly
       const formEl = document.createElement('form');
       formEl.className = 'tcs-search-form';
       formEl.action = '#';
@@ -239,18 +250,15 @@ export default function decorate(block) {
       row.innerHTML = '';
       row.append(formEl);
 
-      // 3. Search Variable Capture & Console Display
       const inputEl = formEl.querySelector('.tcs-search-input');
       const micBtn = formEl.querySelector('.mic-btn');
 
-      // Capture Input Event into Variable
       if (inputEl) {
         inputEl.addEventListener('input', (e) => {
           searchQueryVariable = e.target.value;
         });
       }
 
-      // Handle Form Submit Event
       formEl.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -261,11 +269,9 @@ export default function decorate(block) {
         // eslint-disable-next-line no-console
         console.log('Search Query Variable:', searchQueryVariable);
 
-        // Update location hash to '#' without full page refresh
         window.location.hash = '#';
       });
 
-      // Voice Input Handler (SpeechRecognition API)
       if (micBtn && inputEl) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -356,7 +362,6 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  // Render Glassmorphism Grid Panel (L3 Items)
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
       subMenuPanel.classList.add('hidden');
@@ -380,7 +385,6 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  // Switch Button Icon State & Position
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
@@ -397,7 +401,6 @@ export default function decorate(block) {
     }
   };
 
-  // Render Level 2 Navigation Bar
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
     updateButtonStateAndPosition('L2');
@@ -441,7 +444,6 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  // Render Top-Level L1 Parent Navigation Bar
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
@@ -483,7 +485,6 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  // Close Navigation Completely
   const closeAllNavigation = () => {
     isNavOpen = false;
     currentViewLevel = 'L1';
@@ -497,7 +498,6 @@ export default function decorate(block) {
     subMenuPanel.classList.add('hidden');
   };
 
-  // Hamburger Button Event Handler
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
       if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
@@ -515,13 +515,11 @@ export default function decorate(block) {
     });
   }
 
-  // Hide floating panel when mouse leaves footer zone
   footerContainer.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Floating behavior on scroll
   const handleScroll = () => {
     const footerRect = block.getBoundingClientRect();
     const windowHeight = window.innerHeight;
