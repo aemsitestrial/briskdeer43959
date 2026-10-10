@@ -1,44 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Main Container */
 .icon-list {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 80px;
+  background: #FFF;
   font-family: Inter, system-ui, -apple-system, sans-serif;
-  color: #111;
+  box-sizing: border-box;
 }
 
 /* Header Section */
 .icon-list-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
   margin-bottom: 40px;
-  text-align: left;
+  max-width: 1280px;
 }
 
 .icon-list-header-eyebrow {
-  color: #3b82f6;
-  font-size: 13px;
-  font-weight: 700;
+  font-family: Inter, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 140%;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  color: #4E84FF;
+  margin: 0;
 }
 
 .icon-list-header-title h2,
 .icon-list-header-title {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #111827;
-  margin: 0 0 16px;
+  font-family: Inter, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 48px;
+  line-height: 120%;
+  letter-spacing: -0.03em;
+  color: #0C0C0D;
+  margin: 0;
+  max-width: 941px;
 }
 
 .icon-list-header-description p,
 .icon-list-header-description {
-  font-size: 16px;
-  line-height: 1.5;
-  color: #4b5563;
+  font-family: Inter, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 140%;
+  letter-spacing: -0.03em;
+  color: #0C0C0D;
   margin: 0;
-  max-width: 720px;
+  max-width: 842px;
 }
 
 /* Base Grid Styles */
@@ -47,46 +65,48 @@
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(302px, 1fr));
   gap: 24px;
+  width: 100%;
+  max-width: 1280px;
 }
 
+/* Individual Card Items */
 .icon-list-items > li {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 36px 32px;
-  border-radius: 12px;
-  overflow: hidden;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 12px;
+  width: 100%;
+  height: 360px;
   box-sizing: border-box;
-  min-height: 340px;
+  overflow: hidden;
+  border-radius: 0;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Card Color Variants */
 .icon-list-items > li.card-color-light {
-  background-color: #e9e9e9;
-  color: #111827;
+  background-color: #E6E6E6;
+  color: #0C0C0D;
 }
 
 .icon-list-items > li.card-color-blue {
   background-color: #0f172a;
-  color: #fff;
+  color: #FFF;
 }
 
 .icon-list-items > li.card-color-black {
-  background-color: #000;
-  color: #fff;
+  background-color: #303030;
+  color: #FFF;
 }
 
-/* Background Image - Positioned at Bottom Right */
+/* Background Pattern Slot */
 .icon-list-item-bg {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 70%;
-  height: 50%;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
 }
@@ -95,23 +115,29 @@
 .icon-list-item-bg picture {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: bottom right;
+  object-fit: cover;
 }
 
-/* Content Layout */
+/* Content Layout Wrapper */
 .icon-list-item-content {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
   height: 100%;
 }
 
+/* Icon Styling */
 .icon-list-item-icon {
-  margin-bottom: 24px;
   width: 48px;
   height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
 }
 
 .icon-list-item-icon img,
@@ -121,23 +147,28 @@
   object-fit: contain;
 }
 
+/* Title Styling */
 .icon-list-item-title h3,
 .icon-list-item-title {
   font-family: Inter, sans-serif;
-  font-size: 32px;
+  font-style: normal;
   font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin: 0 0 16px;
-  color: #111827;
+  font-size: 32px;
+  line-height: 140%;
+  color: inherit;
+  margin: 0;
 }
 
+/* Description Styling */
 .icon-list-item-desc p,
 .icon-list-item-desc {
   font-family: Inter, sans-serif;
+  font-style: normal;
+  font-weight: 400;
   font-size: 16px;
-  line-height: 1.45;
-  color: #222;
+  line-height: 160%;
+  letter-spacing: 0.01em;
+  color: inherit;
   margin: 0;
 }
 
@@ -149,8 +180,30 @@
 
 /* Responsive Column Overrides */
 @media (width >= 900px) {
-  .icon-list.col-2 > .icon-list-items { grid-template-columns: repeat(2, 1fr); }
-  .icon-list.col-3 > .icon-list-items { grid-template-columns: repeat(3, 1fr); }
-  .icon-list.col-4 > .icon-list-items { grid-template-columns: repeat(4, 1fr); }
-  .icon-list.col-5 > .icon-list-items { grid-template-columns: repeat(5, 1fr); }
+  .icon-list.col-2 > .icon-list-items {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .icon-list.col-3 > .icon-list-items {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .icon-list.col-4 > .icon-list-items {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .icon-list.col-5 > .icon-list-items {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (width <= 899px) {
+  .icon-list {
+    padding: 24px 20px;
+  }
+
+  .icon-list-header-title h2,
+  .icon-list-header-title {
+    font-size: 32px;
+  }
 }
