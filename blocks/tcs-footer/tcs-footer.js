@@ -174,7 +174,13 @@ export default function decorate(block) {
       }
       return 'tcs-footer-legal-item';
     }
-    if (cells >= 3) return 'tcs-footer-cta';
+    if (cells >= 3) {
+      const firstCellVal = cells[0]?.textContent.trim().toLowerCase() || '';
+      if (firstCellVal.includes('http') || firstCellVal.includes('/') || cells.length === 3) {
+        return 'tcs-footer-legal-item';
+      }
+      return 'tcs-footer-cta';
+    }
     return null;
   };
 
@@ -331,11 +337,13 @@ export default function decorate(block) {
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
+      const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-legal-item-wrapper';
       const legalLink = document.createElement('a');
       legalLink.className = 'tcs-footer-legal-link';
       legalLink.href = link;
+      legalLink.target = target;
       legalLink.textContent = label;
 
       moveInstrumentation(cells[0], legalLink);
@@ -384,7 +392,6 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  // State & Position Controller: Covers Search Box when in Sub-page View (Image 2)
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
