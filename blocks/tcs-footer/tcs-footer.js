@@ -52,16 +52,16 @@ export default function decorate(block) {
   // Explicit AEM Component Attribute Reader
   const getModelType = (row) => {
     // 1. Check AEM Universal Editor attributes first (highest priority)
-    const aueComp = row.getAttribute('data-aue-component') 
-                 || row.getAttribute('data-aue-model') 
-                 || row.dataset.aueComponent 
+    const aueComp = row.getAttribute('data-aue-component')
+                 || row.getAttribute('data-aue-model')
+                 || row.dataset.aueComponent
                  || row.dataset.aueModel;
 
     if (aueComp) return aueComp;
 
     // 2. Fallback text checks for published/preview pages
     const text = row.textContent.trim().toLowerCase();
-    
+
     if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask')) {
       return 'tcs-footer-search';
     }
