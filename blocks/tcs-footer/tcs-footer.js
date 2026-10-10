@@ -2,7 +2,6 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
  * Resolves content paths for AEM authoring/publishing environments
- * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
@@ -20,7 +19,6 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
- * Filters out utility, test, block, header, and home pages.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -134,11 +132,9 @@ export default function decorate(block) {
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
-  // Navigation Pill Row
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
-  // Submenu Panel
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
@@ -161,31 +157,45 @@ export default function decorate(block) {
   let searchQueryVariable = '';
 
   const getModelType = (row) => {
-    const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
-    if (model) return model;
+    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (explicitModel) return explicitModel;
 
+    const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
-    if (cells === 1) {
-      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
-      return 'tcs-footer-hamburger';
+
+    // Strict detection for Search Bar
+    if (
+      text.includes('both')
+      || text.includes('text-only')
+      || text.includes('voice-only')
+      || text.includes('ask')
+      || text.includes('search')
+      || text.includes('question')
+    ) {
+      return 'tcs-footer-search';
     }
-    if (cells === 2) {
-      const val = row.textContent.toLowerCase();
-      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
-        return 'tcs-footer-search';
-      }
+
+    if (text.includes('©') || text.includes('tata consultancy services')) {
+      return 'tcs-footer-copyright';
+    }
+
+    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
-    if (cells >= 3) return 'tcs-footer-cta';
-    return null;
+
+    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text.length === 0)) {
+      return 'tcs-footer-hamburger';
+    }
+
+    return 'tcs-footer-cta';
   };
 
-  // 2. Process Authored Items
+  // 2. Process Authored Component Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger') {
+    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -207,8 +217,7 @@ export default function decorate(block) {
       `;
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-      searchRow.prepend(row);
-    } else if (model === 'tcs-footer-search') {
+    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -308,8 +317,6 @@ export default function decorate(block) {
           };
         }
       }
-
-      searchRow.append(row);
     } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
@@ -328,16 +335,18 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
+      const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-legal-item-wrapper';
       const legalLink = document.createElement('a');
       legalLink.className = 'tcs-footer-legal-link';
       legalLink.href = link;
+      legalLink.target = target;
       legalLink.textContent = label;
 
       moveInstrumentation(cells[0], legalLink);
@@ -347,16 +356,48 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating structure
+  // Default fallback if Search Bar was omitted in authoring data
+  if (!searchBoxWrapperNode) {
+    const fallbackSearchBox = document.createElement('div');
+    fallbackSearchBox.className = 'tcs-footer-search-box mode-both';
+    fallbackSearchBox.innerHTML = `
+      <form class="tcs-search-form" action="#">
+        <input type="text" class="tcs-search-input" placeholder="Ask us a question" aria-label="Ask Canvas Search">
+        <div class="tcs-footer-search-actions">
+          <button type="button" class="mic-btn" aria-label="Voice Search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
+          <button type="submit" class="submit-btn" aria-label="Submit Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </form>
+    `;
+    searchBoxWrapperNode = fallbackSearchBox;
+  }
+
+  // Assemble Floating Bar: Hamburger on left + Search Box beside it
+  if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
+  if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
+
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
-  if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
     footerContainer.append(subMenuPanel);
     footerContainer.append(floatingNav);
   }
 
+  // Static Rows (CTA & Copyright/Legal Links)
+  if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
 
@@ -386,7 +427,6 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  // State & Position Controller: Covers Search Box when in Sub-page View (Image 2)
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
