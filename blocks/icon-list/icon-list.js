@@ -12,7 +12,6 @@ export default function decorate(block) {
   const itemRows = [];
 
   blockChildren.forEach((row) => {
-    // Check if the row is an authored item component
     const isItem = row.getAttribute('data-aue-model') === 'icon-list-item'
       || row.dataset.aueModel === 'icon-list-item'
       || row.children.length >= 8;
@@ -22,7 +21,6 @@ export default function decorate(block) {
     } else {
       const cellText = row.textContent.trim();
 
-      // Read column value and immediately remove row so it doesn't render
       if ([2, 3, 4, 5].includes(Number(cellText))) {
         columnCount = Number(cellText);
         row.remove();
@@ -36,14 +34,12 @@ export default function decorate(block) {
     }
   });
 
-  // Apply column layout class
   block.classList.add(`col-${columnCount}`);
 
   if (headerWrapper.children.length > 0) {
     block.append(headerWrapper);
   }
 
-  // 2. Process ONLY Authored Item Rows
   const ul = document.createElement('ul');
   ul.className = 'icon-list-items';
 
@@ -54,7 +50,6 @@ export default function decorate(block) {
     const rowCells = [...row.children];
 
     // Read toggles & config
-    const viewCardImageTop = rowCells[0]?.textContent.trim().toLowerCase() === 'true';
     const cardColor = rowCells[1]?.textContent.trim().toLowerCase() || 'light';
     const displayIcon = rowCells[2]?.textContent.trim().toLowerCase() !== 'false';
     const displayTitle = rowCells[3]?.textContent.trim().toLowerCase() !== 'false';
@@ -69,10 +64,9 @@ export default function decorate(block) {
 
     // Apply configuration classes
     li.classList.add(`card-color-${cardColor}`);
-    if (viewCardImageTop) li.classList.add('card-img-top');
     if (motionType !== 'none') li.classList.add(`motion-${motionType}`);
 
-    // Card BG Image
+    // Card BG Image (positioned at bottom-right)
     if (bgImageCell && bgImageCell.querySelector('a, img')) {
       const bgDiv = document.createElement('div');
       bgDiv.className = 'icon-list-item-bg';
@@ -88,7 +82,7 @@ export default function decorate(block) {
     const contentDiv = document.createElement('div');
     contentDiv.className = 'icon-list-item-content';
 
-    // Icon (if toggle enabled)
+    // Icon
     if (displayIcon && iconCell) {
       const iconWrapper = document.createElement('div');
       iconWrapper.className = 'icon-list-item-icon';
@@ -102,7 +96,7 @@ export default function decorate(block) {
       }
     }
 
-    // Title (if toggle enabled)
+    // Title
     if (displayTitle && titleCell && titleCell.textContent.trim()) {
       const titleDiv = document.createElement('div');
       titleDiv.className = 'icon-list-item-title';
@@ -110,7 +104,7 @@ export default function decorate(block) {
       contentDiv.append(titleDiv);
     }
 
-    // Description (if toggle enabled)
+    // Description
     if (displayDesc && descCell && descCell.textContent.trim()) {
       const descDiv = document.createElement('div');
       descDiv.className = 'icon-list-item-desc';

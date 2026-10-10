@@ -42,6 +42,8 @@ async function fetchHierarchicalNavData() {
       'demo',
       'nav',
       'iconlist',
+      'qa',
+      'test',
     ];
 
     data.forEach((item) => {
