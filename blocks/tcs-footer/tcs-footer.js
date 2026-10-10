@@ -151,12 +151,11 @@ export default function decorate(block) {
 
   let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
+  let searchBoxWrapperNode = null;
   let isNavOpen = false;
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
-
-  // Variable to store search query
   let searchQueryVariable = '';
 
   const getModelType = (row) => {
@@ -206,13 +205,13 @@ export default function decorate(block) {
       `;
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-      // Always prepend hamburger button so it stays on the left
       searchRow.prepend(row);
     } else if (model === 'tcs-footer-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
+      searchBoxWrapperNode = row;
 
       const formEl = document.createElement('form');
       formEl.className = 'tcs-search-form';
@@ -385,6 +384,7 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
+  // State & Position Controller: Covers Search Box when in Sub-page View (Image 2)
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
@@ -392,10 +392,12 @@ export default function decorate(block) {
 
     if (level === 'L1') {
       searchRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
       navPillsRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
@@ -490,6 +492,7 @@ export default function decorate(block) {
     currentViewLevel = 'L1';
 
     searchRow.prepend(hamburgerWrapperNode);
+    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
     hamburgerBtnNode.setAttribute('aria-expanded', 'false');
     hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
     hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
