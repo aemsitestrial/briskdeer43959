@@ -4,27 +4,9 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
  * Resolves content paths for AEM authoring/publishing environments
  */
 function formatHtmlPath(path) {
-  if (!path || path === '/' || path === '#') return path || '#';
+  if (!path || path === '/') return path || '#';
 
-  const normalizedPath = path.trim();
-  if (normalizedPath.startsWith('#')) return normalizedPath;
-
-  let localPath = normalizedPath;
-  let suffix = '';
-  if (/^(?:https?:)?\/\//i.test(normalizedPath)) {
-    const url = new URL(normalizedPath, window.location.origin);
-    if (url.origin !== window.location.origin) return normalizedPath;
-    localPath = url.pathname;
-    suffix = `${url.search}${url.hash}`;
-  } else if (/^[a-z][a-z\d+.-]*:/i.test(normalizedPath)) {
-    return normalizedPath;
-  } else {
-    const [, pathPart, pathSuffix = ''] = normalizedPath.match(/^([^?#]*)([?#].*)?$/);
-    localPath = pathPart;
-    suffix = pathSuffix;
-  }
-
-  let resolvedPath = localPath;
+  let resolvedPath = path;
 
   if (!resolvedPath.startsWith('/content/')) {
     resolvedPath = `/content/2026/39/briskdeer43959${
@@ -32,8 +14,7 @@ function formatHtmlPath(path) {
     }${resolvedPath}`;
   }
 
-  if (!resolvedPath.endsWith('.html')) resolvedPath += '.html';
-  return `${resolvedPath}${suffix}`;
+  return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
 
 /**
@@ -340,7 +321,7 @@ export default function decorate(block) {
       }
     } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
-      const link = formatHtmlPath(cells[1]?.querySelector('a')?.getAttribute('href') || '#');
+      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-cta-item';
@@ -360,7 +341,7 @@ export default function decorate(block) {
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
-      const link = formatHtmlPath(cells[1]?.querySelector('a')?.getAttribute('href') || '#');
+      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
 
       row.className = 'tcs-footer-legal-item-wrapper';
