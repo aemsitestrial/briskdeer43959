@@ -6518,7 +6518,7 @@
     ]
   },
   {
-    "id": "tcs-footer-hamburger",
+    "id": "tcs-hamburger",
     "fields": [
       {
         "component": "text",
@@ -6530,7 +6530,7 @@
     ]
   },
   {
-    "id": "tcs-footer-search",
+    "id": "tcs-search",
     "fields": [
       {
         "component": "select",
@@ -6563,7 +6563,7 @@
     ]
   },
   {
-    "id": "tcs-footer-cta",
+    "id": "tcs-cta",
     "fields": [
       {
         "component": "text",

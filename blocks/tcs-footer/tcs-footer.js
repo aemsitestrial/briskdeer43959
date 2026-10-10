@@ -2,6 +2,7 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
  * Resolves content paths for AEM authoring/publishing environments
+ * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
@@ -19,6 +20,7 @@ function formatHtmlPath(path) {
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
+ * Filters out utility, test, block, header, and home pages.
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -125,16 +127,18 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar Container
+  // Floating Control Bar
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
+  // Navigation Pill Row
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
+  // Submenu Panel
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
@@ -156,45 +160,38 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
-  // Strict Model Type Classification
   const getModelType = (row) => {
-    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
-    if (explicitModel) return explicitModel;
+    const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (model) return model;
 
-    const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
-
-    if (
-      text.includes('both')
-      || text.includes('text-only')
-      || text.includes('voice-only')
-      || text.includes('ask canvas')
-      || text.includes('ask us')
-    ) {
-      return 'tcs-footer-search';
+    if (cells === 1) {
+      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
+      return 'tcs-hamburger';
     }
-
-    if (text.includes('©') || text.includes('tata consultancy services')) {
-      return 'tcs-footer-copyright';
-    }
-
-    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
+    if (cells === 2) {
+      const val = row.textContent.toLowerCase();
+      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
+        return 'tcs-search';
+      }
       return 'tcs-footer-legal-item';
     }
-
-    if (cells === 1) {
-      return 'tcs-footer-hamburger';
+    if (cells >= 3) {
+      const firstCellVal = cells[0]?.textContent.trim().toLowerCase() || '';
+      if (firstCellVal.includes('http') || firstCellVal.includes('/') || cells.length === 3) {
+        return 'tcs-footer-legal-item';
+      }
+      return 'tcs-cta';
     }
-
-    return 'tcs-footer-cta';
+    return null;
   };
 
-  // 2. Process Authored Component Rows Only
+  // 2. Process Authored Items
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
+    if (model === 'tcs-hamburger') {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -216,7 +213,8 @@ export default function decorate(block) {
       `;
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
-    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
+      searchRow.prepend(row);
+    } else if (model === 'tcs-search') {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -316,7 +314,9 @@ export default function decorate(block) {
           };
         }
       }
-    } else if (model === 'tcs-footer-cta') {
+
+      searchRow.append(row);
+    } else if (model === 'tcs-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
       const target = cells[2]?.textContent.trim() || '_self';
@@ -334,7 +334,7 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
@@ -355,20 +355,16 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble Floating Bar conditionally based on authored items
-  if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
-  if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
-
+  // Assemble floating structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
+  if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
     footerContainer.append(subMenuPanel);
     footerContainer.append(floatingNav);
   }
 
-  // Static Bottom Content
-  if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
 
@@ -400,18 +396,16 @@ export default function decorate(block) {
 
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
-    if (!hamburgerBtnNode) return;
-
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      if (hamburgerWrapperNode) searchRow.prepend(hamburgerWrapperNode);
+      searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      if (hamburgerWrapperNode) navPillsRow.prepend(hamburgerWrapperNode);
+      navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
@@ -506,14 +500,11 @@ export default function decorate(block) {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
-    if (hamburgerWrapperNode) searchRow.prepend(hamburgerWrapperNode);
+    searchRow.prepend(hamburgerWrapperNode);
     if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-
-    if (hamburgerBtnNode) {
-      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
-      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
-    }
+    hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+    hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+    hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
 
     navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
