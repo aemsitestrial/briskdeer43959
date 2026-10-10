@@ -90,27 +90,24 @@
   stroke: #fff;
 }
 
-/* Horizontal Navigation Pills Row */
+/* Standalone Horizontal Navigation Row directly below search bar */
 .tcs-footer-nav-pills-row {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 2px 4px;
-  scrollbar-width: none;
-}
-
-.tcs-footer-nav-pills-row::-webkit-scrollbar {
-  display: none;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 4px 0;
 }
 
 .tcs-nav-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 48px;
+  height: 44px;
   padding: 0 22px;
-  border-radius: 24px;
+  border-radius: 22px;
   border: 1px solid #d1d5db;
   background-color: #fff;
   color: #111827;
@@ -155,7 +152,7 @@
 
 .tcs-footer-submenu-panel.is-fixed {
   position: fixed;
-  bottom: 110px;
+  bottom: 160px;
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 0;
@@ -193,7 +190,7 @@
   display: none !important;
 }
 
-/* Search Box & Perfect Action Centering */
+/* Search Box & Action Centering */
 .tcs-footer-search-box {
   position: relative;
   flex: 1;

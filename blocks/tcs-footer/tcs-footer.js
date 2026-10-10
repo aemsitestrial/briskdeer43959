@@ -1,11 +1,20 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
- * Ensures path ends with .html for authoring environment compatibility
+ * Formats path with .html extension for authoring environment compatibility
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
-  return path.endsWith('.html') ? path : `${path}.html`;
+
+  let resolvedPath = path;
+
+  // Prepend AEM content tree root if missing
+  if (!resolvedPath.startsWith('/content/')) {
+    resolvedPath = `/content/2026/39/briskdeer43959${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
+  }
+
+  // Append .html extension
+  return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
 
 /**
@@ -93,7 +102,7 @@ export default function decorate(block) {
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
-  // Horizontal Navigation Pill Bar
+  // Horizontal Navigation Pill Bar (Placed below Search Bar)
   const navPillsRow = document.createElement('div');
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
@@ -235,6 +244,7 @@ export default function decorate(block) {
 
   // Assemble floating structure
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
+  floatingNav.append(navPillsRow); // Navigation Pills placed right below the search row
   if (ctaRow.children.length > 0) floatingNav.append(ctaRow);
 
   if (floatingNav.children.length > 0) {
@@ -248,7 +258,7 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  // 3. Render Horizontal L1/L2 Navigation Pills & Glassmorphism Submenu Grid
+  // 3. Render Horizontal Navigation Pills Line
   const renderNavPills = async () => {
     navPillsRow.innerHTML = '';
     const navData = await fetchHierarchicalNavData();
@@ -279,7 +289,7 @@ export default function decorate(block) {
                 ${l1.l2List
     .map(
       (l2) => `
-                  <a href="${l2.path}" class="tcs-submenu-item" data-path="${l2.path}">
+                  <a href="${l2.path}" class="tcs-submenu-item">
                     <span>${l2.title}</span>
                     <span class="arrow">→</span>
                   </a>
@@ -300,8 +310,6 @@ export default function decorate(block) {
 
       navPillsRow.append(pill);
     });
-
-    searchRow.append(navPillsRow);
   };
 
   // 4. Hamburger Click Event
