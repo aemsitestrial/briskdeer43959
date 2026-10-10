@@ -66,7 +66,7 @@
   margin: 0;
 }
 
-/* Floating Navigation Control Bar */
+/* Floating Control Bar */
 .tcs-footer-floating-nav {
   display: flex;
   flex-direction: column;
@@ -282,7 +282,7 @@
   transform: rotate(180deg);
 }
 
-/* Glassmorphism Submenu Grid Panel with Frosted Overlay */
+/* Glassmorphism Submenu Grid Panel */
 .tcs-footer-submenu-panel {
   width: 100%;
   max-width: 720px;

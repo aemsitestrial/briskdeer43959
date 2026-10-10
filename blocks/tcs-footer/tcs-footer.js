@@ -2,7 +2,6 @@ import { moveInstrumentation } from '../../scripts/scripts.js';
 
 /**
  * Resolves content paths for AEM authoring/publishing environments
- * E.g., /praneeth/dummy-1 -> /content/2026/39/briskdeer43959/praneeth/dummy-1.html
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
@@ -113,7 +112,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title
+  // 1. Main Heading Title
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -125,7 +124,7 @@ export default function decorate(block) {
   heading.textContent = titleText;
   footerContainer.append(heading);
 
-  // Floating Control Bar (ONLY Search & Navigation Pills Float)
+  // Floating Control Bar (Search & Dynamic Navigation Pills)
   const floatingNav = document.createElement('div');
   floatingNav.className = 'tcs-footer-floating-nav';
 
@@ -140,7 +139,7 @@ export default function decorate(block) {
   const subMenuPanel = document.createElement('div');
   subMenuPanel.className = 'tcs-footer-submenu-panel hidden';
 
-  // Static Rows in Footer Content (Do NOT float)
+  // Static Bottom Section
   const ctaRow = document.createElement('div');
   ctaRow.className = 'tcs-footer-cta-row';
 
@@ -159,38 +158,48 @@ export default function decorate(block) {
   let currentViewLevel = 'L1';
   let searchQueryVariable = '';
 
+  // Robust Model Classification Strategy
   const getModelType = (row) => {
-    const model = row.getAttribute('data-aue-model') || row.dataset.aueModel;
-    if (model) return model;
+    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (explicitModel) return explicitModel;
 
+    const text = row.textContent.trim().toLowerCase();
     const cells = row.children.length;
-    if (cells === 1) {
-      if (row.textContent.includes('©') || row.querySelector('p')) return 'tcs-footer-copyright';
-      return 'tcs-footer-hamburger';
+
+    // Detect Search Bar
+    if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask canvas') || text.includes('ask us')) {
+      return 'tcs-footer-search';
     }
-    if (cells === 2) {
-      const val = row.textContent.toLowerCase();
-      if (val.includes('both') || val.includes('text-only') || val.includes('voice-only')) {
-        return 'tcs-footer-search';
-      }
+
+    // Detect Copyright
+    if (text.includes('©') || text.includes('tata consultancy services')) {
+      return 'tcs-footer-copyright';
+    }
+
+    // Detect Legal Items
+    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
-    if (cells >= 3) {
-      const textVal = row.textContent.toLowerCase();
-      if (textVal.includes('privacy') || textVal.includes('terms') || textVal.includes('cookie') || textVal.includes('legal')) {
-        return 'tcs-footer-legal-item';
-      }
+
+    // Detect Hamburger
+    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text.length === 0)) {
+      return 'tcs-footer-hamburger';
+    }
+
+    // Default CTA
+    if (row.querySelector('a') || cells >= 2) {
       return 'tcs-footer-cta';
     }
+
     return null;
   };
 
-  // 2. Process Authored Items
+  // 2. Process Authored Component Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger') {
+    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
       const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
@@ -213,7 +222,7 @@ export default function decorate(block) {
       hamburgerWrapperNode = row;
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
       searchRow.prepend(row);
-    } else if (model === 'tcs-footer-search') {
+    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -333,7 +342,7 @@ export default function decorate(block) {
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
@@ -354,7 +363,7 @@ export default function decorate(block) {
     }
   });
 
-  // Assemble floating search bar structure
+  // Assemble floating control bar
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
 
@@ -363,7 +372,7 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
-  // Add static CTAs and Legal items below the floating control bar
+  // Static bottom rows
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
 
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
