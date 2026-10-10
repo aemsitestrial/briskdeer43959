@@ -1,18 +1,121 @@
 import { moveInstrumentation } from '../../scripts/scripts.js';
 
+/**
+ * Resolves content paths for AEM authoring/publishing environments
+ */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
+
   let resolvedPath = path;
+
   if (!resolvedPath.startsWith('/content/')) {
-    resolvedPath = `/content/2026/39/briskdeer43959${resolvedPath.startsWith('/') ? '' : '/'}${resolvedPath}`;
+    resolvedPath = `/content/2026/39/briskdeer43959${
+      resolvedPath.startsWith('/') ? '' : '/'
+    }${resolvedPath}`;
   }
+
   return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
+}
+
+/**
+ * Parses query-index.json into a flexible multi-level tree structure.
+ */
+async function fetchHierarchicalNavData() {
+  try {
+    const response = await fetch('/query-index.json');
+    if (!response.ok) return [];
+    const json = await response.json();
+    const data = json.data || json;
+
+    if (!Array.isArray(data)) return [];
+
+    const navTree = {};
+    const excludedPages = [
+      'footer',
+      'header',
+      'tcs-footer',
+      'tcs-header',
+      'blocks',
+      'home',
+      'home-page',
+      'homepage',
+      'demo',
+      'nav',
+      'iconlist',
+    ];
+
+    data.forEach((item) => {
+      const rawPath = item?.path || '';
+      if (!rawPath) return;
+
+      const segments = rawPath.split('/').filter(Boolean);
+
+      let locale = '';
+      if (segments[0] && segments[0].length === 2) {
+        locale = segments.shift();
+      }
+
+      if (segments.length === 0) return;
+
+      const lastSegment = segments[segments.length - 1].toLowerCase().replace(/\s+/g, '-');
+      if (excludedPages.includes(lastSegment)) return;
+
+      const l1Key = segments[0];
+      if (excludedPages.includes(l1Key.toLowerCase())) return;
+
+      if (!navTree[l1Key]) {
+        navTree[l1Key] = {
+          key: l1Key,
+          title: item.title && segments.length === 1 ? item.title : l1Key.replace(/-/g, ' '),
+          path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
+          children: {},
+        };
+      }
+
+      if (segments.length >= 2) {
+        const l2Key = segments[1];
+        if (excludedPages.includes(l2Key.toLowerCase())) return;
+
+        if (!navTree[l1Key].children[l2Key]) {
+          navTree[l1Key].children[l2Key] = {
+            key: l2Key,
+            title: item.title && segments.length === 2 ? item.title : l2Key.replace(/-/g, ' '),
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
+            children: [],
+          };
+        }
+
+        if (segments.length >= 3) {
+          const l3Key = segments[2];
+          if (excludedPages.includes(l3Key.toLowerCase())) return;
+
+          navTree[l1Key].children[l2Key].children.push({
+            key: l3Key,
+            title: item.title || l3Key.replace(/-/g, ' '),
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`),
+          });
+        }
+      }
+    });
+
+    return Object.values(navTree).map((l1) => ({
+      ...l1,
+      children: Object.values(l1.children).map((l2) => ({
+        ...l2,
+        children: l2.children || [],
+      })),
+    }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load navigation index:', error);
+    return [];
+  }
 }
 
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title
+  // 1. Heading Title (First row of block)
   const mainTitleRow = blockRows.shift();
   const titleText = mainTitleRow?.textContent.trim() || "Let's build the future together";
 
@@ -47,47 +150,57 @@ export default function decorate(block) {
   legalNav.className = 'tcs-footer-legal-nav';
 
   let hamburgerWrapperNode = null;
+  let hamburgerBtnNode = null;
   let searchBoxWrapperNode = null;
+  let isNavOpen = false;
+  let navTreeData = null;
 
-  // Explicit AEM Component Attribute Reader
+  let currentViewLevel = 'L1';
+  let searchQueryVariable = '';
+
+  // Precise Model Classification Logic
   const getModelType = (row) => {
-    // 1. Check AEM Universal Editor attributes first (highest priority)
-    const aueComp = row.getAttribute('data-aue-component')
-                 || row.getAttribute('data-aue-model')
-                 || row.dataset.aueComponent
-                 || row.dataset.aueModel;
+    const explicitModel = row.getAttribute('data-aue-model') || row.dataset.aueModel;
+    if (explicitModel) return explicitModel;
 
-    if (aueComp) return aueComp;
-
-    // 2. Fallback text checks for published/preview pages
     const text = row.textContent.trim().toLowerCase();
+    const cells = row.children.length;
 
-    if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask')) {
+    if (
+      text.includes('both')
+      || text.includes('text-only')
+      || text.includes('voice-only')
+      || text.includes('ask canvas')
+      || text.includes('ask us')
+    ) {
       return 'tcs-footer-search';
     }
-    if (text.includes('©') || text.includes('tata consultancy')) {
+
+    if (text.includes('©') || text.includes('tata consultancy') || text.includes('all rights reserved')) {
       return 'tcs-footer-copyright';
     }
-    if (text.includes('privacy') || text.includes('terms') || text.includes('legal')) {
+
+    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
       return 'tcs-footer-legal-item';
     }
-    if (row.children.length === 1 && (text.includes('menu') || text === '')) {
+
+    if (cells === 1 && (text.includes('menu') || text.includes('hamburger') || text === '')) {
       return 'tcs-footer-hamburger';
     }
 
     return 'tcs-footer-cta';
   };
 
-  // 2. Process Authored Rows directly to their correct containers
+  // Process Authored Rows
   blockRows.forEach((row) => {
     const model = getModelType(row);
     const cells = [...row.children];
 
-    if (model === 'tcs-footer-hamburger') {
-      if (hamburgerWrapperNode) return;
+    if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
+      const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
-        <button class="tcs-footer-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+        <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false">
           <span class="icon-hamburger">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -104,9 +217,8 @@ export default function decorate(block) {
         </button>
       `;
       hamburgerWrapperNode = row;
-      searchRow.append(hamburgerWrapperNode);
-    } else if (model === 'tcs-footer-search') {
-      if (searchBoxWrapperNode) return;
+      hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
+    } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
       const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
@@ -118,10 +230,13 @@ export default function decorate(block) {
       formEl.action = '#';
 
       let contentHtml = '';
+
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
+
       contentHtml += '<div class="tcs-footer-search-actions">';
+
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
           <button type="button" class="mic-btn" aria-label="Voice Search">
@@ -133,6 +248,7 @@ export default function decorate(block) {
             </svg>
           </button>`;
       }
+
       contentHtml += `
         <button type="submit" class="submit-btn" aria-label="Submit Search">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
@@ -144,7 +260,50 @@ export default function decorate(block) {
       formEl.innerHTML = contentHtml;
       row.innerHTML = '';
       row.append(formEl);
-      searchRow.append(searchBoxWrapperNode);
+
+      const inputEl = formEl.querySelector('.tcs-search-input');
+      const micBtn = formEl.querySelector('.mic-btn');
+
+      if (inputEl) {
+        inputEl.addEventListener('input', (e) => {
+          searchQueryVariable = e.target.value;
+        });
+      }
+
+      formEl.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (inputEl) searchQueryVariable = inputEl.value;
+        // eslint-disable-next-line no-console
+        console.log('Search Query Variable:', searchQueryVariable);
+      });
+
+      if (micBtn && inputEl) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          micBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            micBtn.classList.add('listening');
+            recognition.start();
+          });
+
+          const stopListening = () => micBtn.classList.remove('listening');
+
+          recognition.onresult = (e) => {
+            stopListening();
+            const { transcript } = e.results[0][0];
+            inputEl.value = transcript;
+            searchQueryVariable = transcript;
+          };
+
+          recognition.onerror = stopListening;
+          recognition.onend = stopListening;
+        }
+      }
     } else if (model === 'tcs-footer-cta') {
       const label = cells[0]?.textContent.trim() || 'Click here';
       const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
@@ -157,13 +316,13 @@ export default function decorate(block) {
       ctaBtn.target = target;
       ctaBtn.innerHTML = `<span>${label}</span><span class="arrow">→</span>`;
 
-      moveInstrumentation(cells[0], ctaBtn);
+      if (cells[0]) moveInstrumentation(cells[0], ctaBtn);
       row.innerHTML = '';
       row.append(ctaBtn);
       ctaRow.append(row);
     } else if (model === 'tcs-footer-copyright') {
       row.className = 'tcs-footer-copyright';
-      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services 2027';
+      row.innerHTML = cells[0]?.innerHTML || '©TATA Consultancy Services';
       bottomRow.prepend(row);
     } else if (model === 'tcs-footer-legal-item') {
       const label = cells[0]?.textContent.trim() || 'Privacy & Terms';
@@ -177,14 +336,21 @@ export default function decorate(block) {
       legalLink.target = target;
       legalLink.textContent = label;
 
-      moveInstrumentation(cells[0], legalLink);
+      if (cells[0]) moveInstrumentation(cells[0], legalLink);
       row.innerHTML = '';
       row.append(legalLink);
       legalNav.append(row);
     }
   });
 
-  // Assemble floating structure
+  // Assemble Control Bar
+  if (hamburgerWrapperNode && !searchRow.contains(hamburgerWrapperNode)) {
+    searchRow.append(hamburgerWrapperNode);
+  }
+  if (searchBoxWrapperNode && !searchRow.contains(searchBoxWrapperNode)) {
+    searchRow.append(searchBoxWrapperNode);
+  }
+
   if (searchRow.children.length > 0) floatingNav.append(searchRow);
   floatingNav.append(navPillsRow);
 
@@ -199,4 +365,189 @@ export default function decorate(block) {
 
   block.textContent = '';
   block.append(footerContainer);
+
+  const renderSubmenuCard = (items) => {
+    if (!items || items.length === 0) {
+      subMenuPanel.classList.add('hidden');
+      return;
+    }
+
+    subMenuPanel.innerHTML = `
+      <div class="tcs-submenu-grid">
+        ${items
+    .map(
+      (item) => `
+          <a href="${item.path}" class="tcs-submenu-item">
+            <span>${item.title}</span>
+            <span class="arrow">→</span>
+          </a>
+        `,
+    )
+    .join('')}
+      </div>
+    `;
+    subMenuPanel.classList.remove('hidden');
+  };
+
+  const updateButtonStateAndPosition = (level) => {
+    currentViewLevel = level;
+    if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
+
+    const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
+    const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
+
+    if (level === 'L1') {
+      searchRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+      hamburgerIcon.classList.add('hidden');
+      closeIcon.classList.remove('hidden');
+    } else {
+      navPillsRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
+      hamburgerIcon.classList.remove('hidden');
+      closeIcon.classList.add('hidden');
+    }
+  };
+
+  const renderL2SubNavigation = (l1Data) => {
+    navPillsRow.innerHTML = '';
+    updateButtonStateAndPosition('L2');
+
+    const l2Group = document.createElement('div');
+    l2Group.className = 'tcs-l2-pills-group';
+
+    l1Data.children.forEach((l2) => {
+      const l2Pill = document.createElement('div');
+      l2Pill.className = 'tcs-nav-pill l2-pill';
+      const hasL3 = l2.children && l2.children.length > 0;
+
+      l2Pill.innerHTML = `
+        <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
+        ${hasL3 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
+      `;
+
+      const triggerL3View = (e) => {
+        if (e) e.stopPropagation();
+        l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+        l2Pill.classList.add('active');
+
+        if (hasL3) {
+          renderSubmenuCard(l2.children);
+        } else {
+          subMenuPanel.classList.add('hidden');
+        }
+      };
+
+      l2Pill.addEventListener('mouseenter', triggerL3View);
+      const chevronBtn = l2Pill.querySelector('.chevron-btn');
+      if (chevronBtn) chevronBtn.addEventListener('click', triggerL3View);
+
+      l2Group.append(l2Pill);
+    });
+
+    navPillsRow.append(l2Group);
+    navPillsRow.classList.remove('hidden');
+  };
+
+  const renderL1ParentNavigation = async () => {
+    navPillsRow.innerHTML = '';
+    subMenuPanel.classList.add('hidden');
+    updateButtonStateAndPosition('L1');
+
+    if (!navTreeData) {
+      navTreeData = await fetchHierarchicalNavData();
+    }
+
+    navTreeData.forEach((l1) => {
+      const l1Pill = document.createElement('div');
+      l1Pill.className = 'tcs-nav-pill';
+      const hasL2 = l1.children && l1.children.length > 0;
+
+      l1Pill.innerHTML = `
+        <a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>
+        ${hasL2 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
+      `;
+
+      const enterSubPageNavigation = (e) => {
+        if (e) e.stopPropagation();
+        if (hasL2) renderL2SubNavigation(l1);
+      };
+
+      l1Pill.addEventListener('mouseenter', () => {
+        if (hasL2) renderSubmenuCard(l1.children);
+      });
+
+      const chevronBtn = l1Pill.querySelector('.chevron-btn');
+      if (chevronBtn) chevronBtn.addEventListener('click', enterSubPageNavigation);
+
+      navPillsRow.append(l1Pill);
+    });
+
+    navPillsRow.classList.remove('hidden');
+  };
+
+  const closeAllNavigation = () => {
+    isNavOpen = false;
+    currentViewLevel = 'L1';
+
+    if (hamburgerWrapperNode) {
+      searchRow.prepend(hamburgerWrapperNode);
+    }
+    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+
+    if (hamburgerBtnNode) {
+      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+    }
+
+    navPillsRow.classList.add('hidden');
+    subMenuPanel.classList.add('hidden');
+  };
+
+  if (hamburgerBtnNode) {
+    hamburgerBtnNode.addEventListener('click', async () => {
+      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
+        await renderL1ParentNavigation();
+        return;
+      }
+
+      if (!isNavOpen) {
+        isNavOpen = true;
+        hamburgerBtnNode.setAttribute('aria-expanded', 'true');
+        await renderL1ParentNavigation();
+      } else {
+        closeAllNavigation();
+      }
+    });
+  }
+
+  footerContainer.addEventListener('mouseleave', () => {
+    subMenuPanel.classList.add('hidden');
+    navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+  });
+
+  // Optimized Scroll Handling using requestAnimationFrame
+  let ticking = false;
+  const handleScroll = () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const footerRect = block.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+
+        if (footerRect.top < windowHeight - 140) {
+          floatingNav.classList.remove('is-fixed');
+          subMenuPanel.classList.remove('is-fixed');
+        } else {
+          floatingNav.classList.add('is-fixed');
+          subMenuPanel.classList.add('is-fixed');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll();
 }

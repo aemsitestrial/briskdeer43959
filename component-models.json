@@ -6574,7 +6574,8 @@
       {
         "component": "aem-content",
         "name": "link",
-        "label": "CTA Link"
+        "label": "CTA Link",
+        "valueType": "string"
       },
       {
         "component": "select",
@@ -6618,7 +6619,8 @@
       {
         "component": "aem-content",
         "name": "link",
-        "label": "Legal Link"
+        "label": "Legal Link",
+        "valueType": "string"
       },
       {
         "component": "select",
