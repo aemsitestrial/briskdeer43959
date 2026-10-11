@@ -107,6 +107,7 @@
   background: rgb(255 255 255 / 80%);
   border: 1px solid rgb(0 0 0 / 10%);
   backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -141,6 +142,7 @@
   height: 60px;
   background: rgb(255 255 255 / 80%);
   border: 1px solid rgb(0 0 0 / 12%);
+  backdrop-filter: blur(30px);
   backdrop-filter: blur(30px);
   border-radius: 50px;
   padding: 8px 16px;
@@ -296,7 +298,7 @@
   transition: transform 0.25s ease;
 }
 
-/* Active State - Blue Pill as seen in Services button of Fig 2 */
+/* Active State - Blue Pill matching Fig 2 */
 .tcs-nav-pill.active {
   background: #4e82f7;
   color: #fff;
@@ -312,7 +314,7 @@
   background: rgb(0 0 0 / 4%);
 }
 
-/* Frosted Glass Submenu Panel - Fig 2 Visual Match */
+/* Frosted Glass Submenu Panel - Fig 2 Visual Match (Stylelint Compliant) */
 .tcs-footer-submenu-panel {
   width: 100%;
   max-width: 760px;
@@ -407,6 +409,7 @@
   height: 50px;
   background: #fff;
   border: 1px solid rgb(0 0 0 / 15%);
+  backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-radius: 9999px;
   font-family: Inter, sans-serif;

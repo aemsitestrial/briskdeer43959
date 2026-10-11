@@ -485,7 +485,6 @@ export default function decorate(block) {
       navPillsRow.append(l1Pill);
     });
 
-    // Automatically render first tab's submenu by default if available
     if (navTreeData[0] && navTreeData[0].children && navTreeData[0].children.length > 0) {
       renderSubmenuCard(navTreeData[0].children);
     }
