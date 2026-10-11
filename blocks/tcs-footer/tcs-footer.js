@@ -158,22 +158,20 @@ export default function decorate(block) {
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
-  let activeL1Category = null;
   let searchQueryVariable = '';
-
-  // Forward declarations for circular references
-  let renderL2SubNavigation;
-  let renderL3SuggestedPrompts;
 
   /**
    * Fail-Safe Model Classification Logic
+   * Uses explicit data-aue-model attributes first, content string matching second,
+   * and strict row position index as the ultimate fallback.
    */
-  function getModelType(row, index) {
+  const getModelType = (row, index) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset?.aueModel;
     if (explicitModel) return explicitModel;
 
     const text = row.textContent.trim().toLowerCase();
 
+    // Explicit string checks
     if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask canvas') || text.includes('ask us')) {
       return 'tcs-footer-search';
     }
@@ -184,6 +182,7 @@ export default function decorate(block) {
       return 'tcs-footer-legal-item';
     }
 
+    // Index-based structural map fallback matching your AEM authoring tree (image_04f79f.png)
     if (index === 0) return 'tcs-footer-hamburger';
     if (index === 1) return 'tcs-footer-search';
     if (index === 2) return 'tcs-footer-cta';
@@ -191,7 +190,7 @@ export default function decorate(block) {
     if (index === 4) return 'tcs-footer-legal-item';
 
     return 'tcs-footer-cta';
-  }
+  };
 
   // Process Authored Rows
   blockRows.forEach((row, index) => {
@@ -222,7 +221,7 @@ export default function decorate(block) {
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
     } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
-      const placeholder = cells[1]?.textContent.trim() || 'Ask TCS...';
+      const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
       searchBoxWrapperNode = row;
@@ -234,18 +233,10 @@ export default function decorate(block) {
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask TCS Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
-
-      contentHtml += `
-        <button type="button" class="clear-btn hidden" aria-label="Clear Search Input">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>`;
 
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
@@ -273,27 +264,10 @@ export default function decorate(block) {
 
       const inputEl = formEl.querySelector('.tcs-search-input');
       const micBtn = formEl.querySelector('.mic-btn');
-      const clearBtn = formEl.querySelector('.clear-btn');
 
       if (inputEl) {
         inputEl.addEventListener('input', (e) => {
           searchQueryVariable = e.target.value;
-          if (clearBtn) {
-            if (e.target.value.trim().length > 0) {
-              clearBtn.classList.remove('hidden');
-            } else {
-              clearBtn.classList.add('hidden');
-            }
-          }
-        });
-      }
-
-      if (clearBtn && inputEl) {
-        clearBtn.addEventListener('click', () => {
-          inputEl.value = '';
-          searchQueryVariable = '';
-          clearBtn.classList.add('hidden');
-          inputEl.focus();
         });
       }
 
@@ -325,7 +299,6 @@ export default function decorate(block) {
             const { transcript } = e.results[0][0];
             inputEl.value = transcript;
             searchQueryVariable = transcript;
-            if (clearBtn) clearBtn.classList.remove('hidden');
           };
 
           recognition.onerror = stopListening;
@@ -391,7 +364,7 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  function renderSubmenuCard(items, onSubItemClick) {
+  const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
       subMenuPanel.classList.add('hidden');
       return;
@@ -401,31 +374,20 @@ export default function decorate(block) {
       <div class="tcs-submenu-grid">
         ${items
     .map(
-      (item, idx) => `
-            <a href="${item.path}" class="tcs-submenu-item" data-index="${idx}">
-              <span>${item.title}</span>
-              <span class="arrow">→</span>
-            </a>
-          `,
+      (item) => `
+          <a href="${item.path}" class="tcs-submenu-item">
+            <span>${item.title}</span>
+            <span class="arrow">→</span>
+          </a>
+        `,
     )
     .join('')}
       </div>
     `;
-
-    if (onSubItemClick) {
-      subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((el) => {
-        el.addEventListener('click', (e) => {
-          e.preventDefault();
-          const index = el.getAttribute('data-index');
-          onSubItemClick(items[index]);
-        });
-      });
-    }
-
     subMenuPanel.classList.remove('hidden');
-  }
+  };
 
-  function updateButtonStateAndPosition(level) {
+  const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
 
@@ -439,14 +401,53 @@ export default function decorate(block) {
       closeIcon.classList.remove('hidden');
     } else {
       navPillsRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
     }
-  }
+  };
 
-  // Declared with const to satisfy prefer-const
-  const renderL1ParentNavigation = async function renderL1() {
+  const renderL2SubNavigation = (l1Data) => {
+    navPillsRow.innerHTML = '';
+    updateButtonStateAndPosition('L2');
+
+    const l2Group = document.createElement('div');
+    l2Group.className = 'tcs-l2-pills-group';
+
+    l1Data.children.forEach((l2) => {
+      const l2Pill = document.createElement('div');
+      l2Pill.className = 'tcs-nav-pill l2-pill';
+      const hasL3 = l2.children && l2.children.length > 0;
+
+      l2Pill.innerHTML = `
+        <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
+        ${hasL3 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
+      `;
+
+      const triggerL3View = (e) => {
+        if (e) e.stopPropagation();
+        l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+        l2Pill.classList.add('active');
+
+        if (hasL3) {
+          renderSubmenuCard(l2.children);
+        } else {
+          subMenuPanel.classList.add('hidden');
+        }
+      };
+
+      l2Pill.addEventListener('mouseenter', triggerL3View);
+      const chevronBtn = l2Pill.querySelector('.chevron-btn');
+      if (chevronBtn) chevronBtn.addEventListener('click', triggerL3View);
+
+      l2Group.append(l2Pill);
+    });
+
+    navPillsRow.append(l2Group);
+    navPillsRow.classList.remove('hidden');
+  };
+
+  const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
     updateButtonStateAndPosition('L1');
@@ -455,27 +456,27 @@ export default function decorate(block) {
       navTreeData = await fetchHierarchicalNavData();
     }
 
-    const l1Items = navTreeData.length > 0 ? navTreeData : [
-      { title: 'What we do', children: [] },
-      { title: 'Who we are', children: [] },
-      { title: 'Insights', children: [] },
-      { title: 'Careers', children: [] },
-      { title: 'Media', children: [] },
-      { title: 'Investors', children: [] },
-    ];
-
-    l1Items.forEach((l1) => {
+    navTreeData.forEach((l1) => {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'tcs-nav-pill';
+      const hasL2 = l1.children && l1.children.length > 0;
 
       l1Pill.innerHTML = `
-        <span class="tcs-pill-link">${l1.title}</span>
+        <a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>
+        ${hasL2 ? '<button class="chevron-btn" aria-label="Expand subpages">∨</button>' : ''}
       `;
 
-      l1Pill.addEventListener('click', (e) => {
-        e.stopPropagation();
-        renderL2SubNavigation(l1);
+      const enterSubPageNavigation = (e) => {
+        if (e) e.stopPropagation();
+        if (hasL2) renderL2SubNavigation(l1);
+      };
+
+      l1Pill.addEventListener('mouseenter', () => {
+        if (hasL2) renderSubmenuCard(l1.children);
       });
+
+      const chevronBtn = l1Pill.querySelector('.chevron-btn');
+      if (chevronBtn) chevronBtn.addEventListener('click', enterSubPageNavigation);
 
       navPillsRow.append(l1Pill);
     });
@@ -483,111 +484,7 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  renderL2SubNavigation = function renderL2(l1Data) {
-    navPillsRow.innerHTML = '';
-    activeL1Category = l1Data;
-    updateButtonStateAndPosition('L2');
-
-    const l2Group = document.createElement('div');
-    l2Group.className = 'tcs-l2-pills-group';
-
-    const l2Categories = (l1Data.children && l1Data.children.length > 0)
-      ? l1Data.children
-      : [
-        { title: 'Services', children: l1Data.children || [] },
-        { title: 'Industries', children: [] },
-        { title: 'Products', children: [] },
-        { title: 'Customers', children: [] },
-        { title: 'Partnerships', children: [] },
-        { title: 'Research & innovation', children: [] },
-      ];
-
-    l2Categories.forEach((l2, index) => {
-      const l2Pill = document.createElement('div');
-      l2Pill.className = `tcs-nav-pill l2-pill ${index === 0 ? 'active' : ''}`;
-
-      l2Pill.innerHTML = `
-        <span class="tcs-pill-link">${l2.title}</span>
-        <button class="chevron-btn" aria-label="Expand subpages">
-          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      `;
-
-      const onSubItemClick = (subItem) => {
-        renderL3SuggestedPrompts(subItem);
-      };
-
-      const selectL2Dropdown = (e) => {
-        if (e) e.stopPropagation();
-        l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
-        l2Pill.classList.add('active');
-
-        if (l2.children && l2.children.length > 0) {
-          renderSubmenuCard(l2.children, onSubItemClick);
-        } else {
-          subMenuPanel.classList.add('hidden');
-        }
-      };
-
-      l2Pill.addEventListener('click', selectL2Dropdown);
-      l2Group.append(l2Pill);
-    });
-
-    navPillsRow.append(l2Group);
-    navPillsRow.classList.remove('hidden');
-
-    const activeFirst = l2Categories[0];
-    if (activeFirst && activeFirst.children && activeFirst.children.length > 0) {
-      renderSubmenuCard(activeFirst.children, (subItem) => renderL3SuggestedPrompts(subItem));
-    } else {
-      subMenuPanel.classList.add('hidden');
-    }
-  };
-
-  renderL3SuggestedPrompts = function renderL3(selectedSubItem) {
-    navPillsRow.innerHTML = '';
-    subMenuPanel.classList.add('hidden');
-    currentViewLevel = 'L3';
-
-    const l3Container = document.createElement('div');
-    l3Container.className = 'tcs-l3-row';
-
-    const backBtn = document.createElement('button');
-    backBtn.className = 'tcs-l3-back-btn';
-    backBtn.setAttribute('aria-label', 'Back to dropdowns');
-    backBtn.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f83ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"></line>
-        <polyline points="12 19 5 12 12 5"></polyline>
-      </svg>
-    `;
-
-    backBtn.addEventListener('click', () => {
-      if (activeL1Category) {
-        renderL2SubNavigation(activeL1Category);
-      } else {
-        renderL1ParentNavigation();
-      }
-    });
-
-    const prompt1 = document.createElement('a');
-    prompt1.className = 'tcs-l3-prompt-pill';
-    prompt1.href = selectedSubItem?.path || '#';
-    prompt1.textContent = `"What customers have solved similar challenges in ${selectedSubItem?.title || 'this domain'}?"`;
-
-    const prompt2 = document.createElement('a');
-    prompt2.className = 'tcs-l3-prompt-pill';
-    prompt2.href = selectedSubItem?.path || '#';
-    prompt2.textContent = `"Find customers in my industry for ${selectedSubItem?.title || 'services'}"`;
-
-    l3Container.append(backBtn, prompt1, prompt2);
-    navPillsRow.append(l3Container);
-    navPillsRow.classList.remove('hidden');
-  };
-
-  function closeAllNavigation() {
+  const closeAllNavigation = () => {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
@@ -604,7 +501,7 @@ export default function decorate(block) {
 
     navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
-  }
+  };
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
@@ -624,15 +521,13 @@ export default function decorate(block) {
   }
 
   footerContainer.addEventListener('mouseleave', () => {
-    if (currentViewLevel === 'L1') {
-      subMenuPanel.classList.add('hidden');
-      navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
-    }
+    subMenuPanel.classList.add('hidden');
+    navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
   // Smooth Scroll Fixed Position Monitor
   let ticking = false;
-  function handleScroll() {
+  const handleScroll = () => {
     if (!ticking) {
       window.requestAnimationFrame(() => {
         const footerRect = block.getBoundingClientRect();
@@ -649,7 +544,7 @@ export default function decorate(block) {
       });
       ticking = true;
     }
-  }
+  };
 
   window.addEventListener('scroll', handleScroll, { passive: true });
   handleScroll();

@@ -157,7 +157,7 @@
   height: 100%;
   border: none;
   background: transparent;
-  padding: 0 110px 0 16px;
+  padding: 0 90px 0 16px;
   font-family: Inter, sans-serif;
   font-style: normal;
   font-weight: 500;
@@ -181,28 +181,7 @@
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-/* ADDED: Clear / Close 'X' Button inside Search Bar */
-.tcs-footer-search-actions .clear-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #494c4d;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.tcs-footer-search-actions .clear-btn:hover {
-  color: #1e2222;
-  background: rgb(0 0 0 / 5%);
+  gap: 12px;
 }
 
 .tcs-footer-search-actions .mic-btn {
@@ -267,7 +246,6 @@
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
 }
 
 .tcs-nav-pill {
@@ -294,7 +272,7 @@
 }
 
 .tcs-nav-pill .tcs-pill-link {
-  color: inherit;
+  color: #0c0c0d;
   text-decoration: none !important;
 }
 
@@ -303,87 +281,18 @@
   border: none;
   cursor: pointer;
   font-size: 14px;
-  color: inherit;
-  padding: 0;
-  display: flex;
-  align-items: center;
-}
-
-.tcs-nav-pill:hover {
-  background: #f3f4f6;
-  border-color: #1e2222;
-}
-
-/* ADDED: Active state pill matching Fig 2 (L2) - Primary Blue pill */
-.tcs-nav-pill.active {
-  background: #4f83ff !important;
-  color: #fff !important;
-  border-color: #4f83ff !important;
-}
-
-.tcs-nav-pill.active .tcs-pill-link,
-.tcs-nav-pill.active .chevron-btn {
-  color: #fff !important;
-}
-
-.tcs-nav-pill.active .chevron-btn svg {
-  stroke: #fff;
-}
-
-/* ADDED: L3 Back Arrow & Prompt Pills Container matching Fig 3 (L3) */
-.tcs-l3-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.tcs-l3-back-btn {
-  box-sizing: border-box;
-  width: 48px;
-  height: 48px;
-  background: #fff;
-  border: 2px solid #494c4e;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #4f83ff;
-  transition: all 0.2s ease;
-}
-
-.tcs-l3-back-btn:hover {
-  background: #f3f4f6;
-  border-color: #1e2222;
-}
-
-.tcs-l3-prompt-pill {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  padding: 12px 24px;
-  background: #fff;
-  border: 2px solid #494c4e;
-  backdrop-filter: blur(8px);
-  border-radius: 9999px;
-  font-family: Inter, sans-serif;
-  font-size: 15px;
-  font-weight: 500;
   color: #0c0c0d;
-  cursor: pointer;
-  text-decoration: none !important;
-  transition: all 0.2s ease;
+  padding: 0;
 }
 
-.tcs-l3-prompt-pill:hover {
-  background: #1e2222;
-  color: #fff;
+.tcs-nav-pill:hover,
+.tcs-nav-pill.active {
+  background: #f3f4f6;
   border-color: #1e2222;
+}
+
+.tcs-nav-pill.active .chevron-btn {
+  transform: rotate(180deg);
 }
 
 /* Glassmorphism Submenu Grid Panel */
@@ -431,7 +340,6 @@
   font-weight: 500;
   text-decoration: none !important;
   background: transparent !important;
-  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
@@ -610,12 +518,12 @@
 
   .tcs-footer-search-box input {
     font-size: 14px;
-    padding-right: 90px;
+    padding-right: 75px;
   }
 
   .tcs-footer-search-actions {
     right: 10px;
-    gap: 6px;
+    gap: 8px;
   }
 
   .tcs-footer-search-actions .submit-btn {
