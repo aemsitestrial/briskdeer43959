@@ -573,7 +573,7 @@
     justify-content: center;
     text-align: center;
     gap: 16px;
-    min-width: 100%;
+    min-width: 99%;
   }
 
   .tcs-footer-legal-nav {
