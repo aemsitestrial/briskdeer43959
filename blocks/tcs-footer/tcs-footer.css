@@ -592,6 +592,17 @@
     color: #000 !important;
   }
 
+  .tcs-footer-cta-row .tcs-footer-cta-btn,
+  .tcs-footer-cta-row .tcs-footer-cta-btn:link,
+  .tcs-footer-cta-row .tcs-footer-cta-btn:visited,
+  .tcs-footer-cta-row .tcs-footer-cta-btn:hover,
+  .tcs-footer-cta-row .tcs-footer-cta-btn:focus,
+  .tcs-footer-cta-row .tcs-footer-cta-btn:active,
+  .tcs-footer-cta-row .tcs-footer-cta-btn span,
+  .tcs-footer-cta-row .tcs-footer-cta-btn .arrow {
+    color: #000 !important;
+  }
+
   .tcs-footer-bottom-row {
     flex-direction: column;
     align-items: center;
