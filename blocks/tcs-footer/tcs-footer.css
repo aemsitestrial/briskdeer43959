@@ -454,7 +454,7 @@
   gap: 24px;
   width: 100%;
   max-width: 1280px;
-  margin-top: 80px; /* Space between CTA buttons and bottom text */
+  margin-top: 140px; /* Increased gap between CTA buttons and bottom copyright/terms section */
   font-family: Inter, sans-serif;
   font-style: normal;
   font-weight: 500;
@@ -543,7 +543,7 @@
   }
 
   .tcs-footer-bottom-row {
-    margin-top: 40px;
+    margin-top: 80px;
   }
 }
 
@@ -617,7 +617,7 @@
     justify-content: center;
     text-align: center;
     gap: 16px;
-    margin-top: 30px;
+    margin-top: 50px;
     min-width: 100%;
   }
 
