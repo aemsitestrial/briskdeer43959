@@ -456,14 +456,18 @@
   gap: 24px;
 }
 
-.tcs-footer-legal-link {
-  color: #0c0c0d;
+.tcs-footer-legal-link,
+.tcs-footer-legal-link:link,
+.tcs-footer-legal-link:visited {
+  color: #000 !important;
   text-decoration: none !important;
 }
 
-.tcs-footer-legal-link:hover {
+.tcs-footer-legal-link:hover,
+.tcs-footer-legal-link:focus,
+.tcs-footer-legal-link:active {
+  color: #000 !important;
   text-decoration: none !important;
-  color: #1e2222;
 }
 
 .canvas-search-slot {
@@ -581,6 +585,11 @@
   .tcs-footer-cta-btn {
     width: 100%;
     min-width: unset;
+  }
+
+  .tcs-footer-cta-btn,
+  .tcs-footer-cta-btn span {
+    color: #000 !important;
   }
 
   .tcs-footer-bottom-row {
