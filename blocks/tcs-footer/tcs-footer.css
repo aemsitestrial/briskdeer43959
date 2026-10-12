@@ -496,6 +496,7 @@
   }
 
   .tcs-footer-submenu-panel {
+    z-index: 9999;
     max-width: 100%;
   }
 }
