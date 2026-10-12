@@ -394,10 +394,7 @@
   min-height: 50px;
 }
 
-.tcs-footer-cta-btn,
-.tcs-footer-cta-btn:link,
-.tcs-footer-cta-btn:visited,
-.tcs-footer-cta-btn span {
+.tcs-footer-cta-btn {
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -423,10 +420,17 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
 }
 
+/* Strips inner spans of extra borders/backgrounds and forces inherit of black color */
+.tcs-footer-cta-btn span {
+  color: inherit !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
 .tcs-footer-cta-btn:hover,
-.tcs-footer-cta-btn:hover span,
-.tcs-footer-cta-btn:focus,
-.tcs-footer-cta-btn:focus span {
+.tcs-footer-cta-btn:focus {
   background: #1e2222;
   color: #fff !important;
   border-color: #1e2222;
@@ -592,9 +596,8 @@
     min-width: unset;
   }
 
-  .tcs-footer-cta-btn,
   .tcs-footer-cta-btn span {
-    color: #000 !important;
+    color: inherit !important;
   }
 
   .tcs-footer-bottom-row {
