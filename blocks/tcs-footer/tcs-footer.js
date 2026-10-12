@@ -534,22 +534,45 @@ export default function decorate(block) {
   });
 
   // Smooth Scroll Fixed Position Monitor
+  const canvasBlock = document.querySelector('.canvas');
+  const canvasSearchSlot = document.querySelector('.canvas-search-slot');
+
+  function isElementVisible(element) {
+    if (!element) return false;
+
+    const rect = element.getBoundingClientRect();
+
+    return (
+      rect.top <= window.innerHeight
+      && rect.bottom >= 0
+    );
+  }
+
   let ticking = false;
   const handleScroll = () => {
     if (!ticking) {
       window.requestAnimationFrame(() => {
-        const footerRect = block.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+        const canvasVisible = isElementVisible(canvasBlock);
 
-        if (footerRect.top < windowHeight - 140) {
+        if (canvasVisible && canvasSearchSlot) {
           floatingNav.classList.remove('is-fixed');
           subMenuPanel.classList.remove('is-fixed');
+
+          if (!canvasSearchSlot.contains(floatingNav)) {
+            canvasSearchSlot.appendChild(floatingNav);
+          }
         } else {
           floatingNav.classList.add('is-fixed');
           subMenuPanel.classList.add('is-fixed');
+
+          if (!footerContainer.contains(floatingNav)) {
+            footerContainer.appendChild(floatingNav);
+          }
         }
+
         ticking = false;
       });
+
       ticking = true;
     }
   };
