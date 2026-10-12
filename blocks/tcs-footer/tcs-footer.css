@@ -466,6 +466,21 @@
   color: #1e2222;
 }
 
+.canvas-search-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.canvas-search-slot .tcs-footer-floating-nav {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: none;
+}
+
 /* TABLET VIEWPORT (768px - 1024px) */
 @media (width <= 1024px) {
   .tcs-footer {
