@@ -136,7 +136,7 @@ export default function decorate(block) {
   const footerContainer = document.createElement('div');
   footerContainer.className = 'tcs-footer-container';
 
-  const heading = document.createElement('h2');
+  const heading = document.createElement('h3');
   heading.className = 'tcs-footer-heading';
   heading.innerHTML = titleText;
   footerContainer.append(heading);
