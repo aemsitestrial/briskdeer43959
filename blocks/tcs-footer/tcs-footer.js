@@ -369,28 +369,6 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  // --- Dynamic Hamburger Relocation Logic ---
-  const navTools = document.querySelector('.section.nav-tools') || document.querySelector('.nav-wrapper nav');
-
-  const relocateHamburger = () => {
-    if (!hamburgerWrapperNode) return;
-
-    const width = window.innerWidth;
-
-    if (width <= 1024) {
-      // Mobile & Tablet (<=1024px): Relocate hamburger into Header Nav Tools
-      if (navTools && !navTools.contains(hamburgerWrapperNode)) {
-        navTools.append(hamburgerWrapperNode);
-      }
-    } else if (searchRow && !searchRow.contains(hamburgerWrapperNode)) {
-      // Desktop (>1024px): Return hamburger into Footer Search Row
-      searchRow.prepend(hamburgerWrapperNode);
-    }
-  };
-
-  relocateHamburger();
-  window.addEventListener('resize', relocateHamburger);
-
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
       subMenuPanel.classList.add('hidden');
@@ -422,12 +400,12 @@ export default function decorate(block) {
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      if (window.innerWidth > 1024) searchRow.prepend(hamburgerWrapperNode);
+      searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       hamburgerIcon.classList.add('hidden');
       closeIcon.classList.remove('hidden');
     } else {
-      if (window.innerWidth > 1024) navPillsRow.prepend(hamburgerWrapperNode);
+      navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       hamburgerIcon.classList.remove('hidden');
       closeIcon.classList.add('hidden');
@@ -521,7 +499,7 @@ export default function decorate(block) {
     isNavOpen = false;
     currentViewLevel = 'L1';
 
-    if (hamburgerWrapperNode && window.innerWidth > 1024) {
+    if (hamburgerWrapperNode) {
       searchRow.prepend(hamburgerWrapperNode);
     }
     if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
@@ -558,7 +536,7 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Smooth Scroll Position Monitor
+  // Smooth Scroll Fixed Position Monitor
   let ticking = false;
 
   const handleScroll = () => {
@@ -566,24 +544,27 @@ export default function decorate(block) {
       window.requestAnimationFrame(() => {
         const windowHeight = window.innerHeight;
 
-        const canvasEl = document.querySelector('.canvas-search-slot')
-          || document.querySelector('.canvas-intent-content')
-          || document.querySelector('.canvas');
+        // Select Canvas block & Footer block
+        const canvasEl = document.querySelector('.canvas') || document.querySelector('.canvas-wrapper');
         const footerEl = block;
 
         let isCanvasInView = false;
         if (canvasEl) {
           const canvasRect = canvasEl.getBoundingClientRect();
+          // Canvas is active when top is within viewport and bottom hasn't scrolled fully past
           isCanvasInView = canvasRect.top < windowHeight && canvasRect.bottom > 100;
         }
 
+        // Check if user reached Footer
         const footerRect = footerEl.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
+        // Un-fix bar while inside Canvas OR reached Footer
         if (isCanvasInView || isAtFooter) {
           floatingNav.classList.remove('is-fixed');
           subMenuPanel.classList.remove('is-fixed');
         } else {
+          // Fix bar to bottom while scrolling between Canvas and Footer
           floatingNav.classList.add('is-fixed');
           subMenuPanel.classList.add('is-fixed');
         }

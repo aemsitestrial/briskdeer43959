@@ -503,32 +503,8 @@
   transform: none;
 }
 
-/* TABLET & MOBILE HEADER HAMBURGER INTEGRATION */
+/* TABLET VIEWPORT (768px - 1024px) */
 @media (width <= 1024px) {
-  #nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .section.nav-tools {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-  }
-
-  .section.nav-tools .tcs-footer-hamburger-wrapper {
-    display: flex;
-    align-items: center;
-  }
-
-  .section.nav-tools .tcs-footer-hamburger {
-    width: 40px;
-    height: 40px;
-    box-shadow: none;
-    border-color: rgb(0 0 0 / 15%);
-  }
-
   .tcs-footer {
     padding: 80px 40px 40px;
   }
