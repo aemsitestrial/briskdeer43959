@@ -329,7 +329,7 @@
 
 .tcs-footer-submenu-panel.is-fixed {
   position: fixed;
-  bottom: 140px;
+  bottom: 170px;
   left: 50%;
   transform: translateX(-50%);
   margin-bottom: 0;
