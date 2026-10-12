@@ -461,18 +461,6 @@
   text-decoration: none !important;
 }
 
-.canvas-search-slot {
-  display: flex;
-  justify-content: center;
-}
-
-.canvas-search-slot .tcs-footer-floating-nav {
-  position: static;
-  transform: none;
-  width: 100%;
-  max-width: 780px;
-}
-
 .tcs-footer-legal-link:hover {
   text-decoration: none !important;
   color: #1e2222;
