@@ -341,47 +341,6 @@
   gap: 16px 40px;
 }
 
-.tcs-submenu-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgb(0 0 0 / 10%);
-  color: #2b2c2e;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none !important;
-  background: transparent !important;
-  transition: color 0.2s ease, border-color 0.2s ease;
-}
-
-.tcs-submenu-item span {
-  color: inherit;
-}
-
-.tcs-submenu-item:hover {
-  color: #000;
-  border-bottom-color: rgb(0 0 0 / 30%);
-}
-
-.tcs-submenu-item .arrow {
-  color: #2b2c2e;
-  font-size: 15px;
-  opacity: 0.7;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.tcs-submenu-item:hover .arrow {
-  opacity: 1;
-  transform: translateX(4px);
-}
-
-/* Helper Utilities */
-.hidden {
-  display: none !important;
-}
-
 /* CTA Row & Buttons */
 .tcs-footer-cta-row {
   display: flex;
@@ -420,7 +379,6 @@
   box-shadow: 0 2px 8px rgb(0 0 0 / 3%);
 }
 
-/* Strips inner spans of extra borders/backgrounds and forces inherit of black color */
 .tcs-footer-cta-btn span {
   color: inherit !important;
   background: transparent !important;
@@ -435,6 +393,50 @@
   color: #fff !important;
   border-color: #1e2222;
   text-decoration: none !important;
+}
+
+.tcs-submenu-item,
+.tcs-submenu-item:link,
+.tcs-submenu-item:visited {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgb(0 0 0 / 10%);
+  color: #2b2c2e !important;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none !important;
+  background: transparent !important;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.tcs-submenu-item span {
+  color: inherit !important;
+}
+
+.tcs-submenu-item:hover,
+.tcs-submenu-item:hover span {
+  color: #000 !important;
+  border-bottom-color: rgb(0 0 0 / 30%);
+}
+
+.tcs-submenu-item .arrow {
+  color: inherit !important;
+  font-size: 15px;
+  opacity: 0.7;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.tcs-submenu-item:hover .arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Helper Utilities */
+.hidden {
+  display: none !important;
 }
 
 /* Bottom Links Row */
@@ -594,10 +596,6 @@
   .tcs-footer-cta-btn {
     width: 100%;
     min-width: unset;
-  }
-
-  .tcs-footer-cta-btn span {
-    color: inherit !important;
   }
 
   .tcs-footer-bottom-row {
