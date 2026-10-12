@@ -499,7 +499,7 @@
     position:fixed;
     left: 16px;
     right: 16px;
-    bottom: 40px; /* reduce this value */
+    bottom: 10px; /* reduce this value */
     z-index:9999;
     max-width: 100%;
   }
@@ -539,13 +539,6 @@
   .tcs-footer-search-box input {
     font-size: 14px;
     padding-right: 75px;
-  }
-
-  .tcs-footer-search-box.search-hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
   }
 
   .tcs-footer-search-actions {

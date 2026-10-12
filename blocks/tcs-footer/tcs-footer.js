@@ -428,9 +428,6 @@ export default function decorate(block) {
 
       const triggerL3View = (e) => {
         if (e) e.stopPropagation();
-
-        searchBoxWrapperNode?.classList.add('search-hidden');
-
         l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l2Pill.classList.add('active');
 
@@ -477,12 +474,9 @@ export default function decorate(block) {
       };
 
       l1Pill.addEventListener('mouseenter', () => {
-        searchBoxWrapperNode?.classList.add('search-hidden');
         navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l1Pill.classList.add('active');
-        if (hasL2) {
-          renderSubmenuCard(l1.children);
-        }
+        if (hasL2) renderSubmenuCard(l1.children);
       });
 
       const chevronBtn = l1Pill.querySelector('.chevron-btn');
@@ -536,12 +530,7 @@ export default function decorate(block) {
 
   footerContainer.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
-
-    navPillsRow
-      .querySelectorAll('.tcs-nav-pill')
-      .forEach((p) => p.classList.remove('active'));
-
-    searchBoxWrapperNode?.classList.remove('search-hidden');
+    navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
   // Smooth Scroll Fixed Position Monitor
