@@ -130,6 +130,13 @@
   stroke: #2b2b2b;
 }
 
+.tcs-footer-hamburger .custom-hamburger-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
 .tcs-footer-hamburger:hover {
   background: #fff;
   border-color: rgb(0 0 0 / 20%);
@@ -445,7 +452,7 @@
   display: none !important;
 }
 
-/* Bottom Links Row - Matched to Figma ratio */
+/* Bottom Links Row */
 .tcs-footer-bottom-row {
   display: flex;
   flex-flow: row wrap;
@@ -575,7 +582,6 @@
     width: 100%;
   }
 
-  /* Make Search Box take full width */
   .tcs-footer-search-box {
     width: 100%;
     max-width: 100%;

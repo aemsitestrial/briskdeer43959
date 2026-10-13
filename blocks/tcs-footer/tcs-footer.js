@@ -203,16 +203,26 @@ export default function decorate(block) {
     const cells = [...row.children];
 
     if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
-      const ariaLabel = cells[0]?.textContent.trim() || 'Open navigation menu';
+      // Extract authored icon image element or URL string
+      const authoredImg = cells[0]?.querySelector('img');
+      const authoredIconSrc = authoredImg ? authoredImg.src : cells[0]?.textContent.trim();
+      const ariaLabel = cells[1]?.textContent.trim() || cells[0]?.textContent.trim() || 'Open navigation menu';
+
+      const hamburgerIconContent = authoredIconSrc && (authoredImg || authoredIconSrc.startsWith('/') || authoredIconSrc.startsWith('http'))
+        ? `<img src="${authoredIconSrc}" alt="${ariaLabel}" class="custom-hamburger-icon" />`
+        : `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        `;
+
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
         <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false">
           <span class="icon-hamburger">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
+            ${hamburgerIconContent}
           </span>
           <span class="icon-close hidden">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -551,7 +561,6 @@ export default function decorate(block) {
         let isCanvasInView = false;
         if (canvasEl) {
           const canvasRect = canvasEl.getBoundingClientRect();
-          // Canvas is active when top is within viewport and bottom hasn't scrolled fully past
           isCanvasInView = canvasRect.top < windowHeight && canvasRect.bottom > 100;
         }
 
