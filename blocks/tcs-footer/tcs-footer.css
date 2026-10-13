@@ -527,6 +527,24 @@
   transform: none;
 }
 
+/* Hero Banner Sticky Slot Docking Rules */
+.hero-banner-sticky {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.hero-banner-sticky .tcs-footer-floating-nav {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  margin: 0 auto;
+  width: 100%;
+}
+
 /* TABLET VIEWPORT (768px - 1024px) */
 @media (width <= 1024px) {
   .tcs-footer {

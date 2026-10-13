@@ -545,7 +545,7 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Smooth Scroll & Inner Slot Target Mounting Monitor
+  // Smooth Scroll & Dual Target Docking Monitor (Hero Banner & Canvas Block)
   let ticking = false;
 
   const handleScroll = () => {
@@ -553,37 +553,48 @@ export default function decorate(block) {
       window.requestAnimationFrame(() => {
         const windowHeight = window.innerHeight;
 
-        // Target the inner slot div seen in DevTools Inspector
-        const searchSlotEl = document.querySelector('.canvas-block-search-slot');
+        // Query both target slots
+        const heroSlotEl = document.querySelector('.hero-banner-sticky');
+        const canvasSlotEl = document.querySelector('.canvas-block-search-slot');
         const footerEl = block;
 
-        let isSlotInView = false;
-        if (searchSlotEl) {
-          const slotRect = searchSlotEl.getBoundingClientRect();
-          // Slot is visible when inside the visible viewport range
-          isSlotInView = slotRect.top < windowHeight && slotRect.bottom > 0;
-        }
+        const checkInView = (el) => {
+          if (!el) return false;
+          const rect = el.getBoundingClientRect();
+          return rect.top < windowHeight && rect.bottom > 0;
+        };
+
+        const isHeroInView = checkInView(heroSlotEl);
+        const isCanvasInView = checkInView(canvasSlotEl);
 
         const footerRect = footerEl.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
-        if (isSlotInView && searchSlotEl) {
-          // 1. DOCK inside .canvas-block-search-slot
-          if (floatingNav.parentElement !== searchSlotEl) {
-            searchSlotEl.append(floatingNav);
+        if (isHeroInView && heroSlotEl) {
+          // 1. DOCK inside .hero-banner-sticky
+          if (floatingNav.parentElement !== heroSlotEl) {
+            heroSlotEl.append(floatingNav);
+          }
+          floatingNav.classList.remove('is-fixed');
+          floatingNav.classList.add('is-docked-slot');
+          subMenuPanel.classList.remove('is-fixed');
+        } else if (isCanvasInView && canvasSlotEl) {
+          // 2. DOCK inside .canvas-block-search-slot
+          if (floatingNav.parentElement !== canvasSlotEl) {
+            canvasSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else if (isAtFooter) {
-          // 2. UN-FIXED inside Footer Container
+          // 3. UN-FIXED inside Footer Container
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else {
-          // 3. FIXED floating control bar while scrolling between Canvas Slot and Footer
+          // 4. FLOATING FIXED state while scrolling between slots
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
