@@ -552,26 +552,32 @@ export default function decorate(block) {
     if (!ticking) {
       window.requestAnimationFrame(() => {
         const windowHeight = window.innerHeight;
+        const scrollY = window.scrollY || window.pageYOffset;
 
-        // Query both target slots
         const heroSlotEl = document.querySelector('.hero-banner-sticky');
         const canvasSlotEl = document.querySelector('.canvas-block-search-slot');
         const footerEl = block;
 
-        const checkInView = (el) => {
-          if (!el) return false;
-          const rect = el.getBoundingClientRect();
-          return rect.top < windowHeight && rect.bottom > 0;
-        };
+        // Check if Hero Slot is in view OR if user is at the top of page
+        let isHeroInView = false;
+        if (heroSlotEl) {
+          const heroRect = heroSlotEl.getBoundingClientRect();
+          isHeroInView = scrollY < 150 || (heroRect.top < windowHeight && heroRect.bottom > 0);
+        }
 
-        const isHeroInView = checkInView(heroSlotEl);
-        const isCanvasInView = checkInView(canvasSlotEl);
+        // Check Canvas slot
+        let isCanvasInView = false;
+        if (canvasSlotEl) {
+          const canvasRect = canvasSlotEl.getBoundingClientRect();
+          isCanvasInView = canvasRect.top < windowHeight && canvasRect.bottom > 0;
+        }
 
+        // Check Footer reach
         const footerRect = footerEl.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
         if (isHeroInView && heroSlotEl) {
-          // 1. DOCK inside .hero-banner-sticky
+          // 1. DOCK inside Hero Banner Sticky Slot
           if (floatingNav.parentElement !== heroSlotEl) {
             heroSlotEl.append(floatingNav);
           }
@@ -579,7 +585,7 @@ export default function decorate(block) {
           floatingNav.classList.add('is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else if (isCanvasInView && canvasSlotEl) {
-          // 2. DOCK inside .canvas-block-search-slot
+          // 2. DOCK inside Canvas Search Slot
           if (floatingNav.parentElement !== canvasSlotEl) {
             canvasSlotEl.append(floatingNav);
           }
@@ -587,14 +593,14 @@ export default function decorate(block) {
           floatingNav.classList.add('is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else if (isAtFooter) {
-          // 3. UN-FIXED inside Footer Container
+          // 3. UN-FIXED inside Footer
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else {
-          // 4. FLOATING FIXED state while scrolling between slots
+          // 4. FLOATING FIXED state while scrolling between sections
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }

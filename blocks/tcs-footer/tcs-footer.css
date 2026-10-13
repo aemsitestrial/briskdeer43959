@@ -527,21 +527,24 @@
   transform: none;
 }
 
-/* Hero Banner Sticky Slot Docking Rules */
 .hero-banner-sticky {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 60px; /* Ensures slot maintains size when empty or filled */
   margin-top: 24px;
+  position: relative;
+  z-index: 10;
 }
 
+/* Ensure child nav resets position inside the slot */
 .hero-banner-sticky .tcs-footer-floating-nav {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  transform: none;
-  margin: 0 auto;
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 auto !important;
   width: 100%;
 }
 
