@@ -402,13 +402,13 @@ export default function decorate(block) {
     if (level === 'L1') {
       searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-      hamburgerIcon.classList.add('hidden');
-      closeIcon.classList.remove('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+      if (closeIcon) closeIcon.classList.remove('hidden');
     } else {
       navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
-      hamburgerIcon.classList.remove('hidden');
-      closeIcon.classList.add('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
+      if (closeIcon) closeIcon.classList.add('hidden');
     }
   };
 
@@ -506,8 +506,8 @@ export default function decorate(block) {
 
     if (hamburgerBtnNode) {
       hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-      hamburgerBtnNode.querySelector('.icon-hamburger').classList.remove('hidden');
-      hamburgerBtnNode.querySelector('.icon-close').classList.add('hidden');
+      hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
     }
 
     navPillsRow.classList.add('hidden');

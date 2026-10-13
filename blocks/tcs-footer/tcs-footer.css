@@ -564,17 +564,21 @@
     line-height: 125%;
   }
 
+  /* Hide Hamburger Completely on Mobile */
+  .tcs-footer-hamburger-wrapper {
+    display: none !important;
+  }
+
   .tcs-footer-search-row {
     flex-direction: row;
     gap: 10px;
+    width: 100%;
   }
 
-  .tcs-footer-hamburger {
-    width: 44px;
-    height: 44px;
-  }
-
+  /* Make Search Box take full width */
   .tcs-footer-search-box {
+    width: 100%;
+    max-width: 100%;
     height: 54px;
     padding: 6px 12px;
   }
