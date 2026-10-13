@@ -33,7 +33,8 @@
       "footer-sai",
       "canvas-search-hero",
       "icon-list",
-      "tcs-footer"
+      "tcs-footer",
+      "cta"
     ]
   },
   {
@@ -159,6 +160,7 @@
       "tcs-footer-hamburger",
       "tcs-footer-search",
       "tcs-footer-cta",
+      "cta",
       "tcs-footer-copyright",
       "tcs-footer-legal-item"
     ]

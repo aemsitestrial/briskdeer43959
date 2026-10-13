@@ -310,10 +310,23 @@ export default function decorate(block) {
           recognition.onend = stopListening;
         }
       }
-    } else if (model === 'tcs-footer-cta') {
-      const label = cells[0]?.textContent.trim() || 'Click here';
-      const link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
-      const target = cells[2]?.textContent.trim() || '_self';
+    } else if (model === 'tcs-footer-cta' || model === 'cta') {
+      let label = 'Click here';
+      let link = '#';
+      let target = '_self';
+
+      if (model === 'cta') {
+        // Parsing generic CTA model fields
+        label = cells[0]?.textContent.trim() || 'Click here';
+        link = formatHtmlPath(cells[1]?.querySelector('a')?.href || cells[1]?.textContent.trim() || '#');
+        const targetOption = cells[5]?.textContent.trim().toLowerCase();
+        target = targetOption === 'new-window' ? '_blank' : '_self';
+      } else {
+        // Parsing legacy tcs-footer-cta model fields
+        label = cells[0]?.textContent.trim() || 'Click here';
+        link = formatHtmlPath(cells[1]?.querySelector('a')?.href || '#');
+        target = cells[2]?.textContent.trim() || '_self';
+      }
 
       row.className = 'tcs-footer-cta-item';
       const ctaBtn = document.createElement('a');
