@@ -63,13 +63,12 @@
         "table",
         "text",
         "title",
-	"teaser",
+	      "teaser",
         "video",
         "footer-sai",
         "canvas-search-hero",
         "icon-list",
-        "tcs-footer",
-        "tcs-canva"
+        "tcs-footer"
       ]
     }
   ]

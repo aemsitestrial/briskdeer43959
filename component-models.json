@@ -6510,59 +6510,6 @@
     ]
   },
   {
-    "id": "tcs-canva",
-    "fields": [
-      {
-        "component": "text",
-        "name": "title",
-        "label": "Heading",
-        "valueType": "string",
-        "value": "How can TCS help you?"
-      },
-      {
-        "component": "richtext",
-        "name": "description",
-        "label": "Description",
-        "valueType": "string",
-        "value": "<p>Describe or select a challenge, opportunity or ambition</p>"
-      }
-    ]
-  },
-  {
-    "id": "tcs-canva-cta",
-    "fields": [
-      {
-        "component": "text",
-        "name": "label",
-        "label": "CTA Label",
-        "valueType": "string"
-      },
-      {
-        "component": "aem-content",
-        "name": "link",
-        "label": "CTA Link",
-        "valueType": "string"
-      },
-      {
-        "component": "select",
-        "name": "target",
-        "label": "Target Type",
-        "valueType": "string",
-        "value": "_self",
-        "options": [
-          {
-            "name": "Same Tab (_self)",
-            "value": "_self"
-          },
-          {
-            "name": "New Tab (_blank)",
-            "value": "_blank"
-          }
-        ]
-      }
-    ]
-  },
-  {
     "id": "tcs-footer",
     "fields": [
       {
