@@ -203,7 +203,6 @@ export default function decorate(block) {
     const cells = [...row.children];
 
     if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
-      // Extract authored icon image element or URL string
       const authoredImg = cells[0]?.querySelector('img');
       const authoredIconSrc = authoredImg ? authoredImg.src : cells[0]?.textContent.trim();
       const ariaLabel = cells[1]?.textContent.trim() || cells[0]?.textContent.trim() || 'Open navigation menu';
@@ -546,7 +545,7 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Smooth Scroll Fixed Position Monitor
+  // Smooth Scroll & Inner Slot Target Mounting Monitor
   let ticking = false;
 
   const handleScroll = () => {
@@ -554,27 +553,42 @@ export default function decorate(block) {
       window.requestAnimationFrame(() => {
         const windowHeight = window.innerHeight;
 
-        // Select Canvas block & Footer block
-        const canvasEl = document.querySelector('.canvas') || document.querySelector('.canvas-wrapper');
+        // Target the inner slot div seen in DevTools Inspector
+        const searchSlotEl = document.querySelector('.canvas-block-search-slot');
         const footerEl = block;
 
-        let isCanvasInView = false;
-        if (canvasEl) {
-          const canvasRect = canvasEl.getBoundingClientRect();
-          isCanvasInView = canvasRect.top < windowHeight && canvasRect.bottom > 100;
+        let isSlotInView = false;
+        if (searchSlotEl) {
+          const slotRect = searchSlotEl.getBoundingClientRect();
+          // Slot is visible when inside the visible viewport range
+          isSlotInView = slotRect.top < windowHeight && slotRect.bottom > 0;
         }
 
-        // Check if user reached Footer
         const footerRect = footerEl.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
-        // Un-fix bar while inside Canvas OR reached Footer
-        if (isCanvasInView || isAtFooter) {
+        if (isSlotInView && searchSlotEl) {
+          // 1. DOCK inside .canvas-block-search-slot
+          if (floatingNav.parentElement !== searchSlotEl) {
+            searchSlotEl.append(floatingNav);
+          }
           floatingNav.classList.remove('is-fixed');
+          floatingNav.classList.add('is-docked-slot');
+          subMenuPanel.classList.remove('is-fixed');
+        } else if (isAtFooter) {
+          // 2. UN-FIXED inside Footer Container
+          if (floatingNav.parentElement !== footerContainer) {
+            footerContainer.insertBefore(floatingNav, ctaRow);
+          }
+          floatingNav.classList.remove('is-fixed', 'is-docked-slot');
           subMenuPanel.classList.remove('is-fixed');
         } else {
-          // Fix bar to bottom while scrolling between Canvas and Footer
+          // 3. FIXED floating control bar while scrolling between Canvas Slot and Footer
+          if (floatingNav.parentElement !== footerContainer) {
+            footerContainer.insertBefore(floatingNav, ctaRow);
+          }
           floatingNav.classList.add('is-fixed');
+          floatingNav.classList.remove('is-docked-slot');
           subMenuPanel.classList.add('is-fixed');
         }
 
