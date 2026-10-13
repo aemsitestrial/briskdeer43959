@@ -216,6 +216,7 @@
 
   .canvas-block-title {
     font-size: 28px;
+    font-family: Inter, sans-serif;
   }
 
   .canvas-block-option-pill:any-link {

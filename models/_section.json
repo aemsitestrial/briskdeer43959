@@ -70,7 +70,8 @@
         "icon-list",
         "tcs-footer",
         "cta",
-        "canvas-block"
+        "canvas-block",
+        "hero-banner"
       ]
     }
   ]
