@@ -10,6 +10,16 @@ const getChevronSvg = () => `
 `;
 
 /**
+ * SVG Left Arrow Icon Helper (for L3 Suggestion Pills row)
+ */
+const getLeftArrowSvg = () => `
+  <svg class="arrow-back-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="19" y1="12" x2="5" y2="12"></line>
+    <polyline points="12 19 5 12 12 5"></polyline>
+  </svg>
+`;
+
+/**
  * Resolves content paths for AEM authoring/publishing environments
  */
 function formatHtmlPath(path) {
@@ -25,6 +35,35 @@ function formatHtmlPath(path) {
 
   return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
+
+/**
+ * Determines current page depth level (L1, L2, L3) based on window URL path
+ */
+function detectCurrentPageLevel() {
+  const currentPath = window.location.pathname.replace(/\.html$/, '');
+  const segments = currentPath.split('/').filter((s) => s && s !== 'content');
+
+  // Strip locale prefix if present
+  if (segments[0] && segments[0].length === 2) {
+    segments.shift();
+  }
+
+  // Remove AEM path prefix segments if present
+  const filterPrefixes = ['2026', '39', 'briskdeer43959'];
+  const filtered = segments.filter((s) => !filterPrefixes.includes(s));
+
+  if (filtered.length <= 1) return 'L1';
+  if (filtered.length === 2) return 'L2';
+  return 'L3';
+}
+
+/**
+ * Default search suggestion pills when visiting L3 terminal pages
+ */
+const DEFAULT_L3_SUGGESTIONS = [
+  'Find the right TCS solution for my business',
+  'Show me TCS success stories',
+];
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
@@ -169,8 +208,8 @@ export default function decorate(block) {
   let isNavOpen = false;
   let navTreeData = null;
 
-  let currentViewLevel = 'L1';
   let searchQueryVariable = '';
+  const pageLevel = detectCurrentPageLevel();
 
   const getModelType = (row, index) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset?.aueModel;
@@ -235,7 +274,7 @@ export default function decorate(block) {
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
     } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
-      const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
+      const placeholder = cells[1]?.textContent.trim() || 'Ask TCS...';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
       searchBoxWrapperNode = row;
@@ -247,7 +286,7 @@ export default function decorate(block) {
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask TCS Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
@@ -401,30 +440,69 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  const updateButtonStateAndPosition = (level) => {
-    currentViewLevel = level;
-    if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
+  /**
+   * Triggers a search with the given text query in the search bar
+   */
+  const handleSuggestionClick = (query) => {
+    const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
+    const searchForm = searchBoxWrapperNode?.querySelector('.tcs-search-form');
 
-    const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
-    const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
-
-    if (level === 'L1') {
-      searchRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
-      if (closeIcon) closeIcon.classList.remove('hidden');
-    } else {
-      navPillsRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
-      if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
-      if (closeIcon) closeIcon.classList.add('hidden');
+    if (searchInput) {
+      searchInput.value = query;
+      searchQueryVariable = query;
+      if (searchForm) {
+        searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
     }
   };
 
+  /**
+   * Renders Suggestion Pills with Left Arrow for L3 pages (Leaf Nodes)
+   */
+  const renderL3Suggestions = (suggestions = DEFAULT_L3_SUGGESTIONS) => {
+    navPillsRow.innerHTML = '';
+    subMenuPanel.classList.add('hidden');
+
+    const suggestionsGroup = document.createElement('div');
+    suggestionsGroup.className = 'tcs-l3-suggestions-group';
+
+    // Left Back Arrow
+    const backBtn = document.createElement('button');
+    backBtn.className = 'tcs-suggestion-back-btn';
+    backBtn.setAttribute('aria-label', 'Go back');
+    backBtn.innerHTML = getLeftArrowSvg();
+    backBtn.addEventListener('click', () => {
+      window.history.back();
+    });
+    suggestionsGroup.append(backBtn);
+
+    // Suggestion Pill Buttons
+    suggestions.forEach((text) => {
+      const pillBtn = document.createElement('button');
+      pillBtn.className = 'tcs-suggestion-pill';
+      pillBtn.textContent = `"${text}"`;
+
+      pillBtn.addEventListener('click', () => {
+        handleSuggestionClick(text);
+      });
+
+      suggestionsGroup.append(pillBtn);
+    });
+
+    navPillsRow.append(suggestionsGroup);
+    navPillsRow.classList.remove('hidden');
+  };
+
+  /**
+   * Renders L2 Options (with Chevrons & Submenu Panel for L3 Pages)
+   */
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-    updateButtonStateAndPosition('L2');
+
+    if (hamburgerWrapperNode) {
+      hamburgerWrapperNode.classList.remove('hidden');
+    }
 
     const l2Group = document.createElement('div');
     l2Group.className = 'tcs-l2-pills-group';
@@ -465,57 +543,67 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
+  /**
+   * Renders L1 Options ONLY (No Chevron). Direct links to L2 pages.
+   */
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-    updateButtonStateAndPosition('L1');
+
+    if (hamburgerWrapperNode) {
+      hamburgerWrapperNode.classList.add('hidden');
+    }
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
     }
 
+    const l1Group = document.createElement('div');
+    l1Group.className = 'tcs-l1-pills-group';
+
     navTreeData.forEach((l1) => {
       const l1Pill = document.createElement('div');
-      l1Pill.className = 'tcs-nav-pill';
-      const hasL2 = l1.children && l1.children.length > 0;
+      l1Pill.className = 'tcs-nav-pill l1-pill';
 
-      l1Pill.innerHTML = `
-        <a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>
-        ${hasL2 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
-      `;
+      // No chevron for L1 - direct link to L2 page
+      l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
-      l1Pill.addEventListener('mouseenter', () => {
-        navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
-        l1Pill.classList.add('active');
-        if (hasL2) {
-          renderSubmenuCard(l1.children);
-        } else {
-          subMenuPanel.classList.add('hidden');
-        }
-      });
-
-      const chevronBtn = l1Pill.querySelector('.chevron-btn');
-      if (chevronBtn) {
-        chevronBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (hasL2) renderL2SubNavigation(l1);
-        });
-      }
-
-      navPillsRow.append(l1Pill);
+      l1Group.append(l1Pill);
     });
 
+    navPillsRow.append(l1Group);
     navPillsRow.classList.remove('hidden');
+  };
+
+  /**
+   * Initialize layout based on detected page depth level
+   */
+  const initPageLevelLayout = async () => {
+    if (!navTreeData) {
+      navTreeData = await fetchHierarchicalNavData();
+    }
+
+    if (pageLevel === 'L1') {
+      await renderL1ParentNavigation();
+    } else if (pageLevel === 'L2') {
+      const currentPath = window.location.pathname.replace(/\.html$/, '');
+      const activeL1 = navTreeData.find((l1) => currentPath.includes(l1.key)) || navTreeData[0];
+
+      if (activeL1 && activeL1.children?.length > 0) {
+        renderL2SubNavigation(activeL1);
+      } else {
+        await renderL1ParentNavigation();
+      }
+    } else if (pageLevel === 'L3') {
+      if (hamburgerWrapperNode) {
+        hamburgerWrapperNode.classList.remove('hidden');
+      }
+      renderL3Suggestions(DEFAULT_L3_SUGGESTIONS);
+    }
   };
 
   const closeAllNavigation = () => {
     isNavOpen = false;
-    currentViewLevel = 'L1';
-
-    if (hamburgerWrapperNode) {
-      searchRow.prepend(hamburgerWrapperNode);
-    }
-    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
 
     if (hamburgerBtnNode) {
       hamburgerBtnNode.setAttribute('aria-expanded', 'false');
@@ -523,20 +611,18 @@ export default function decorate(block) {
       hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
     }
 
-    navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
+    initPageLevelLayout();
   };
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
-      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
-        await renderL1ParentNavigation();
-        return;
-      }
-
       if (!isNavOpen) {
         isNavOpen = true;
         hamburgerBtnNode.setAttribute('aria-expanded', 'true');
+        hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.add('hidden');
+        hamburgerBtnNode.querySelector('.icon-close')?.classList.remove('hidden');
+
         await renderL1ParentNavigation();
       } else {
         closeAllNavigation();
@@ -548,6 +634,9 @@ export default function decorate(block) {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
+
+  // Initial Page-level setup execution
+  initPageLevelLayout();
 
   // Smooth Scroll & Instant Dock/Float State Monitor
   let ticking = false;
@@ -561,7 +650,6 @@ export default function decorate(block) {
         const canvasSlotEl = document.querySelector('.canvas-block-search-slot');
         const footerEl = block;
 
-        // Precise boundary check: determines if slot container is actively visible in viewport
         const isSlotVisible = (el) => {
           if (!el) return false;
           const rect = el.getBoundingClientRect();
@@ -575,27 +663,23 @@ export default function decorate(block) {
         const isAtFooter = footerRect.top < windowHeight - 140;
 
         if (isHeroDocked && heroSlotEl) {
-          // 1. DOCK inside Hero Banner Slot
           if (floatingNav.parentElement !== heroSlotEl) {
             heroSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isCanvasDocked && canvasSlotEl) {
-          // 2. DOCK inside Canvas Block Search Slot
           if (floatingNav.parentElement !== canvasSlotEl) {
             canvasSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isAtFooter) {
-          // 3. UN-FIXED inside Footer Container
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
         } else {
-          // 4. FLOATING FIXED state (Instant switch as soon as user scrolls past slot)
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
