@@ -196,13 +196,19 @@ export default function decorate(block) {
   footerContainer.append(heading);
 
   // Floating Control Bar Containers
-  const floatingNav = document.createElement('div');
+  const floatingNav = document.createElement('nav');
   floatingNav.className = 'tcs-footer-floating-nav';
+  floatingNav.setAttribute('aria-label', 'Footer Navigation');
+
+  const navAnchorNode = document.createElement('div');
+  navAnchorNode.className = 'tcs-footer-nav-anchor';
+  footerContainer.append(navAnchorNode);
 
   const searchRow = document.createElement('div');
   searchRow.className = 'tcs-footer-search-row';
 
   const navPillsRow = document.createElement('div');
+  navPillsRow.id = 'tcs-footer-nav-pills';
   navPillsRow.className = 'tcs-footer-nav-pills-row hidden';
 
   const subMenuPanel = document.createElement('div');
@@ -223,7 +229,6 @@ export default function decorate(block) {
   let isNavOpen = false;
   let navTreeData = null;
 
-  let currentViewLevel = 'L1';
   let activeL1Data = null;
   let searchQueryVariable = '';
 
@@ -283,9 +288,9 @@ export default function decorate(block) {
         && (authoredImg || authoredIconSrc.startsWith('/') || authoredIconSrc.startsWith('http'));
 
       const hamburgerIconContent = authoredIconSrc && isExternalOrPath
-        ? `<img src="${authoredIconSrc}" alt="${ariaLabel}" class="custom-hamburger-icon" />`
+        ? `<img src="${authoredIconSrc}" alt="" class="custom-hamburger-icon" />`
         : `
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -294,12 +299,12 @@ export default function decorate(block) {
 
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
-        <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false">
+        <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false" aria-controls="tcs-footer-nav-pills">
           <span class="icon-hamburger">
             ${hamburgerIconContent}
           </span>
           <span class="icon-close hidden">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -318,11 +323,12 @@ export default function decorate(block) {
       const formEl = document.createElement('form');
       formEl.className = 'tcs-search-form';
       formEl.action = '#';
+      formEl.setAttribute('role', 'search');
 
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="${placeholder}">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
@@ -330,7 +336,7 @@ export default function decorate(block) {
       if (variation === 'both' || variation === 'voice-only') {
         contentHtml += `
           <button type="button" class="mic-btn" aria-label="Voice Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
               <line x1="12" y1="19" x2="12" y2="23"></line>
@@ -341,7 +347,7 @@ export default function decorate(block) {
 
       contentHtml += `
         <button type="submit" class="submit-btn" aria-label="Submit Search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" aria-hidden="true">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
@@ -378,7 +384,11 @@ export default function decorate(block) {
           micBtn.addEventListener('click', (e) => {
             e.preventDefault();
             micBtn.classList.add('listening');
-            recognition.start();
+            try {
+              recognition.start();
+            } catch (err) {
+              micBtn.classList.remove('listening');
+            }
           });
 
           const stopListening = () => micBtn.classList.remove('listening');
@@ -392,6 +402,8 @@ export default function decorate(block) {
 
           recognition.onerror = stopListening;
           recognition.onend = stopListening;
+        } else {
+          micBtn.style.display = 'none';
         }
       }
     } else if (model === 'tcs-footer-cta') {
@@ -404,7 +416,7 @@ export default function decorate(block) {
       ctaBtn.className = 'tcs-footer-cta-btn';
       ctaBtn.href = link;
       ctaBtn.target = target;
-      ctaBtn.innerHTML = `<span>${label}</span><span class="arrow">→</span>`;
+      ctaBtn.innerHTML = `<span>${label}</span><span class="arrow" aria-hidden="true">→</span>`;
 
       if (cells[0]) moveInstrumentation(cells[0], ctaBtn);
       row.innerHTML = '';
@@ -441,7 +453,7 @@ export default function decorate(block) {
   floatingNav.append(navPillsRow);
 
   if (floatingNav.children.length > 0) {
-    footerContainer.append(floatingNav);
+    navAnchorNode.append(floatingNav);
   }
 
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
@@ -451,8 +463,10 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
+  /**
+   * Helper to update control icon states and keep search bar visible
+   */
   const updateButtonStateAndPosition = (level) => {
-    currentViewLevel = level;
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
 
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
@@ -460,14 +474,17 @@ export default function decorate(block) {
 
     if (level === 'L1') {
       searchRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
       if (closeIcon) closeIcon.classList.remove('hidden');
     } else {
       navPillsRow.prepend(hamburgerWrapperNode);
-      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
+    }
+
+    // ALWAYS ensure search bar is visible across all navigation levels
+    if (searchBoxWrapperNode) {
+      searchBoxWrapperNode.classList.remove('hidden');
     }
   };
 
@@ -476,8 +493,6 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
-   * - Display suggestion pills with left-arrow icon back button.
-   * - Clicking a suggestion pill populates search input.
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -530,7 +545,7 @@ export default function decorate(block) {
   };
 
   /**
-   * Submenu Panel Renderer (Displays L3 Options on L2 Selection)
+   * Submenu Panel Renderer (Displays L3 Options on L2 Hover/Selection)
    */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
@@ -545,7 +560,7 @@ export default function decorate(block) {
       (item) => `
           <a href="${item.path}" class="tcs-submenu-item">
             <span>${item.title}</span>
-            <span class="arrow">→</span>
+            <span class="arrow" aria-hidden="true">→</span>
           </a>
         `,
     )
@@ -554,13 +569,17 @@ export default function decorate(block) {
     `;
 
     subMenuPanel.classList.remove('hidden');
+
+    // Close panel when a subpage link is selected
+    subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((link) => {
+      link.addEventListener('click', () => {
+        subMenuPanel.classList.add('hidden');
+      });
+    });
   };
 
   /**
    * Requirement 2: L2 Navigation View
-   * - Renders L2 options for the active parent category (e.g. dummy-1, dummy-2).
-   * - Shows a chevron ONLY if the L2 item contains L3 pages.
-   * - Clicking either chevron or the L2 pill opens the submenu panel showing its L3 options.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -577,7 +596,7 @@ export default function decorate(block) {
       const hasL3 = l2.children && l2.children.length > 0;
 
       const chevIconHtml = hasL3
-        ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>`
+        ? `<button class="chevron-btn" aria-label="Expand subpages for ${l2.title}">${getChevronSvg()}</button>`
         : '';
 
       l2Pill.innerHTML = `
@@ -602,6 +621,15 @@ export default function decorate(block) {
         }
       };
 
+      // Open submenu panel on hover over L2 pill
+      l2Pill.addEventListener('mouseenter', () => {
+        if (hasL3) {
+          l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+          l2Pill.classList.add('active');
+          renderSubmenuCard(l2.children);
+        }
+      });
+
       l2Pill.addEventListener('click', (e) => {
         if (hasL3 && !e.target.closest('a')) {
           toggleSubmenu(e);
@@ -625,7 +653,6 @@ export default function decorate(block) {
 
   /**
    * Requirement 1: L1 Navigation View
-   * - Display ONLY L1 options without chevrons or submenus.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
@@ -666,7 +693,6 @@ export default function decorate(block) {
     const { depth, l1Key, l2Key } = getCurrentPageInfo();
 
     if (depth >= 3) {
-      // Visiting L3 Page (e.g. /praneeth/dummy-1/industries) -> Show Suggestions
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       activeL1Data = matchedL1;
       let suggestions = [];
@@ -683,7 +709,6 @@ export default function decorate(block) {
 
       renderL3SuggestionsView(suggestions);
     } else if (depth === 1 || depth === 2) {
-      // Visiting L1 Page (/praneeth) or L2 Page (/praneeth/dummy-1) -> Show L2 subpages
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       if (matchedL1 && matchedL1.children && matchedL1.children.length > 0) {
         renderL2SubNavigation(matchedL1);
@@ -697,7 +722,6 @@ export default function decorate(block) {
 
   const closeAllNavigation = () => {
     isNavOpen = false;
-    currentViewLevel = 'L1';
 
     if (hamburgerWrapperNode) {
       searchRow.prepend(hamburgerWrapperNode);
@@ -726,8 +750,17 @@ export default function decorate(block) {
     });
   }
 
-  floatingNav.addEventListener('mouseleave', () => {
-    if (currentViewLevel === 'L2') {
+  // Keyboard accessibility: Escape key closes navigation
+  floatingNav.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isNavOpen) {
+      closeAllNavigation();
+      hamburgerBtnNode?.focus();
+    }
+  });
+
+  // Close subMenuPanel when clicking outside the floating navigation
+  document.addEventListener('click', (e) => {
+    if (!floatingNav.contains(e.target)) {
       subMenuPanel.classList.add('hidden');
       navPillsRow
         .querySelectorAll('.tcs-nav-pill')
@@ -745,7 +778,6 @@ export default function decorate(block) {
 
         const heroSlotEl = document.querySelector('.hero-banner-sticky');
         const canvasSlotEl = document.querySelector('.canvas-block-search-slot');
-        const footerEl = block;
 
         const isSlotVisible = (el) => {
           if (!el) return false;
@@ -756,7 +788,7 @@ export default function decorate(block) {
         const isHeroDocked = isSlotVisible(heroSlotEl);
         const isCanvasDocked = !isHeroDocked && isSlotVisible(canvasSlotEl);
 
-        const footerRect = footerEl.getBoundingClientRect();
+        const footerRect = block.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
         if (isHeroDocked && heroSlotEl) {
@@ -772,13 +804,13 @@ export default function decorate(block) {
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isAtFooter) {
-          if (floatingNav.parentElement !== footerContainer) {
-            footerContainer.insertBefore(floatingNav, ctaRow);
+          if (floatingNav.parentElement !== navAnchorNode) {
+            navAnchorNode.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
         } else {
-          if (floatingNav.parentElement !== footerContainer) {
-            footerContainer.insertBefore(floatingNav, ctaRow);
+          if (floatingNav.parentElement !== navAnchorNode) {
+            navAnchorNode.append(floatingNav);
           }
           floatingNav.classList.add('is-fixed');
           floatingNav.classList.remove('is-docked-slot');
