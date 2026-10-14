@@ -62,7 +62,7 @@ function getCurrentPageInfo() {
   // Construct parent path for page redirection
   const parentPath = segments.length > 1
     ? formatHtmlPath(`/${locale ? `${locale}/` : ''}${segments.slice(0, -1).join('/')}`)
-    : formatHtmlPath(`/${locale ? `${locale}/` : ''}${segments[0] || ''}`);
+    : '/';
 
   return {
     level,
@@ -471,7 +471,7 @@ export default function decorate(block) {
   block.append(footerContainer);
 
   /**
-   * Updates state & removes hamburger from L3 pages
+   * Updates button states
    */
   const updateButtonStateAndPosition = (level) => {
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
@@ -490,11 +490,9 @@ export default function decorate(block) {
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
     } else if (level === 'L3') {
-      // HIDE HAMBURGER IN L3
       hamburgerWrapperNode.classList.add('hidden');
     }
 
-    // ALWAYS ensure search bar is visible
     if (searchBoxWrapperNode) {
       searchBoxWrapperNode.classList.remove('hidden');
     }
@@ -526,7 +524,6 @@ export default function decorate(block) {
 
     subMenuPanel.classList.remove('hidden');
 
-    // Close panel when a subpage link is selected
     subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((link) => {
       link.addEventListener('click', () => {
         subMenuPanel.classList.add('hidden');
@@ -576,7 +573,6 @@ export default function decorate(block) {
         }
       };
 
-      // Open submenu panel on hover over L2 pill
       l2Pill.addEventListener('mouseenter', () => {
         if (hasL3) {
           l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
@@ -639,10 +635,6 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
-   * - No hamburger menu displayed
-   * - Dynamically renders search suggestion pills from index tree
-   * - Clicking pills updates search bar
-   * - Left arrow button redirects browser back to parent L2 page URL
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -652,7 +644,6 @@ export default function decorate(block) {
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
 
-    // Left Back Arrow -> Redirects to Parent L2 Page Window
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
     backBtn.setAttribute('aria-label', 'Return to parent page');
@@ -753,8 +744,17 @@ export default function decorate(block) {
     subMenuPanel.classList.add('hidden');
   };
 
+  // HAMBURGER CLICK LISTENER
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
+      const { depth, parentPath } = getCurrentPageInfo();
+
+      // IF USER IS ON SUB-PAGE (L2/L3) AND CLICKS HAMBURGER -> REDIRECT TO PARENT PAGE WINDOW
+      if (depth >= 1 && isNavOpen) {
+        window.location.href = parentPath;
+        return;
+      }
+
       if (!isNavOpen) {
         isNavOpen = true;
         hamburgerBtnNode.setAttribute('aria-expanded', 'true');
@@ -764,6 +764,17 @@ export default function decorate(block) {
       }
     });
   }
+
+  // AUTO-INITIALIZE ON PAGE LOAD: IF ON L2/SUBPAGE, AUTO-OPEN MENU AS IN IMAGE-2
+  const initAutoNav = async () => {
+    const { depth } = getCurrentPageInfo();
+    if (depth >= 1) {
+      isNavOpen = true;
+      if (hamburgerBtnNode) hamburgerBtnNode.setAttribute('aria-expanded', 'true');
+      await renderCurrentPageNavigation();
+    }
+  };
+  initAutoNav();
 
   // Keyboard accessibility: Escape key closes navigation
   floatingNav.addEventListener('keydown', (e) => {
