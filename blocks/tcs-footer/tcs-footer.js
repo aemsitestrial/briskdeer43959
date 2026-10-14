@@ -635,6 +635,7 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
+   * - Places Back Arrow horizontally beside suggestion pills in the same row (fig-2)
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -643,6 +644,10 @@ export default function decorate(block) {
 
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
+    l3Container.style.display = 'flex';
+    l3Container.style.alignItems = 'center';
+    l3Container.style.justifyContent = 'center';
+    l3Container.style.gap = '12px';
 
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
@@ -662,6 +667,9 @@ export default function decorate(block) {
 
     const pillsGroup = document.createElement('div');
     pillsGroup.className = 'tcs-l3-pills-group';
+    pillsGroup.style.display = 'flex';
+    pillsGroup.style.alignItems = 'center';
+    pillsGroup.style.gap = '8px';
 
     suggestionsList.forEach((suggestion) => {
       const sugText = typeof suggestion === 'string' ? suggestion : (suggestion.title || suggestion.key || '');
@@ -744,12 +752,10 @@ export default function decorate(block) {
     subMenuPanel.classList.add('hidden');
   };
 
-  // HAMBURGER CLICK LISTENER
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
       const { depth, parentPath } = getCurrentPageInfo();
 
-      // IF USER IS ON SUB-PAGE (L2/L3) AND CLICKS HAMBURGER -> REDIRECT TO PARENT PAGE WINDOW
       if (depth >= 1 && isNavOpen) {
         window.location.href = parentPath;
         return;
@@ -765,7 +771,6 @@ export default function decorate(block) {
     });
   }
 
-  // AUTO-INITIALIZE ON PAGE LOAD: IF ON L2/SUBPAGE, AUTO-OPEN MENU AS IN IMAGE-2
   const initAutoNav = async () => {
     const { depth } = getCurrentPageInfo();
     if (depth >= 1) {
@@ -776,7 +781,6 @@ export default function decorate(block) {
   };
   initAutoNav();
 
-  // Keyboard accessibility: Escape key closes navigation
   floatingNav.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isNavOpen) {
       closeAllNavigation();
@@ -784,7 +788,6 @@ export default function decorate(block) {
     }
   });
 
-  // Close subMenuPanel when clicking outside the floating navigation
   document.addEventListener('click', (e) => {
     if (!floatingNav.contains(e.target)) {
       subMenuPanel.classList.add('hidden');
@@ -794,7 +797,6 @@ export default function decorate(block) {
     }
   });
 
-  // Smooth Scroll & Docking
   let ticking = false;
 
   const handleScroll = () => {
