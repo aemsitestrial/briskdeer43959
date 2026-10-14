@@ -10,10 +10,10 @@ const getChevronSvg = () => `
 `;
 
 /**
- * SVG Left Arrow Icon Helper (for L3 Suggestion Pills row)
+ * SVG Left Arrow Icon Helper
  */
-const getLeftArrowSvg = () => `
-  <svg class="arrow-back-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+const getArrowLeftSvg = () => `
+  <svg class="arrow-left-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
     <line x1="19" y1="12" x2="5" y2="12"></line>
     <polyline points="12 19 5 12 12 5"></polyline>
   </svg>
@@ -35,30 +35,6 @@ function formatHtmlPath(path) {
 
   return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
 }
-
-/**
- * Determines current page depth level (L1, L2, L3) based on URL path
- */
-function detectCurrentPageLevel() {
-  const currentPath = window.location.pathname.replace(/\.html$/, '');
-  const segments = currentPath.split('/').filter((s) => s && s !== 'content');
-
-  if (segments[0] && segments[0].length === 2) {
-    segments.shift();
-  }
-
-  const filterPrefixes = ['2026', '39', 'briskdeer43959'];
-  const filtered = segments.filter((s) => !filterPrefixes.includes(s));
-
-  if (filtered.length <= 1) return 'L1';
-  if (filtered.length === 2) return 'L2';
-  return 'L3';
-}
-
-const DEFAULT_L3_SUGGESTIONS = [
-  'Find the right TCS solution for my business',
-  'Show me TCS success stories',
-];
 
 /**
  * Parses query-index.json into a flexible multi-level tree structure.
@@ -204,8 +180,8 @@ export default function decorate(block) {
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
+  let activeL1Data = null;
   let searchQueryVariable = '';
-  const pageLevel = detectCurrentPageLevel();
 
   const getModelType = (row, index) => {
     const explicitModel = row.getAttribute('data-aue-model') || row.dataset?.aueModel;
@@ -413,29 +389,6 @@ export default function decorate(block) {
   block.textContent = '';
   block.append(footerContainer);
 
-  const renderSubmenuCard = (items) => {
-    if (!items || items.length === 0) {
-      subMenuPanel.classList.add('hidden');
-      return;
-    }
-
-    subMenuPanel.innerHTML = `
-      <div class="tcs-submenu-grid">
-        ${items
-    .map(
-      (item) => `
-          <a href="${item.path}" class="tcs-submenu-item">
-            <span>${item.title}</span>
-            <span class="arrow">→</span>
-          </a>
-        `,
-    )
-    .join('')}
-      </div>
-    `;
-    subMenuPanel.classList.remove('hidden');
-  };
-
   const updateButtonStateAndPosition = (level) => {
     currentViewLevel = level;
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
@@ -456,52 +409,104 @@ export default function decorate(block) {
     }
   };
 
-  const handleSuggestionClick = (query) => {
-    const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
-    const searchForm = searchBoxWrapperNode?.querySelector('.tcs-search-form');
+  // Declare placeholders so inner closures can invoke them without no-use-before-define issues
+  let renderL1ParentNavigation;
+  let renderL2SubNavigation;
 
-    if (searchInput) {
-      searchInput.value = query;
-      searchQueryVariable = query;
-      if (searchForm) {
-        searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-      }
-    }
-  };
-
-  const renderL3Suggestions = (suggestions = DEFAULT_L3_SUGGESTIONS) => {
+  /**
+   * Render L3 Suggestions View
+   */
+  const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
+    updateButtonStateAndPosition('L3');
 
-    const suggestionsGroup = document.createElement('div');
-    suggestionsGroup.className = 'tcs-l3-suggestions-group';
+    const l3Container = document.createElement('div');
+    l3Container.className = 'tcs-l3-suggestions-wrapper';
 
+    // Left Arrow Button to return to L2
     const backBtn = document.createElement('button');
-    backBtn.className = 'tcs-suggestion-back-btn';
-    backBtn.setAttribute('aria-label', 'Go back');
-    backBtn.innerHTML = getLeftArrowSvg();
+    backBtn.className = 'tcs-nav-back-btn';
+    backBtn.setAttribute('aria-label', 'Return to previous navigation view');
+    backBtn.innerHTML = getArrowLeftSvg();
     backBtn.addEventListener('click', () => {
-      window.history.back();
+      if (activeL1Data) {
+        renderL2SubNavigation(activeL1Data);
+      } else {
+        renderL1ParentNavigation();
+      }
     });
-    suggestionsGroup.append(backBtn);
 
-    suggestions.forEach((text) => {
-      const pillBtn = document.createElement('button');
-      pillBtn.className = 'tcs-suggestion-pill';
-      pillBtn.textContent = `"${text}"`;
+    l3Container.append(backBtn);
 
-      pillBtn.addEventListener('click', () => {
-        handleSuggestionClick(text);
+    const pillsGroup = document.createElement('div');
+    pillsGroup.className = 'tcs-l3-pills-group';
+
+    suggestionsList.forEach((suggestion) => {
+      const sugPill = document.createElement('button');
+      sugPill.className = 'tcs-nav-pill l3-suggestion-pill';
+      sugPill.type = 'button';
+      sugPill.textContent = suggestion.title || suggestion;
+
+      sugPill.addEventListener('click', () => {
+        const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
+        if (searchInput) {
+          const selectedText = suggestion.title || suggestion;
+          searchInput.value = selectedText;
+          searchQueryVariable = selectedText;
+          searchInput.focus();
+        }
       });
 
-      suggestionsGroup.append(pillBtn);
+      pillsGroup.append(sugPill);
     });
 
-    navPillsRow.append(suggestionsGroup);
+    l3Container.append(pillsGroup);
+    navPillsRow.append(l3Container);
     navPillsRow.classList.remove('hidden');
   };
 
-  const renderL2SubNavigation = (l1Data) => {
+  const renderSubmenuCard = (items) => {
+    if (!items || items.length === 0) {
+      subMenuPanel.classList.add('hidden');
+      return;
+    }
+
+    subMenuPanel.innerHTML = `
+      <div class="tcs-submenu-grid">
+        ${items
+    .map(
+      (item, idx) => `
+          <a href="${item.path}" class="tcs-submenu-item" data-index="${idx}">
+            <span>${item.title}</span>
+            <span class="arrow">→</span>
+          </a>
+        `,
+    )
+    .join('')}
+      </div>
+    `;
+
+    // Attach click triggers to open L3 suggestion pills if L3 item clicked
+    subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((itemEl) => {
+      itemEl.addEventListener('click', (e) => {
+        const idx = itemEl.getAttribute('data-index');
+        const clickedL3 = items[idx];
+        if (clickedL3) {
+          e.preventDefault();
+          renderL3SuggestionsView(items);
+        }
+      });
+    });
+
+    subMenuPanel.classList.remove('hidden');
+  };
+
+  /**
+   * Render L2 Sub-Navigation
+   */
+  renderL2SubNavigation = (l1Data) => {
+    activeL1Data = l1Data;
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
     updateButtonStateAndPosition('L2');
@@ -514,19 +519,24 @@ export default function decorate(block) {
       l2Pill.className = 'tcs-nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
+      // Render chevron ONLY if L2 has L3 options
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
-      l2Pill.addEventListener('mouseenter', () => {
-        l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
-        l2Pill.classList.add('active');
-
+      const toggleSubmenu = (e) => {
         if (hasL3) {
+          e?.preventDefault();
+          l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+          l2Pill.classList.add('active');
           renderSubmenuCard(l2.children);
-        } else {
-          subMenuPanel.classList.add('hidden');
+        }
+      };
+
+      l2Pill.addEventListener('click', (e) => {
+        if (hasL3 && !e.target.closest('a')) {
+          toggleSubmenu(e);
         }
       });
 
@@ -534,7 +544,7 @@ export default function decorate(block) {
       if (chevronBtn) {
         chevronBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (hasL3) renderSubmenuCard(l2.children);
+          toggleSubmenu(e);
         });
       }
 
@@ -545,56 +555,42 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  const renderL1ParentNavigation = async () => {
+  /**
+   * Render L1 Navigation View
+   */
+  renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
-    subMenuPanel.classList.add('hidden');
+    subMenuPanel.classList.add('hidden'); // Ensure submenu is explicitly hidden for L1
     updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
     }
 
-    const l1Group = document.createElement('div');
-    l1Group.className = 'tcs-l1-pills-group';
-
     navTreeData.forEach((l1) => {
       const l1Pill = document.createElement('div');
-      l1Pill.className = 'tcs-nav-pill l1-pill';
+      l1Pill.className = 'tcs-nav-pill';
 
-      // L1 items: direct link, no chevrons
+      // No chevrons for L1 options
       l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
-      l1Group.append(l1Pill);
+      l1Pill.addEventListener('click', (e) => {
+        if (l1.children && l1.children.length > 0) {
+          e.preventDefault();
+          renderL2SubNavigation(l1);
+        }
+      });
+
+      navPillsRow.append(l1Pill);
     });
 
-    navPillsRow.append(l1Group);
     navPillsRow.classList.remove('hidden');
-  };
-
-  const initPageLevelLayout = async () => {
-    if (!navTreeData) {
-      navTreeData = await fetchHierarchicalNavData();
-    }
-
-    if (pageLevel === 'L1') {
-      await renderL1ParentNavigation();
-    } else if (pageLevel === 'L2') {
-      const currentPath = window.location.pathname.replace(/\.html$/, '');
-      const activeL1 = navTreeData.find((l1) => currentPath.includes(l1.key)) || navTreeData[0];
-
-      if (activeL1 && activeL1.children?.length > 0) {
-        renderL2SubNavigation(activeL1);
-      } else {
-        await renderL1ParentNavigation();
-      }
-    } else if (pageLevel === 'L3') {
-      renderL3Suggestions(DEFAULT_L3_SUGGESTIONS);
-    }
   };
 
   const closeAllNavigation = () => {
     isNavOpen = false;
     currentViewLevel = 'L1';
+    activeL1Data = null;
 
     if (hamburgerWrapperNode) {
       searchRow.prepend(hamburgerWrapperNode);
@@ -629,11 +625,11 @@ export default function decorate(block) {
   }
 
   floatingNav.addEventListener('mouseleave', () => {
-    subMenuPanel.classList.add('hidden');
-    navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+    if (currentViewLevel !== 'L3') {
+      subMenuPanel.classList.add('hidden');
+      navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
+    }
   });
-
-  initPageLevelLayout();
 
   // Smooth Scroll & Instant Dock/Float State Monitor
   let ticking = false;
