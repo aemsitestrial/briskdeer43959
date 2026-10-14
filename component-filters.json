@@ -36,7 +36,8 @@
       "tcs-footer",
       "cta",
       "canvas-block",
-      "hero-banner"
+      "hero-banner",
+      "navigation"
     ]
   },
   {
@@ -130,6 +131,13 @@
     "id": "icon-list",
     "components": [
       "icon-list-item"
+    ]
+  },
+  {
+    "id": "navigation",
+    "components": [
+      "nav-hamburger",
+      "nav-search"
     ]
   },
   {

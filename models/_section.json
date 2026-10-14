@@ -71,7 +71,8 @@
         "tcs-footer",
         "cta",
         "canvas-block",
-        "hero-banner"
+        "hero-banner",
+        "navigation"
       ]
     }
   ]

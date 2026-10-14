@@ -7060,6 +7060,61 @@
     ]
   },
   {
+    "id": "navigation",
+    "fields": []
+  },
+  {
+    "id": "nav-hamburger",
+    "fields": [
+      {
+        "component": "aem-content",
+        "name": "icon",
+        "label": "Hamburger Custom Icon (Image / SVG)",
+        "valueType": "string"
+      },
+      {
+        "component": "text",
+        "name": "ariaLabel",
+        "label": "Aria Label",
+        "valueType": "string",
+        "value": "Open navigation menu"
+      }
+    ]
+  },
+  {
+    "id": "nav-search",
+    "fields": [
+      {
+        "component": "select",
+        "name": "searchVariation",
+        "label": "Search Variation",
+        "valueType": "string",
+        "value": "both",
+        "options": [
+          {
+            "name": "Text & Voice",
+            "value": "both"
+          },
+          {
+            "name": "Text Only",
+            "value": "text-only"
+          },
+          {
+            "name": "Voice Only",
+            "value": "voice-only"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "placeholder",
+        "label": "Placeholder Text",
+        "valueType": "string",
+        "value": "Ask TCS..."
+      }
+    ]
+  },
+  {
     "id": "quote",
     "fields": [
       {
