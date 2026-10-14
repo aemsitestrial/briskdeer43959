@@ -341,13 +341,12 @@ export default function decorate(block) {
     }
   };
 
-  /**
-   * Render L3 Suggestions View
-   * Renders a Back Pill (<-) and Suggestion Pills that reflect into the Search Bar when clicked.
-   */
   let renderL2SubNavigation;
   let renderL1ParentNavigation;
 
+  /**
+   * Render L3 Suggestions View
+   */
   const renderL3SuggestionsView = (previousL2, parentL1) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
@@ -356,7 +355,7 @@ export default function decorate(block) {
     const l3Group = document.createElement('div');
     l3Group.className = 'nav-l3-pills-group';
 
-    // 1. Back Arrow Button Pill
+    // Back Arrow Button Pill
     const backPill = document.createElement('button');
     backPill.className = 'nav-back-pill';
     backPill.setAttribute('aria-label', 'Go Back');
@@ -371,7 +370,6 @@ export default function decorate(block) {
 
     l3Group.append(backPill);
 
-    // 2. Default Contextual Prompt Suggestions for L3 pages
     const defaultSuggestions = [
       'What customers have solved similar challenges?',
       'Find customers in my industry',
@@ -399,7 +397,6 @@ export default function decorate(block) {
 
   /**
    * Render L2 Level Navigation
-   * Displays L2 pills. CHEVRON IS SHOWN for L2 pills containing L3 children.
    */
   renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
@@ -414,7 +411,6 @@ export default function decorate(block) {
       l2Pill.className = 'nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
-      // Render Chevron ONLY for L2 items having L3 children
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="pill-link">${l2.title}</a>
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
@@ -448,7 +444,6 @@ export default function decorate(block) {
 
   /**
    * Render L1 Parent Navigation
-   * REQUIREMENTS: L1 options ONLY - NO CHEVRON icons for L1 pills.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
@@ -463,11 +458,9 @@ export default function decorate(block) {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'nav-pill l1-pill';
 
-      // NO CHEVRON FOR L1
       l1Pill.innerHTML = `<a href="${l1.path}" class="pill-link">${l1.title}</a>`;
 
-      l1Pill.addEventListener('click', (e) => {
-        e.preventDefault();
+      l1Pill.addEventListener('click', () => {
         navPillsRow.querySelectorAll('.nav-pill').forEach((p) => p.classList.remove('active'));
         l1Pill.classList.add('active');
 
@@ -475,6 +468,11 @@ export default function decorate(block) {
           renderL2SubNavigation(l1);
         } else {
           renderL3SuggestionsView(null, l1);
+        }
+
+        // Navigate directly to the L1 page
+        if (l1.path && l1.path !== '#') {
+          window.location.href = l1.path;
         }
       });
 
