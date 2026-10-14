@@ -28,7 +28,7 @@ function formatHtmlPath(path) {
   let resolvedPath = path;
 
   if (!resolvedPath.startsWith('/content/')) {
-    resolvedPath = `/content/2026/39/briskdeer43959${
+    resolvedPath = `/${
       resolvedPath.startsWith('/') ? '' : '/'
     }${resolvedPath}`;
   }
