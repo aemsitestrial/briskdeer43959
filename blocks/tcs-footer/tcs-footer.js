@@ -25,13 +25,9 @@ const getArrowLeftSvg = () => `
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
 
-  // Ensure path starts with a single slash '/'
   let resolvedPath = path.startsWith('/') ? path : `/${path}`;
-
-  // Strip .html extension if present in input
   resolvedPath = resolvedPath.replace(/\.html$/, '');
 
-  // Clean up any AEM content path prefixes to leave only /[pagename]
   if (resolvedPath.includes('/content/')) {
     const parts = resolvedPath.split('/').filter(Boolean);
     const lastPart = parts[parts.length - 1];
@@ -52,7 +48,6 @@ function getCurrentPageInfo() {
     segments.shift(); // Remove locale segment if present
   }
 
-  // Remove common AEM prefix segments if present
   const contentIdx = segments.indexOf('content');
   if (contentIdx !== -1) {
     segments.splice(0, contentIdx + 4);
@@ -73,7 +68,7 @@ function getCurrentPageInfo() {
 }
 
 /**
- * Parses query-index.json into a flexible multi-level tree structure.
+ * Parses query-index.json into L1, L2, and L3 multi-level hierarchy
  */
 async function fetchHierarchicalNavData() {
   try {
@@ -114,7 +109,9 @@ async function fetchHierarchicalNavData() {
 
       if (segments.length === 0) return;
 
-      const lastSegment = segments[segments.length - 1].toLowerCase().replace(/\s+/g, '-');
+      const lastSegment = segments[segments.length - 1]
+        .toLowerCase()
+        .replace(/\s+/g, '-');
       if (excludedPages.includes(lastSegment)) return;
 
       const l1Key = segments[0];
@@ -172,7 +169,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title
+  // Heading Title
   const mainTitleRow = blockRows.shift();
   const rawTitle = mainTitleRow?.textContent.trim();
   const titleText = rawTitle
@@ -443,15 +440,14 @@ export default function decorate(block) {
     }
   };
 
-  // Declare functions beforehand for forward-references
   let renderL1ParentNavigation;
   let renderL2SubNavigation;
 
   /**
    * Requirement 3: L3 Page Behavior
-   * - Display suggestions as pill-shaped buttons instead of showing a submenu.
-   * - Display a left-arrow icon before the suggestion pills to return to previous navigation view.
-   * - Clicking a suggestion pill inserts and displays the suggestion in the search bar.
+   * - Display suggestions as pill buttons instead of submenu.
+   * - Display left-arrow icon before suggestions to return to L2.
+   * - Clicking a pill inserts suggestion into the search bar.
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -461,7 +457,6 @@ export default function decorate(block) {
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
 
-    // Left arrow icon before suggestion pills
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
     backBtn.setAttribute('aria-label', 'Return to previous navigation view');
@@ -487,7 +482,6 @@ export default function decorate(block) {
       sugPill.type = 'button';
       sugPill.textContent = sugText;
 
-      // On click: insert selected suggestion into search bar
       sugPill.addEventListener('click', () => {
         const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
         if (searchInput) {
@@ -506,7 +500,7 @@ export default function decorate(block) {
   };
 
   /**
-   * Submenu Panel Renderer (Used in L2 view for showing L3 subpages)
+   * Submenu Panel Renderer (Displays L3 Options on L2 Page)
    */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
@@ -535,9 +529,9 @@ export default function decorate(block) {
   /**
    * Requirement 2: L2 Page Behavior
    * - Display relevant L2 navigation options.
-   * - L2 options that contain L3 pages display a chevron.
-   * - Selecting chevron or L2 option opens submenu containing its L3 options.
-   * - Selecting an L3 option navigates to corresponding L3 page.
+   * - L2 options containing L3 pages display a chevron.
+   * - Selecting chevron or L2 option opens submenu panel containing L3 options.
+   * - Selecting an L3 option navigates to the L3 page.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -553,7 +547,7 @@ export default function decorate(block) {
       l2Pill.className = 'tcs-nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
-      // Render chevron ONLY if L2 option contains L3 pages
+      // Display Chevron ONLY if L2 item contains L3 pages
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
@@ -591,14 +585,14 @@ export default function decorate(block) {
 
   /**
    * Requirement 1: L1 Page Behavior
-   * - Display ONLY the available L1 navigation options.
-   * - Do NOT display chevrons beside L1 options.
-   * - Selecting an L1 option navigates directly to corresponding L2 page.
-   * - Do NOT display a submenu panel while on an L1 page.
+   * - Display ONLY available L1 options.
+   * - DO NOT display chevrons beside L1 options.
+   * - Selecting L1 option navigates directly to corresponding L2 page.
+   * - DO NOT display submenu panel on L1 page.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
-    subMenuPanel.classList.add('hidden'); // Never display a submenu on L1
+    subMenuPanel.classList.add('hidden');
     updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
@@ -609,13 +603,12 @@ export default function decorate(block) {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'tcs-nav-pill';
 
-      // Chevron removed completely for L1
+      // No chevrons for L1 options
       l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
       const linkEl = l1Pill.querySelector('.tcs-pill-link');
       if (linkEl) {
         linkEl.addEventListener('click', () => {
-          // Direct navigation to corresponding page
           window.location.href = l1.path;
         });
       }
@@ -637,7 +630,6 @@ export default function decorate(block) {
     const { level, l1Key, l2Key } = getCurrentPageInfo();
 
     if (level === 'L3') {
-      // Current page is L3: find matching parent L1 and L2 items for suggestions
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       activeL1Data = matchedL1;
       let suggestions = [];
@@ -654,7 +646,6 @@ export default function decorate(block) {
 
       renderL3SuggestionsView(suggestions);
     } else if (level === 'L2') {
-      // Current page is L2: render relevant L2 navigation options
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       if (matchedL1) {
         renderL2SubNavigation(matchedL1);
@@ -662,7 +653,6 @@ export default function decorate(block) {
         await renderL1ParentNavigation();
       }
     } else {
-      // Current page is L1: render L1 options only with direct page links
       await renderL1ParentNavigation();
     }
   };
