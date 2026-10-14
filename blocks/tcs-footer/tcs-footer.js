@@ -37,6 +37,37 @@ function formatHtmlPath(path) {
 }
 
 /**
+ * Helper to determine current page level (L1, L2, or L3) and path segments
+ */
+function getCurrentPageInfo() {
+  const path = window.location.pathname.replace(/\.html$/, '');
+  const segments = path.split('/').filter(Boolean);
+
+  if (segments[0] && segments[0].length === 2) {
+    segments.shift(); // Remove locale segment if present
+  }
+
+  // Remove common AEM prefix segments
+  const contentIdx = segments.indexOf('content');
+  if (contentIdx !== -1) {
+    segments.splice(0, contentIdx + 4);
+  }
+
+  const depth = segments.length;
+  let level = 'L1';
+  if (depth === 2) level = 'L2';
+  if (depth >= 3) level = 'L3';
+
+  return {
+    level,
+    segments,
+    l1Key: segments[0] || '',
+    l2Key: segments[1] || '',
+    l3Key: segments[2] || '',
+  };
+}
+
+/**
  * Parses query-index.json into a flexible multi-level tree structure.
  */
 async function fetchHierarchicalNavData() {
@@ -136,7 +167,7 @@ async function fetchHierarchicalNavData() {
 export default function decorate(block) {
   const blockRows = [...block.children];
 
-  // 1. Heading Title (First row of block)
+  // 1. Heading Title
   const mainTitleRow = blockRows.shift();
   const rawTitle = mainTitleRow?.textContent.trim();
   const titleText = rawTitle
@@ -369,7 +400,6 @@ export default function decorate(block) {
     }
   });
 
-  // Nest SubMenu Panel INSIDE floatingNav
   if (subMenuPanel) floatingNav.append(subMenuPanel);
   if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
   if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
@@ -381,7 +411,6 @@ export default function decorate(block) {
     footerContainer.append(floatingNav);
   }
 
-  // Static Bottom Items
   if (ctaRow.children.length > 0) footerContainer.append(ctaRow);
   if (legalNav.children.length > 0) bottomRow.append(legalNav);
   if (bottomRow.children.length > 0) footerContainer.append(bottomRow);
@@ -409,12 +438,15 @@ export default function decorate(block) {
     }
   };
 
-  // Declare placeholders so inner closures can invoke them without no-use-before-define issues
+  // Declare functions beforehand for forward-references
   let renderL1ParentNavigation;
   let renderL2SubNavigation;
 
   /**
-   * Render L3 Suggestions View
+   * Requirement 3: L3 Page Behavior
+   * - Display suggestions as pill-shaped buttons instead of showing a submenu.
+   * - Display a left-arrow icon before the suggestion pills to return to previous navigation view.
+   * - Clicking a suggestion pill inserts and displays the suggestion in the search bar.
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -424,11 +456,12 @@ export default function decorate(block) {
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
 
-    // Left Arrow Button to return to L2
+    // Left arrow icon before suggestion pills
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
     backBtn.setAttribute('aria-label', 'Return to previous navigation view');
     backBtn.innerHTML = getArrowLeftSvg();
+
     backBtn.addEventListener('click', () => {
       if (activeL1Data) {
         renderL2SubNavigation(activeL1Data);
@@ -443,17 +476,18 @@ export default function decorate(block) {
     pillsGroup.className = 'tcs-l3-pills-group';
 
     suggestionsList.forEach((suggestion) => {
+      const sugText = suggestion.title || suggestion;
       const sugPill = document.createElement('button');
       sugPill.className = 'tcs-nav-pill l3-suggestion-pill';
       sugPill.type = 'button';
-      sugPill.textContent = suggestion.title || suggestion;
+      sugPill.textContent = sugText;
 
+      // On click: insert selected suggestion into search bar
       sugPill.addEventListener('click', () => {
         const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
         if (searchInput) {
-          const selectedText = suggestion.title || suggestion;
-          searchInput.value = selectedText;
-          searchQueryVariable = selectedText;
+          searchInput.value = sugText;
+          searchQueryVariable = sugText;
           searchInput.focus();
         }
       });
@@ -466,6 +500,9 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
+  /**
+   * Submenu Panel Renderer (Used in L2 view for showing L3 subpages)
+   */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
       subMenuPanel.classList.add('hidden');
@@ -476,8 +513,8 @@ export default function decorate(block) {
       <div class="tcs-submenu-grid">
         ${items
     .map(
-      (item, idx) => `
-          <a href="${item.path}" class="tcs-submenu-item" data-index="${idx}">
+      (item) => `
+          <a href="${item.path}" class="tcs-submenu-item">
             <span>${item.title}</span>
             <span class="arrow">→</span>
           </a>
@@ -487,23 +524,15 @@ export default function decorate(block) {
       </div>
     `;
 
-    // Attach click triggers to open L3 suggestion pills if L3 item clicked
-    subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((itemEl) => {
-      itemEl.addEventListener('click', (e) => {
-        const idx = itemEl.getAttribute('data-index');
-        const clickedL3 = items[idx];
-        if (clickedL3) {
-          e.preventDefault();
-          renderL3SuggestionsView(items);
-        }
-      });
-    });
-
     subMenuPanel.classList.remove('hidden');
   };
 
   /**
-   * Render L2 Sub-Navigation
+   * Requirement 2: L2 Page Behavior
+   * - Display relevant L2 navigation options.
+   * - L2 options that contain L3 pages display a chevron.
+   * - Selecting chevron or L2 option opens submenu containing its L3 options.
+   * - Selecting an L3 option navigates to corresponding L3 page.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -519,13 +548,13 @@ export default function decorate(block) {
       l2Pill.className = 'tcs-nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
-      // Render chevron ONLY if L2 has L3 options
+      // Render chevron ONLY if L2 option contains L3 pages
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
-      const toggleSubmenu = (e) => {
+      const openSubmenu = (e) => {
         if (hasL3) {
           e?.preventDefault();
           l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
@@ -536,7 +565,7 @@ export default function decorate(block) {
 
       l2Pill.addEventListener('click', (e) => {
         if (hasL3 && !e.target.closest('a')) {
-          toggleSubmenu(e);
+          openSubmenu(e);
         }
       });
 
@@ -544,7 +573,7 @@ export default function decorate(block) {
       if (chevronBtn) {
         chevronBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          toggleSubmenu(e);
+          openSubmenu(e);
         });
       }
 
@@ -556,11 +585,15 @@ export default function decorate(block) {
   };
 
   /**
-   * Render L1 Navigation View
+   * Requirement 1: L1 Page Behavior
+   * - Display ONLY the available L1 navigation options.
+   * - Do NOT display chevrons beside L1 options.
+   * - Selecting an L1 option navigates directly to corresponding L2 page.
+   * - Do NOT display a submenu panel while on an L1 page.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
-    subMenuPanel.classList.add('hidden'); // Ensure submenu is explicitly hidden for L1
+    subMenuPanel.classList.add('hidden'); // Never display a submenu on L1
     updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
@@ -571,15 +604,16 @@ export default function decorate(block) {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'tcs-nav-pill';
 
-      // No chevrons for L1 options
+      // Chevron removed completely for L1
       l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
-      l1Pill.addEventListener('click', (e) => {
-        if (l1.children && l1.children.length > 0) {
-          e.preventDefault();
-          renderL2SubNavigation(l1);
-        }
-      });
+      const linkEl = l1Pill.querySelector('.tcs-pill-link');
+      if (linkEl) {
+        linkEl.addEventListener('click', () => {
+          // Direct navigation to corresponding page
+          window.location.href = l1.path;
+        });
+      }
 
       navPillsRow.append(l1Pill);
     });
@@ -587,10 +621,50 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
+  /**
+   * Auto-detect level based on active URL location
+   */
+  const renderCurrentPageNavigation = async () => {
+    if (!navTreeData) {
+      navTreeData = await fetchHierarchicalNavData();
+    }
+
+    const { level, l1Key, l2Key } = getCurrentPageInfo();
+
+    if (level === 'L3') {
+      // Current page is L3: find matching parent L1 and L2 items for suggestions
+      const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
+      activeL1Data = matchedL1;
+      let suggestions = [];
+
+      if (matchedL1) {
+        const matchedL2 = matchedL1.children.find((l2) => l2.key === l2Key)
+          || matchedL1.children[0];
+        if (matchedL2 && matchedL2.children.length > 0) {
+          suggestions = matchedL2.children;
+        } else {
+          suggestions = matchedL1.children;
+        }
+      }
+
+      renderL3SuggestionsView(suggestions);
+    } else if (level === 'L2') {
+      // Current page is L2: render relevant L2 navigation options
+      const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
+      if (matchedL1) {
+        renderL2SubNavigation(matchedL1);
+      } else {
+        await renderL1ParentNavigation();
+      }
+    } else {
+      // Current page is L1: render L1 options only with direct page links
+      await renderL1ParentNavigation();
+    }
+  };
+
   const closeAllNavigation = () => {
     isNavOpen = false;
     currentViewLevel = 'L1';
-    activeL1Data = null;
 
     if (hamburgerWrapperNode) {
       searchRow.prepend(hamburgerWrapperNode);
@@ -609,15 +683,10 @@ export default function decorate(block) {
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
-      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
-        await renderL1ParentNavigation();
-        return;
-      }
-
       if (!isNavOpen) {
         isNavOpen = true;
         hamburgerBtnNode.setAttribute('aria-expanded', 'true');
-        await renderL1ParentNavigation();
+        await renderCurrentPageNavigation();
       } else {
         closeAllNavigation();
       }
@@ -625,13 +694,13 @@ export default function decorate(block) {
   }
 
   floatingNav.addEventListener('mouseleave', () => {
-    if (currentViewLevel !== 'L3') {
+    if (currentViewLevel === 'L2') {
       subMenuPanel.classList.add('hidden');
       navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
     }
   });
 
-  // Smooth Scroll & Instant Dock/Float State Monitor
+  // Smooth Scroll & Docking
   let ticking = false;
 
   const handleScroll = () => {
