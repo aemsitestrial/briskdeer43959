@@ -234,6 +234,7 @@ export default function decorate(block) {
   let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let searchBoxWrapperNode = null;
+  let isNavOpen = false;
   let navTreeData = null;
 
   let searchQueryVariable = '';
@@ -305,7 +306,7 @@ export default function decorate(block) {
 
       row.className = 'tcs-footer-hamburger-wrapper';
       row.innerHTML = `
-        <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="true" aria-controls="tcs-footer-nav-pills">
+        <button class="tcs-footer-hamburger" aria-label="${ariaLabel}" aria-expanded="false" aria-controls="tcs-footer-nav-pills">
           <span class="icon-hamburger">
             ${hamburgerIconContent}
           </span>
@@ -470,7 +471,7 @@ export default function decorate(block) {
   block.append(footerContainer);
 
   /**
-   * Updates state & places hamburger in navPillsRow beside options
+   * Updates state & removes hamburger from L3 pages
    */
   const updateButtonStateAndPosition = (level) => {
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
@@ -478,22 +479,29 @@ export default function decorate(block) {
     const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
-    if (level === 'L1' || level === 'L2') {
+    if (level === 'L1') {
+      hamburgerWrapperNode.classList.remove('hidden');
+      searchRow.prepend(hamburgerWrapperNode);
+      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+      if (closeIcon) closeIcon.classList.remove('hidden');
+    } else if (level === 'L2') {
       hamburgerWrapperNode.classList.remove('hidden');
       navPillsRow.prepend(hamburgerWrapperNode);
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
     } else if (level === 'L3') {
+      // HIDE HAMBURGER IN L3
       hamburgerWrapperNode.classList.add('hidden');
     }
 
+    // ALWAYS ensure search bar is visible
     if (searchBoxWrapperNode) {
       searchBoxWrapperNode.classList.remove('hidden');
     }
   };
 
   /**
-   * Submenu Panel Renderer
+   * Submenu Panel Renderer (Displays L3 Options on L2 Hover/Selection)
    */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
@@ -518,6 +526,7 @@ export default function decorate(block) {
 
     subMenuPanel.classList.remove('hidden');
 
+    // Close panel when a subpage link is selected
     subMenuPanel.querySelectorAll('.tcs-submenu-item').forEach((link) => {
       link.addEventListener('click', () => {
         subMenuPanel.classList.add('hidden');
@@ -567,6 +576,7 @@ export default function decorate(block) {
         }
       };
 
+      // Open submenu panel on hover over L2 pill
       l2Pill.addEventListener('mouseenter', () => {
         if (hasL3) {
           l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
@@ -629,6 +639,10 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
+   * - No hamburger menu displayed
+   * - Dynamically renders search suggestion pills from index tree
+   * - Clicking pills updates search bar
+   * - Left arrow button redirects browser back to parent L2 page URL
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -638,6 +652,7 @@ export default function decorate(block) {
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
 
+    // Left Back Arrow -> Redirects to Parent L2 Page Window
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
     backBtn.setAttribute('aria-label', 'Return to parent page');
@@ -720,20 +735,43 @@ export default function decorate(block) {
     }
   };
 
-  // Hamburger Click -> Navigates Back to Parent Page
+  const closeAllNavigation = () => {
+    isNavOpen = false;
+
+    if (hamburgerWrapperNode) {
+      searchRow.prepend(hamburgerWrapperNode);
+    }
+    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+
+    if (hamburgerBtnNode) {
+      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+      hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
+    }
+
+    navPillsRow.classList.add('hidden');
+    subMenuPanel.classList.add('hidden');
+  };
+
   if (hamburgerBtnNode) {
-    hamburgerBtnNode.addEventListener('click', () => {
-      const pageInfo = getCurrentPageInfo();
-      if (pageInfo.parentPath) {
-        window.location.href = pageInfo.parentPath;
+    hamburgerBtnNode.addEventListener('click', async () => {
+      if (!isNavOpen) {
+        isNavOpen = true;
+        hamburgerBtnNode.setAttribute('aria-expanded', 'true');
+        await renderCurrentPageNavigation();
       } else {
-        window.history.back();
+        closeAllNavigation();
       }
     });
   }
 
-  // Auto-render default navigation options on initial page load
-  renderCurrentPageNavigation();
+  // Keyboard accessibility: Escape key closes navigation
+  floatingNav.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isNavOpen) {
+      closeAllNavigation();
+      hamburgerBtnNode?.focus();
+    }
+  });
 
   // Close subMenuPanel when clicking outside the floating navigation
   document.addEventListener('click', (e) => {
