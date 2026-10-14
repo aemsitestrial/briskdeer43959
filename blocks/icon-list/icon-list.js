@@ -8,7 +8,8 @@ export default function decorate(block) {
   const headerWrapper = document.createElement('div');
   headerWrapper.className = 'icon-list-header';
 
-  const fields = ['eyebrow', 'title', 'description'];
+  const headerFields = ['eyebrow', 'title', 'description'];
+  const headerRows = [];
   const itemRows = [];
 
   blockChildren.forEach((row) => {
@@ -19,18 +20,43 @@ export default function decorate(block) {
     if (isItem) {
       itemRows.push(row);
     } else {
-      const cellText = row.textContent.trim();
+      headerRows.push(row);
+    }
+  });
 
-      if ([2, 3, 4, 5].includes(Number(cellText))) {
-        columnCount = Number(cellText);
-        row.remove();
-      } else if (cellText || row.querySelector('img')) {
-        const classSuffix = fields.shift() || 'extra';
-        row.className = `icon-list-header-${classSuffix}`;
-        headerWrapper.append(row);
-      } else {
-        row.remove();
+  // Process Parent Block Header Settings
+  headerRows.forEach((row) => {
+    const cellText = row.textContent.trim();
+
+    // Column Count Setting
+    if ([2, 3, 4, 5].includes(Number(cellText))) {
+      columnCount = Number(cellText);
+      row.remove();
+      return;
+    }
+
+    const rowCells = [...row.children];
+
+    // Check if row follows the [toggle, content] structure
+    if (rowCells.length >= 2) {
+      const displayToggle = rowCells[0].textContent.trim().toLowerCase() !== 'false';
+      const contentCell = rowCells[1];
+      const fieldType = headerFields.shift() || 'extra';
+
+      if (displayToggle && (contentCell.textContent.trim() || contentCell.querySelector('img, a'))) {
+        const div = document.createElement('div');
+        div.className = `icon-list-header-${fieldType}`;
+        div.innerHTML = contentCell.innerHTML;
+        headerWrapper.append(div);
       }
+      row.remove();
+    } else if (cellText || row.querySelector('img')) {
+      // Fallback for single-cell header rows
+      const fieldType = headerFields.shift() || 'extra';
+      row.className = `icon-list-header-${fieldType}`;
+      headerWrapper.append(row);
+    } else {
+      row.remove();
     }
   });
 

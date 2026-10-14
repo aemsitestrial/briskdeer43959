@@ -50,16 +50,34 @@
           ]
         },
         {
+          "component": "boolean",
+          "name": "displayEyebrow",
+          "label": "Display Eyebrow",
+          "value": "true"
+        },
+        {
           "component": "text",
           "name": "eyebrow",
           "label": "Eyebrow Text",
           "valueType": "string"
         },
         {
+          "component": "boolean",
+          "name": "displayTitle",
+          "label": "Display Block Title",
+          "value": "true"
+        },
+        {
           "component": "text",
           "name": "title",
           "label": "Block Title",
           "valueType": "string"
+        },
+        {
+          "component": "boolean",
+          "name": "displayDesc",
+          "label": "Display Block Description",
+          "value": "true"
         },
         {
           "component": "richtext",

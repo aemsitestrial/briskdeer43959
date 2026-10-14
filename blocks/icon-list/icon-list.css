@@ -14,6 +14,11 @@
   text-align: left;
 }
 
+.icon-list-header:empty {
+  display: none;
+  margin-bottom: 0;
+}
+
 .icon-list-header-eyebrow {
   color: #3b82f6;
   font-size: 13px;
@@ -64,7 +69,7 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Card Color Variants (Matching Image) */
+/* Card Color Variants */
 .icon-list-items > li.card-color-blue {
   background-color: #4275db;
   color: #fff;
