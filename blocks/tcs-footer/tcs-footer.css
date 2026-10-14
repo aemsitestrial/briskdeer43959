@@ -86,11 +86,12 @@
 }
 
 .tcs-footer-floating-nav.is-fixed {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0;
+  position: fixed !important;
+  bottom: 30px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
 }
 
 .tcs-footer-search-row {
@@ -116,11 +117,11 @@
 }
 
 .tcs-footer-floating-nav.is-docked-slot {
-  position: relative;
-  bottom: auto;
-  left: auto;
-  transform: none;
-  margin: 0 auto;
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  transform: none !important;
+  margin: 0 auto !important;
   width: 100%;
 }
 
@@ -274,7 +275,7 @@
   gap: 20px;
   flex-wrap: wrap;
   width: 100%;
-  min-height: 48px; /* FIXED HEIGHT: Prevents layout twitching on render */
+  min-height: 48px; /* FIXED HEIGHT: Prevents layout twitching on hover */
   padding: 6px 0;
   box-sizing: border-box;
 }
@@ -303,7 +304,7 @@
   line-height: 1;
   color: #4a4a4a;
   cursor: pointer;
-  flex-shrink: 0; /* PREVENT WIDTH SHIFT: Lock pill width during state transitions */
+  flex-shrink: 0; /* LOCK WIDTH: Prevents pill size jumps */
   transition: background-color 0.2s ease;
 }
 
@@ -348,7 +349,7 @@
 
 /* Submenu Panel (Absolute Overlay Fix) */
 .tcs-footer-submenu-panel {
-  position: absolute; /* ABSOLUTE: Removes panel completely from document flow */
+  position: absolute; /* ABSOLUTE: Completely isolates panel from document flow */
   bottom: 100%; /* Docks panel directly above the pills */
   left: 50%;
   transform: translateX(-50%);
@@ -359,14 +360,13 @@
   backdrop-filter: blur(24px);
   border-radius: 24px;
   padding: 28px 36px;
-  margin-bottom: 16px; /* Spacing between panel and floating bar */
+  margin-bottom: 16px;
   z-index: 101;
   box-sizing: border-box;
   box-shadow: 0 12px 32px rgb(0 0 0 / 8%), 0 2px 6px rgb(0 0 0 / 4%);
   pointer-events: auto;
 }
 
-/* Hidden override */
 .tcs-footer-submenu-panel.hidden {
   display: none !important;
 }
@@ -540,11 +540,10 @@
   width: 100%;
   min-height: 60px;
   margin-top: 24px;
-  position: absolute !important;
+  position: relative !important;
   z-index: 10;
 }
 
-/* Ensure child nav resets position inside the slot */
 .hero-banner-sticky .tcs-footer-floating-nav {
   position: relative !important;
   bottom: auto !important;
@@ -616,7 +615,6 @@
     line-height: 125%;
   }
 
-  /* Hide Hamburger Completely on Mobile */
   .tcs-footer-hamburger-wrapper {
     display: none !important;
   }

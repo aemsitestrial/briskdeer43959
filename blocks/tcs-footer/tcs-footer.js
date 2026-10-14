@@ -439,7 +439,6 @@ export default function decorate(block) {
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
-      // Trigger subpanel strictly on mouseenter
       l2Pill.addEventListener('mouseenter', () => {
         l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l2Pill.classList.add('active');
@@ -485,7 +484,6 @@ export default function decorate(block) {
         ${hasL2 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
-      // Mouseenter triggers subpanel reveal with zero layout displacement
       l1Pill.addEventListener('mouseenter', () => {
         navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l1Pill.classList.add('active');
@@ -546,55 +544,58 @@ export default function decorate(block) {
     });
   }
 
-  // Clear hover state only when leaving the whole control bar
   floatingNav.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Smooth Scroll & Dual Target Docking Monitor
+  // Smooth Scroll & Instant Dock/Float State Monitor
   let ticking = false;
 
   const handleScroll = () => {
     if (!ticking) {
       window.requestAnimationFrame(() => {
         const windowHeight = window.innerHeight;
-        const scrollY = window.scrollY || window.pageYOffset;
 
         const heroSlotEl = document.querySelector('.hero-banner-sticky');
         const canvasSlotEl = document.querySelector('.canvas-block-search-slot');
         const footerEl = block;
 
-        const checkInView = (el) => {
+        // Precise boundary check: determines if slot container is actively visible in viewport
+        const isSlotVisible = (el) => {
           if (!el) return false;
           const rect = el.getBoundingClientRect();
-          return rect.top < windowHeight && rect.bottom > 0;
+          return rect.top < windowHeight && rect.bottom > 80;
         };
 
-        const isHeroInView = heroSlotEl && (scrollY < 150 || checkInView(heroSlotEl));
-        const isCanvasInView = checkInView(canvasSlotEl);
+        const isHeroDocked = isSlotVisible(heroSlotEl);
+        const isCanvasDocked = !isHeroDocked && isSlotVisible(canvasSlotEl);
 
         const footerRect = footerEl.getBoundingClientRect();
         const isAtFooter = footerRect.top < windowHeight - 140;
 
-        if (isHeroInView && heroSlotEl) {
+        if (isHeroDocked && heroSlotEl) {
+          // 1. DOCK inside Hero Banner Slot
           if (floatingNav.parentElement !== heroSlotEl) {
             heroSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
-        } else if (isCanvasInView && canvasSlotEl) {
+        } else if (isCanvasDocked && canvasSlotEl) {
+          // 2. DOCK inside Canvas Block Search Slot
           if (floatingNav.parentElement !== canvasSlotEl) {
             canvasSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isAtFooter) {
+          // 3. UN-FIXED inside Footer Container
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
         } else {
+          // 4. FLOATING FIXED state (Instant switch as soon as user scrolls past slot)
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
