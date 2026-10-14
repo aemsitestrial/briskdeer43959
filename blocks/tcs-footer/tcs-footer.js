@@ -20,7 +20,7 @@ const getArrowLeftSvg = () => `
 `;
 
 /**
- * Resolves content paths cleanly to /[pagename].html
+ * Resolves content paths cleanly to /[pagename] without .html extension
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
@@ -28,16 +28,14 @@ function formatHtmlPath(path) {
   // Ensure path starts with a single slash '/'
   let resolvedPath = path.startsWith('/') ? path : `/${path}`;
 
-  // If the path contains AEM content prefixes, clean them up to keep only /[pagename]
+  // Strip .html extension if present in input
+  resolvedPath = resolvedPath.replace(/\.html$/, '');
+
+  // Clean up any AEM content path prefixes to leave only /[pagename]
   if (resolvedPath.includes('/content/')) {
     const parts = resolvedPath.split('/').filter(Boolean);
     const lastPart = parts[parts.length - 1];
     resolvedPath = `/${lastPart}`;
-  }
-
-  // Ensure .html extension
-  if (!resolvedPath.endsWith('.html')) {
-    resolvedPath = `${resolvedPath}.html`;
   }
 
   return resolvedPath;
