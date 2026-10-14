@@ -358,7 +358,7 @@ export default function decorate(block) {
     }
   });
 
-  // Nest SubMenu Panel INSIDE floatingNav at top so it docks alongside search controls
+  // Nest SubMenu Panel INSIDE floatingNav
   if (subMenuPanel) floatingNav.append(subMenuPanel);
   if (hamburgerWrapperNode) searchRow.append(hamburgerWrapperNode);
   if (searchBoxWrapperNode) searchRow.append(searchBoxWrapperNode);
@@ -439,6 +439,7 @@ export default function decorate(block) {
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
+      // Trigger subpanel strictly on mouseenter
       l2Pill.addEventListener('mouseenter', () => {
         l2Group.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l2Pill.classList.add('active');
@@ -484,6 +485,7 @@ export default function decorate(block) {
         ${hasL2 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
       `;
 
+      // Mouseenter triggers subpanel reveal with zero layout displacement
       l1Pill.addEventListener('mouseenter', () => {
         navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
         l1Pill.classList.add('active');
@@ -544,7 +546,7 @@ export default function decorate(block) {
     });
   }
 
-  // Clear submenu state on panel leave
+  // Clear hover state only when leaving the whole control bar
   floatingNav.addEventListener('mouseleave', () => {
     subMenuPanel.classList.add('hidden');
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
@@ -576,27 +578,23 @@ export default function decorate(block) {
         const isAtFooter = footerRect.top < windowHeight - 140;
 
         if (isHeroInView && heroSlotEl) {
-          // 1. DOCK inside Hero Banner Slot
           if (floatingNav.parentElement !== heroSlotEl) {
             heroSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isCanvasInView && canvasSlotEl) {
-          // 2. DOCK inside Canvas Block Search Slot
           if (floatingNav.parentElement !== canvasSlotEl) {
             canvasSlotEl.append(floatingNav);
           }
           floatingNav.classList.remove('is-fixed');
           floatingNav.classList.add('is-docked-slot');
         } else if (isAtFooter) {
-          // 3. UN-FIXED inside Footer Container
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
           floatingNav.classList.remove('is-fixed', 'is-docked-slot');
         } else {
-          // 4. FLOATING FIXED state while scrolling between sections
           if (floatingNav.parentElement !== footerContainer) {
             footerContainer.insertBefore(floatingNav, ctaRow);
           }
