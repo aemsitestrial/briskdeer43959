@@ -119,9 +119,13 @@ async function fetchHierarchicalNavData() {
       if (excludedPages.includes(l1Key.toLowerCase())) return;
 
       if (!navTree[l1Key]) {
+        const titleVal = item.title && segments.length === 1
+          ? item.title
+          : l1Key.replace(/-/g, ' ');
+
         navTree[l1Key] = {
           key: l1Key,
-          title: item.title && segments.length === 1 ? item.title : l1Key.replace(/-/g, ' '),
+          title: titleVal,
           path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
           children: {},
         };
@@ -132,9 +136,13 @@ async function fetchHierarchicalNavData() {
         if (excludedPages.includes(l2Key.toLowerCase())) return;
 
         if (!navTree[l1Key].children[l2Key]) {
+          const l2TitleVal = item.title && segments.length === 2
+            ? item.title
+            : l2Key.replace(/-/g, ' ');
+
           navTree[l1Key].children[l2Key] = {
             key: l2Key,
-            title: item.title && segments.length === 2 ? item.title : l2Key.replace(/-/g, ' '),
+            title: l2TitleVal,
             path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
             children: [],
           };
@@ -147,7 +155,9 @@ async function fetchHierarchicalNavData() {
           navTree[l1Key].children[l2Key].children.push({
             key: l3Key,
             title: item.title || l3Key.replace(/-/g, ' '),
-            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`),
+            path: formatHtmlPath(
+              `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
+            ),
           });
         }
       }
@@ -210,7 +220,6 @@ export default function decorate(block) {
   let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let searchBoxWrapperNode = null;
-  let isNavOpen = false;
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
@@ -223,13 +232,28 @@ export default function decorate(block) {
 
     const text = row.textContent.trim().toLowerCase();
 
-    if (text.includes('both') || text.includes('text-only') || text.includes('voice-only') || text.includes('ask canvas') || text.includes('ask us')) {
+    if (
+      text.includes('both')
+      || text.includes('text-only')
+      || text.includes('voice-only')
+      || text.includes('ask canvas')
+      || text.includes('ask us')
+    ) {
       return 'tcs-footer-search';
     }
-    if (text.includes('©') || text.includes('tata consultancy') || text.includes('all rights reserved')) {
+    if (
+      text.includes('©')
+      || text.includes('tata consultancy')
+      || text.includes('all rights reserved')
+    ) {
       return 'tcs-footer-copyright';
     }
-    if (text.includes('privacy') || text.includes('terms') || text.includes('cookie') || text.includes('legal')) {
+    if (
+      text.includes('privacy')
+      || text.includes('terms')
+      || text.includes('cookie')
+      || text.includes('legal')
+    ) {
       return 'tcs-footer-legal-item';
     }
 
@@ -250,9 +274,14 @@ export default function decorate(block) {
     if (model === 'tcs-footer-hamburger' && !hamburgerWrapperNode) {
       const authoredImg = cells[0]?.querySelector('img');
       const authoredIconSrc = authoredImg ? authoredImg.src : cells[0]?.textContent.trim();
-      const ariaLabel = cells[1]?.textContent.trim() || cells[0]?.textContent.trim() || 'Open navigation menu';
+      const ariaLabel = cells[1]?.textContent.trim()
+        || cells[0]?.textContent.trim()
+        || 'Open navigation menu';
 
-      const hamburgerIconContent = authoredIconSrc && (authoredImg || authoredIconSrc.startsWith('/') || authoredIconSrc.startsWith('http'))
+      const isExternalOrPath = authoredIconSrc
+        && (authoredImg || authoredIconSrc.startsWith('/') || authoredIconSrc.startsWith('http'));
+
+      const hamburgerIconContent = authoredIconSrc && isExternalOrPath
         ? `<img src="${authoredIconSrc}" alt="${ariaLabel}" class="custom-hamburger-icon" />`
         : `
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -431,8 +460,8 @@ export default function decorate(block) {
     if (level === 'L1') {
       searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
-      if (closeIcon) closeIcon.classList.remove('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
+      if (closeIcon) closeIcon.classList.add('hidden');
     } else {
       navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
@@ -445,9 +474,7 @@ export default function decorate(block) {
   let renderL2SubNavigation;
 
   /**
-   * Requirement 3: L3 Page Behavior
-   * - Display suggestion pills with left-arrow icon back button.
-   * - Clicking a suggestion pill populates search input.
+   * Requirement 3: L3 Page Suggestion Pills Behavior
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -500,7 +527,7 @@ export default function decorate(block) {
   };
 
   /**
-   * Submenu Panel Renderer (Displays L3 Options on L2 Selection)
+   * Submenu Panel Renderer (Displays L3 Options above L2 Control Bar)
    */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
@@ -528,9 +555,9 @@ export default function decorate(block) {
 
   /**
    * Requirement 2: L2 Navigation View
-   * - Renders L2 options for the active parent category (e.g. dummy-1, dummy-2).
-   * - Shows a chevron ONLY if the L2 item contains L3 pages.
-   * - Clicking either chevron or the L2 pill opens the submenu panel showing its L3 options.
+   * - Hamburger is active without clicking and pre-attached to navigation pills row.
+   * - Clicking Hamburger navigates back to L1 parent options view.
+   * - Shows L2 options with chevrons and floating submenus for L3.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -546,10 +573,13 @@ export default function decorate(block) {
       l2Pill.className = 'tcs-nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
-      // Render Chevron ONLY if L2 option contains L3 pages
+      const chevIconHtml = hasL3
+        ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>`
+        : '';
+
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
-        ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
+        ${chevIconHtml}
       `;
 
       const toggleSubmenu = (e) => {
@@ -568,6 +598,16 @@ export default function decorate(block) {
           }
         }
       };
+
+      l2Pill.addEventListener('mouseenter', () => {
+        if (hasL3) {
+          l2Group
+            .querySelectorAll('.tcs-nav-pill')
+            .forEach((p) => p.classList.remove('active'));
+          l2Pill.classList.add('active');
+          renderSubmenuCard(l2.children);
+        }
+      });
 
       l2Pill.addEventListener('click', (e) => {
         if (hasL3 && !e.target.closest('a')) {
@@ -592,7 +632,6 @@ export default function decorate(block) {
 
   /**
    * Requirement 1: L1 Navigation View
-   * - Display ONLY L1 options without chevrons or submenus.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
@@ -611,8 +650,13 @@ export default function decorate(block) {
 
       const linkEl = l1Pill.querySelector('.tcs-pill-link');
       if (linkEl) {
-        linkEl.addEventListener('click', () => {
-          window.location.href = l1.path;
+        linkEl.addEventListener('click', (e) => {
+          if (l1.children && Object.keys(l1.children).length > 0) {
+            e.preventDefault();
+            renderL2SubNavigation(l1);
+          } else {
+            window.location.href = l1.path;
+          }
         });
       }
 
@@ -633,7 +677,7 @@ export default function decorate(block) {
     const { depth, l1Key, l2Key } = getCurrentPageInfo();
 
     if (depth >= 3) {
-      // Visiting L3 Page (e.g. /praneeth/dummy-1/industries) -> Show Suggestions
+      // Visiting L3 Page -> Show Suggestions Bar
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       activeL1Data = matchedL1;
       let suggestions = [];
@@ -650,7 +694,7 @@ export default function decorate(block) {
 
       renderL3SuggestionsView(suggestions);
     } else if (depth === 1 || depth === 2) {
-      // Visiting L1 Page (/praneeth) or L2 Page (/praneeth/dummy-1) -> Show L2 subpages
+      // Visiting L1 or L2 Page -> Auto-activate L2 options bar with Hamburger back control
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       if (matchedL1 && matchedL1.children && matchedL1.children.length > 0) {
         renderL2SubNavigation(matchedL1);
@@ -662,33 +706,13 @@ export default function decorate(block) {
     }
   };
 
-  const closeAllNavigation = () => {
-    isNavOpen = false;
-    currentViewLevel = 'L1';
-
-    if (hamburgerWrapperNode) {
-      searchRow.prepend(hamburgerWrapperNode);
-    }
-    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-
-    if (hamburgerBtnNode) {
-      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
-      hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.remove('hidden');
-      hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
-    }
-
-    navPillsRow.classList.add('hidden');
-    subMenuPanel.classList.add('hidden');
-  };
-
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
-      if (!isNavOpen) {
-        isNavOpen = true;
-        hamburgerBtnNode.setAttribute('aria-expanded', 'true');
-        await renderCurrentPageNavigation();
+      // If currently in L2 or L3 view, hamburger click navigates back to L1 view
+      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
+        await renderL1ParentNavigation();
       } else {
-        closeAllNavigation();
+        await renderCurrentPageNavigation();
       }
     });
   }
