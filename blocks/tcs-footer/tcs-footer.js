@@ -38,7 +38,7 @@ function formatHtmlPath(path) {
 }
 
 /**
- * Helper to determine current page level (L1, L2, or L3) and path segments
+ * Helper to determine active level & key matching based on URL path
  */
 function getCurrentPageInfo() {
   const path = window.location.pathname.replace(/\.html$/, '');
@@ -54,12 +54,9 @@ function getCurrentPageInfo() {
   }
 
   const depth = segments.length;
-  let level = 'L1';
-  if (depth === 2) level = 'L2';
-  if (depth >= 3) level = 'L3';
 
   return {
-    level,
+    depth,
     segments,
     l1Key: segments[0] || '',
     l2Key: segments[1] || '',
@@ -445,9 +442,8 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
-   * - Display suggestions as pill buttons instead of submenu.
-   * - Display left-arrow icon before suggestions to return to L2.
-   * - Clicking a pill inserts suggestion into the search bar.
+   * - Display suggestion pills with a left-arrow icon back button.
+   * - Clicking a suggestion pill populates search input.
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -527,11 +523,9 @@ export default function decorate(block) {
   };
 
   /**
-   * Requirement 2: L2 Page Behavior
-   * - Display relevant L2 navigation options.
-   * - L2 options containing L3 pages display a chevron.
-   * - Selecting chevron or L2 option opens submenu panel containing L3 options.
-   * - Selecting an L3 option navigates to the L3 page.
+   * Requirement 2: L2 Navigation View
+   * - Display relevant L2 options (e.g. dummy-1, dummy-2).
+   * - Chevron shown ONLY if L2 option contains L3 pages.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -547,7 +541,6 @@ export default function decorate(block) {
       l2Pill.className = 'tcs-nav-pill l2-pill';
       const hasL3 = l2.children && l2.children.length > 0;
 
-      // Display Chevron ONLY if L2 item contains L3 pages
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="tcs-pill-link">${l2.title}</a>
         ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
@@ -584,11 +577,8 @@ export default function decorate(block) {
   };
 
   /**
-   * Requirement 1: L1 Page Behavior
-   * - Display ONLY available L1 options.
-   * - DO NOT display chevrons beside L1 options.
-   * - Selecting L1 option navigates directly to corresponding L2 page.
-   * - DO NOT display submenu panel on L1 page.
+   * Requirement 1: L1 Navigation View
+   * - Display ONLY L1 options without chevrons or submenus.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
@@ -603,7 +593,6 @@ export default function decorate(block) {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'tcs-nav-pill';
 
-      // No chevrons for L1 options
       l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
       const linkEl = l1Pill.querySelector('.tcs-pill-link');
@@ -620,16 +609,17 @@ export default function decorate(block) {
   };
 
   /**
-   * Auto-detect level based on active URL location
+   * Auto-detect navigation to show based on current page URL
    */
   const renderCurrentPageNavigation = async () => {
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
     }
 
-    const { level, l1Key, l2Key } = getCurrentPageInfo();
+    const { depth, l1Key, l2Key } = getCurrentPageInfo();
 
-    if (level === 'L3') {
+    if (depth >= 3) {
+      // User is on an L3 page (e.g. /praneeth/dummy-1/industries)
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       activeL1Data = matchedL1;
       let suggestions = [];
@@ -645,14 +635,16 @@ export default function decorate(block) {
       }
 
       renderL3SuggestionsView(suggestions);
-    } else if (level === 'L2') {
+    } else if (depth === 1 || depth === 2) {
+      // When on /praneeth or /praneeth/dummy-1, render L2 options for this category!
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
-      if (matchedL1) {
+      if (matchedL1 && matchedL1.children && matchedL1.children.length > 0) {
         renderL2SubNavigation(matchedL1);
       } else {
         await renderL1ParentNavigation();
       }
     } else {
+      // Default to root L1 list
       await renderL1ParentNavigation();
     }
   };
