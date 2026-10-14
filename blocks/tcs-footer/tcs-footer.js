@@ -464,7 +464,7 @@ export default function decorate(block) {
   block.append(footerContainer);
 
   /**
-   * Helper to update control icon states and keep search bar visible
+   * Updates state & removes hamburger from L3 pages
    */
   const updateButtonStateAndPosition = (level) => {
     if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
@@ -473,16 +473,21 @@ export default function decorate(block) {
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
+      hamburgerWrapperNode.classList.remove('hidden');
       searchRow.prepend(hamburgerWrapperNode);
       if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
       if (closeIcon) closeIcon.classList.remove('hidden');
-    } else {
+    } else if (level === 'L2') {
+      hamburgerWrapperNode.classList.remove('hidden');
       navPillsRow.prepend(hamburgerWrapperNode);
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
+    } else if (level === 'L3') {
+      // HIDE HAMBURGER IN L3
+      hamburgerWrapperNode.classList.add('hidden');
     }
 
-    // ALWAYS ensure search bar is visible across all navigation levels
+    // ALWAYS ensure search bar is visible
     if (searchBoxWrapperNode) {
       searchBoxWrapperNode.classList.remove('hidden');
     }
@@ -493,6 +498,10 @@ export default function decorate(block) {
 
   /**
    * Requirement 3: L3 Page Behavior
+   * - No hamburger menu displayed
+   * - Shows default suggestions pills (Industries, Shopping, etc.)
+   * - Clicking pills updates search bar
+   * - Left arrow back button returns to L2 navigation
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -502,9 +511,10 @@ export default function decorate(block) {
     const l3Container = document.createElement('div');
     l3Container.className = 'tcs-l3-suggestions-wrapper';
 
+    // Left Back Arrow
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-nav-back-btn';
-    backBtn.setAttribute('aria-label', 'Return to previous navigation view');
+    backBtn.setAttribute('aria-label', 'Return to L2 navigation view');
     backBtn.innerHTML = getArrowLeftSvg();
 
     backBtn.addEventListener('click', () => {
@@ -520,8 +530,14 @@ export default function decorate(block) {
     const pillsGroup = document.createElement('div');
     pillsGroup.className = 'tcs-l3-pills-group';
 
-    suggestionsList.forEach((suggestion) => {
-      const sugText = suggestion.title || suggestion;
+    // Fallback default suggestions if empty
+    const defaultSuggestions = ['Industries', 'Shopping'];
+    const activeSuggestions = suggestionsList.length > 0 ? suggestionsList : defaultSuggestions;
+
+    activeSuggestions.forEach((suggestion) => {
+      const sugText = typeof suggestion === 'string' ? suggestion : (suggestion.title || suggestion.key || '');
+      if (!sugText) return;
+
       const sugPill = document.createElement('button');
       sugPill.className = 'tcs-nav-pill l3-suggestion-pill';
       sugPill.type = 'button';
