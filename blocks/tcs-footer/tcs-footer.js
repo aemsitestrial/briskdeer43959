@@ -37,18 +37,16 @@ function formatHtmlPath(path) {
 }
 
 /**
- * Determines current page depth level (L1, L2, L3) based on window URL path
+ * Determines current page depth level (L1, L2, L3) based on URL path
  */
 function detectCurrentPageLevel() {
   const currentPath = window.location.pathname.replace(/\.html$/, '');
   const segments = currentPath.split('/').filter((s) => s && s !== 'content');
 
-  // Strip locale prefix if present
   if (segments[0] && segments[0].length === 2) {
     segments.shift();
   }
 
-  // Remove AEM path prefix segments if present
   const filterPrefixes = ['2026', '39', 'briskdeer43959'];
   const filtered = segments.filter((s) => !filterPrefixes.includes(s));
 
@@ -57,9 +55,6 @@ function detectCurrentPageLevel() {
   return 'L3';
 }
 
-/**
- * Default search suggestion pills when visiting L3 terminal pages
- */
 const DEFAULT_L3_SUGGESTIONS = [
   'Find the right TCS solution for my business',
   'Show me TCS success stories',
@@ -208,6 +203,7 @@ export default function decorate(block) {
   let isNavOpen = false;
   let navTreeData = null;
 
+  let currentViewLevel = 'L1';
   let searchQueryVariable = '';
   const pageLevel = detectCurrentPageLevel();
 
@@ -274,7 +270,7 @@ export default function decorate(block) {
       hamburgerBtnNode = row.querySelector('.tcs-footer-hamburger');
     } else if (model === 'tcs-footer-search' && !searchBoxWrapperNode) {
       const variation = cells[0]?.textContent.trim().toLowerCase() || 'both';
-      const placeholder = cells[1]?.textContent.trim() || 'Ask TCS...';
+      const placeholder = cells[1]?.textContent.trim() || 'Ask Canvas Search';
 
       row.className = `tcs-footer-search-box mode-${variation}`;
       searchBoxWrapperNode = row;
@@ -286,7 +282,7 @@ export default function decorate(block) {
       let contentHtml = '';
 
       if (variation !== 'voice-only') {
-        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask TCS Search">`;
+        contentHtml += `<input type="text" class="tcs-search-input" placeholder="${placeholder}" aria-label="Ask Canvas Search">`;
       }
 
       contentHtml += '<div class="tcs-footer-search-actions">';
@@ -440,9 +436,26 @@ export default function decorate(block) {
     subMenuPanel.classList.remove('hidden');
   };
 
-  /**
-   * Triggers a search with the given text query in the search bar
-   */
+  const updateButtonStateAndPosition = (level) => {
+    currentViewLevel = level;
+    if (!hamburgerBtnNode || !hamburgerWrapperNode) return;
+
+    const hamburgerIcon = hamburgerBtnNode.querySelector('.icon-hamburger');
+    const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
+
+    if (level === 'L1') {
+      searchRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+      if (closeIcon) closeIcon.classList.remove('hidden');
+    } else {
+      navPillsRow.prepend(hamburgerWrapperNode);
+      if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
+      if (closeIcon) closeIcon.classList.add('hidden');
+    }
+  };
+
   const handleSuggestionClick = (query) => {
     const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
     const searchForm = searchBoxWrapperNode?.querySelector('.tcs-search-form');
@@ -456,9 +469,6 @@ export default function decorate(block) {
     }
   };
 
-  /**
-   * Renders Suggestion Pills with Left Arrow for L3 pages (Leaf Nodes)
-   */
   const renderL3Suggestions = (suggestions = DEFAULT_L3_SUGGESTIONS) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
@@ -466,7 +476,6 @@ export default function decorate(block) {
     const suggestionsGroup = document.createElement('div');
     suggestionsGroup.className = 'tcs-l3-suggestions-group';
 
-    // Left Back Arrow
     const backBtn = document.createElement('button');
     backBtn.className = 'tcs-suggestion-back-btn';
     backBtn.setAttribute('aria-label', 'Go back');
@@ -476,7 +485,6 @@ export default function decorate(block) {
     });
     suggestionsGroup.append(backBtn);
 
-    // Suggestion Pill Buttons
     suggestions.forEach((text) => {
       const pillBtn = document.createElement('button');
       pillBtn.className = 'tcs-suggestion-pill';
@@ -493,16 +501,10 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  /**
-   * Renders L2 Options (with Chevrons & Submenu Panel for L3 Pages)
-   */
   const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-
-    if (hamburgerWrapperNode) {
-      hamburgerWrapperNode.classList.remove('hidden');
-    }
+    updateButtonStateAndPosition('L2');
 
     const l2Group = document.createElement('div');
     l2Group.className = 'tcs-l2-pills-group';
@@ -543,16 +545,10 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  /**
-   * Renders L1 Options ONLY (No Chevron). Direct links to L2 pages.
-   */
   const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
-
-    if (hamburgerWrapperNode) {
-      hamburgerWrapperNode.classList.add('hidden');
-    }
+    updateButtonStateAndPosition('L1');
 
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
@@ -565,7 +561,7 @@ export default function decorate(block) {
       const l1Pill = document.createElement('div');
       l1Pill.className = 'tcs-nav-pill l1-pill';
 
-      // No chevron for L1 - direct link to L2 page
+      // L1 items: direct link, no chevrons
       l1Pill.innerHTML = `<a href="${l1.path}" class="tcs-pill-link">${l1.title}</a>`;
 
       l1Group.append(l1Pill);
@@ -575,9 +571,6 @@ export default function decorate(block) {
     navPillsRow.classList.remove('hidden');
   };
 
-  /**
-   * Initialize layout based on detected page depth level
-   */
   const initPageLevelLayout = async () => {
     if (!navTreeData) {
       navTreeData = await fetchHierarchicalNavData();
@@ -595,15 +588,18 @@ export default function decorate(block) {
         await renderL1ParentNavigation();
       }
     } else if (pageLevel === 'L3') {
-      if (hamburgerWrapperNode) {
-        hamburgerWrapperNode.classList.remove('hidden');
-      }
       renderL3Suggestions(DEFAULT_L3_SUGGESTIONS);
     }
   };
 
   const closeAllNavigation = () => {
     isNavOpen = false;
+    currentViewLevel = 'L1';
+
+    if (hamburgerWrapperNode) {
+      searchRow.prepend(hamburgerWrapperNode);
+    }
+    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
 
     if (hamburgerBtnNode) {
       hamburgerBtnNode.setAttribute('aria-expanded', 'false');
@@ -611,18 +607,20 @@ export default function decorate(block) {
       hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
     }
 
+    navPillsRow.classList.add('hidden');
     subMenuPanel.classList.add('hidden');
-    initPageLevelLayout();
   };
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
+      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
+        await renderL1ParentNavigation();
+        return;
+      }
+
       if (!isNavOpen) {
         isNavOpen = true;
         hamburgerBtnNode.setAttribute('aria-expanded', 'true');
-        hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.add('hidden');
-        hamburgerBtnNode.querySelector('.icon-close')?.classList.remove('hidden');
-
         await renderL1ParentNavigation();
       } else {
         closeAllNavigation();
@@ -635,7 +633,6 @@ export default function decorate(block) {
     navPillsRow.querySelectorAll('.tcs-nav-pill').forEach((p) => p.classList.remove('active'));
   });
 
-  // Initial Page-level setup execution
   initPageLevelLayout();
 
   // Smooth Scroll & Instant Dock/Float State Monitor
