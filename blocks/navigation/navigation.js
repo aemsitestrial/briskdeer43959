@@ -345,7 +345,8 @@ export default function decorate(block) {
   let renderL1ParentNavigation;
 
   /**
-   * Render L3 Suggestions View
+   * Render Search Suggestions View (L3 / Leaf Level)
+   * Rendered when a selected item or page has NO remaining subpages.
    */
   const renderL3SuggestionsView = (previousL2, parentL1) => {
     navPillsRow.innerHTML = '';
@@ -370,6 +371,7 @@ export default function decorate(block) {
 
     l3Group.append(backPill);
 
+    // Search Prompt Suggestions
     const defaultSuggestions = [
       'What customers have solved similar challenges?',
       'Find customers in my industry',
@@ -397,6 +399,7 @@ export default function decorate(block) {
 
   /**
    * Render L2 Level Navigation
+   * Shows Chevrons ONLY on L2 items that contain L3 subpages.
    */
   renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
@@ -413,9 +416,10 @@ export default function decorate(block) {
 
       l2Pill.innerHTML = `
         <a href="${l2.path}" class="pill-link">${l2.title}</a>
-        ${hasL3 ? `<button class="chevron-btn" aria-label="Expand subpages">${getChevronSvg()}</button>` : ''}
+        ${hasL3 ? `<button class="chevron-btn" aria-label="Show subpages">${getChevronSvg()}</button>` : ''}
       `;
 
+      // Hover shows L3 submenu card if present
       l2Pill.addEventListener('mouseenter', () => {
         l2Group.querySelectorAll('.nav-pill').forEach((p) => p.classList.remove('active'));
         l2Pill.classList.add('active');
@@ -427,11 +431,26 @@ export default function decorate(block) {
         }
       });
 
+      // Chevron click explicitly opens L3 Submenu Panel
       const chevronBtn = l2Pill.querySelector('.chevron-btn');
       if (chevronBtn) {
         chevronBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          renderL3SuggestionsView(l2, l1Data);
+          e.preventDefault();
+          l2Group.querySelectorAll('.nav-pill').forEach((p) => p.classList.remove('active'));
+          l2Pill.classList.add('active');
+          renderSubmenuCard(l2.children);
+        });
+      }
+
+      // Link click logic: if no subpages, load suggestion prompts
+      const pillLink = l2Pill.querySelector('.pill-link');
+      if (pillLink) {
+        pillLink.addEventListener('click', (e) => {
+          if (!hasL3) {
+            e.preventDefault();
+            renderL3SuggestionsView(l2, l1Data);
+          }
         });
       }
 
@@ -460,19 +479,17 @@ export default function decorate(block) {
 
       l1Pill.innerHTML = `<a href="${l1.path}" class="pill-link">${l1.title}</a>`;
 
-      l1Pill.addEventListener('click', () => {
+      l1Pill.addEventListener('click', (e) => {
+        const hasL2 = l1.children && l1.children.length > 0;
+
         navPillsRow.querySelectorAll('.nav-pill').forEach((p) => p.classList.remove('active'));
         l1Pill.classList.add('active');
 
-        if (l1.children && l1.children.length > 0) {
+        if (hasL2) {
           renderL2SubNavigation(l1);
         } else {
+          e.preventDefault();
           renderL3SuggestionsView(null, l1);
-        }
-
-        // Navigate directly to the L1 page
-        if (l1.path && l1.path !== '#') {
-          window.location.href = l1.path;
         }
       });
 
