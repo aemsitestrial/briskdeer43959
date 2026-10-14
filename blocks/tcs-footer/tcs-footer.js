@@ -20,20 +20,27 @@ const getArrowLeftSvg = () => `
 `;
 
 /**
- * Resolves content paths for AEM authoring/publishing environments
+ * Resolves content paths cleanly to /[pagename].html
  */
 function formatHtmlPath(path) {
   if (!path || path === '/') return path || '#';
 
-  let resolvedPath = path;
+  // Ensure path starts with a single slash '/'
+  let resolvedPath = path.startsWith('/') ? path : `/${path}`;
 
-  if (!resolvedPath.startsWith('/content/')) {
-    resolvedPath = `/content/2026/39/briskdeer43959${
-      resolvedPath.startsWith('/') ? '' : '/'
-    }${resolvedPath}`;
+  // If the path contains AEM content prefixes, clean them up to keep only /[pagename]
+  if (resolvedPath.includes('/content/')) {
+    const parts = resolvedPath.split('/').filter(Boolean);
+    const lastPart = parts[parts.length - 1];
+    resolvedPath = `/${lastPart}`;
   }
 
-  return resolvedPath.endsWith('.html') ? resolvedPath : `${resolvedPath}.html`;
+  // Ensure .html extension
+  if (!resolvedPath.endsWith('.html')) {
+    resolvedPath = `${resolvedPath}.html`;
+  }
+
+  return resolvedPath;
 }
 
 /**
@@ -47,7 +54,7 @@ function getCurrentPageInfo() {
     segments.shift(); // Remove locale segment if present
   }
 
-  // Remove common AEM prefix segments
+  // Remove common AEM prefix segments if present
   const contentIdx = segments.indexOf('content');
   if (contentIdx !== -1) {
     segments.splice(0, contentIdx + 4);
