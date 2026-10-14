@@ -68,121 +68,113 @@ function getCurrentPageInfo() {
   };
 }
 
-let navTreePromise = null;
-
 /**
  * Parses query-index.json into L1, L2, and L3 multi-level hierarchy
  */
 async function fetchHierarchicalNavData() {
-  if (navTreePromise) return navTreePromise;
+  try {
+    const response = await fetch('/query-index.json');
+    if (!response.ok) return [];
+    const json = await response.json();
+    const data = json.data || json;
 
-  navTreePromise = (async () => {
-    try {
-      const response = await fetch('/query-index.json');
-      if (!response.ok) return [];
-      const json = await response.json();
-      const data = json.data || json;
+    if (!Array.isArray(data)) return [];
 
-      if (!Array.isArray(data)) return [];
+    const navTree = {};
+    const excludedPages = [
+      'footer',
+      'header',
+      'tcs-footer',
+      'tcs-header',
+      'blocks',
+      'home',
+      'home-page',
+      'homepage',
+      'demo',
+      'nav',
+      'iconlist',
+      'qa',
+      'test',
+    ];
 
-      const navTree = {};
-      const excludedPages = [
-        'footer',
-        'header',
-        'tcs-footer',
-        'tcs-header',
-        'blocks',
-        'home',
-        'home-page',
-        'homepage',
-        'demo',
-        'nav',
-        'iconlist',
-        'qa',
-        'test',
-      ];
+    data.forEach((item) => {
+      const rawPath = item?.path || '';
+      if (!rawPath) return;
 
-      data.forEach((item) => {
-        const rawPath = item?.path || '';
-        if (!rawPath) return;
+      const segments = rawPath.split('/').filter(Boolean);
 
-        const segments = rawPath.split('/').filter(Boolean);
+      let locale = '';
+      if (segments[0] && segments[0].length === 2) {
+        locale = segments.shift();
+      }
 
-        let locale = '';
-        if (segments[0] && segments[0].length === 2) {
-          locale = segments.shift();
-        }
+      if (segments.length === 0) return;
 
-        if (segments.length === 0) return;
+      const lastSegment = segments[segments.length - 1]
+        .toLowerCase()
+        .replace(/\s+/g, '-');
+      if (excludedPages.includes(lastSegment)) return;
 
-        const lastSegment = segments[segments.length - 1]
-          .toLowerCase()
-          .replace(/\s+/g, '-');
-        if (excludedPages.includes(lastSegment)) return;
+      const l1Key = segments[0];
+      if (excludedPages.includes(l1Key.toLowerCase())) return;
 
-        const l1Key = segments[0];
-        if (excludedPages.includes(l1Key.toLowerCase())) return;
+      if (!navTree[l1Key]) {
+        const titleVal = item.title && segments.length === 1
+          ? item.title
+          : l1Key.replace(/-/g, ' ');
 
-        if (!navTree[l1Key]) {
-          const titleVal = item.title && segments.length === 1
+        navTree[l1Key] = {
+          key: l1Key,
+          title: titleVal,
+          path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
+          children: {},
+        };
+      }
+
+      if (segments.length >= 2) {
+        const l2Key = segments[1];
+        if (excludedPages.includes(l2Key.toLowerCase())) return;
+
+        if (!navTree[l1Key].children[l2Key]) {
+          const l2TitleVal = item.title && segments.length === 2
             ? item.title
-            : l1Key.replace(/-/g, ' ');
+            : l2Key.replace(/-/g, ' ');
 
-          navTree[l1Key] = {
-            key: l1Key,
-            title: titleVal,
-            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
-            children: {},
+          navTree[l1Key].children[l2Key] = {
+            key: l2Key,
+            title: l2TitleVal,
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
+            children: [],
           };
         }
 
-        if (segments.length >= 2) {
-          const l2Key = segments[1];
-          if (excludedPages.includes(l2Key.toLowerCase())) return;
+        if (segments.length >= 3) {
+          const l3Key = segments[2];
+          if (excludedPages.includes(l3Key.toLowerCase())) return;
 
-          if (!navTree[l1Key].children[l2Key]) {
-            const l2TitleVal = item.title && segments.length === 2
-              ? item.title
-              : l2Key.replace(/-/g, ' ');
-
-            navTree[l1Key].children[l2Key] = {
-              key: l2Key,
-              title: l2TitleVal,
-              path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
-              children: [],
-            };
-          }
-
-          if (segments.length >= 3) {
-            const l3Key = segments[2];
-            if (excludedPages.includes(l3Key.toLowerCase())) return;
-
-            navTree[l1Key].children[l2Key].children.push({
-              key: l3Key,
-              title: item.title || l3Key.replace(/-/g, ' '),
-              path: formatHtmlPath(
-                `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
-              ),
-            });
-          }
+          navTree[l1Key].children[l2Key].children.push({
+            key: l3Key,
+            title: item.title || l3Key.replace(/-/g, ' '),
+            path: formatHtmlPath(
+              `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
+            ),
+          });
         }
-      });
+      }
+    });
 
-      return Object.values(navTree).map((l1) => ({
-        ...l1,
-        children: Object.values(l1.children).map((l2) => ({
-          ...l2,
-          children: l2.children || [],
-        })),
-      }));
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to load navigation index:', error);
-      return [];
-    }
-  })();
-
-  return navTreePromise;
+    return Object.values(navTree).map((l1) => ({
+      ...l1,
+      children: Object.values(l1.children).map((l2) => ({
+        ...l2,
+        children: l2.children || [],
+      })),
+    }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load navigation index:', error);
+    return [];
+  }
 }
 
 export default function decorate(block) {
@@ -228,6 +220,7 @@ export default function decorate(block) {
   let hamburgerWrapperNode = null;
   let hamburgerBtnNode = null;
   let searchBoxWrapperNode = null;
+  let isNavOpen = false;
   let navTreeData = null;
 
   let currentViewLevel = 'L1';
@@ -466,16 +459,12 @@ export default function decorate(block) {
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      if (hamburgerWrapperNode.parentElement !== searchRow) {
-        searchRow.prepend(hamburgerWrapperNode);
-      }
+      searchRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
-      if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
-      if (closeIcon) closeIcon.classList.add('hidden');
+      if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
+      if (closeIcon) closeIcon.classList.remove('hidden');
     } else {
-      if (hamburgerWrapperNode.parentElement !== navPillsRow) {
-        navPillsRow.prepend(hamburgerWrapperNode);
-      }
+      navPillsRow.prepend(hamburgerWrapperNode);
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
@@ -486,7 +475,9 @@ export default function decorate(block) {
   let renderL2SubNavigation;
 
   /**
-   * Requirement 3: L3 Page Suggestion Pills Behavior
+   * Requirement 3: L3 Page Behavior
+   * - Display suggestion pills with left-arrow icon back button.
+   * - Clicking a suggestion pill populates search input.
    */
   const renderL3SuggestionsView = (suggestionsList = []) => {
     navPillsRow.innerHTML = '';
@@ -539,7 +530,7 @@ export default function decorate(block) {
   };
 
   /**
-   * Submenu Panel Renderer (Displays L3 Options above L2 Control Bar)
+   * Submenu Panel Renderer (Displays L3 Options on L2 Selection)
    */
   const renderSubmenuCard = (items) => {
     if (!items || items.length === 0) {
@@ -567,6 +558,9 @@ export default function decorate(block) {
 
   /**
    * Requirement 2: L2 Navigation View
+   * - Renders L2 options for the active parent category (e.g. dummy-1, dummy-2).
+   * - Shows a chevron ONLY if the L2 item contains L3 pages.
+   * - Clicking either chevron or the L2 pill opens the submenu panel showing its L3 options.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -608,16 +602,6 @@ export default function decorate(block) {
         }
       };
 
-      l2Pill.addEventListener('mouseenter', () => {
-        if (hasL3) {
-          l2Group
-            .querySelectorAll('.tcs-nav-pill')
-            .forEach((p) => p.classList.remove('active'));
-          l2Pill.classList.add('active');
-          renderSubmenuCard(l2.children);
-        }
-      });
-
       l2Pill.addEventListener('click', (e) => {
         if (hasL3 && !e.target.closest('a')) {
           toggleSubmenu(e);
@@ -641,6 +625,7 @@ export default function decorate(block) {
 
   /**
    * Requirement 1: L1 Navigation View
+   * - Display ONLY L1 options without chevrons or submenus.
    */
   renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
@@ -659,13 +644,8 @@ export default function decorate(block) {
 
       const linkEl = l1Pill.querySelector('.tcs-pill-link');
       if (linkEl) {
-        linkEl.addEventListener('click', (e) => {
-          if (l1.children && l1.children.length > 0) {
-            e.preventDefault();
-            renderL2SubNavigation(l1);
-          } else {
-            window.location.href = l1.path;
-          }
+        linkEl.addEventListener('click', () => {
+          window.location.href = l1.path;
         });
       }
 
@@ -686,7 +666,7 @@ export default function decorate(block) {
     const { depth, l1Key, l2Key } = getCurrentPageInfo();
 
     if (depth >= 3) {
-      // Visiting L3 Page -> Show Suggestions Bar
+      // Visiting L3 Page (e.g. /praneeth/dummy-1/industries) -> Show Suggestions
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       activeL1Data = matchedL1;
       let suggestions = [];
@@ -703,7 +683,7 @@ export default function decorate(block) {
 
       renderL3SuggestionsView(suggestions);
     } else if (depth === 1 || depth === 2) {
-      // Visiting L1 or L2 Page -> Auto-activate L2 options bar with Hamburger back control
+      // Visiting L1 Page (/praneeth) or L2 Page (/praneeth/dummy-1) -> Show L2 subpages
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
       if (matchedL1 && matchedL1.children && matchedL1.children.length > 0) {
         renderL2SubNavigation(matchedL1);
@@ -715,16 +695,33 @@ export default function decorate(block) {
     }
   };
 
-  // Initial load navigation trigger
-  renderCurrentPageNavigation();
+  const closeAllNavigation = () => {
+    isNavOpen = false;
+    currentViewLevel = 'L1';
+
+    if (hamburgerWrapperNode) {
+      searchRow.prepend(hamburgerWrapperNode);
+    }
+    if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
+
+    if (hamburgerBtnNode) {
+      hamburgerBtnNode.setAttribute('aria-expanded', 'false');
+      hamburgerBtnNode.querySelector('.icon-hamburger')?.classList.remove('hidden');
+      hamburgerBtnNode.querySelector('.icon-close')?.classList.add('hidden');
+    }
+
+    navPillsRow.classList.add('hidden');
+    subMenuPanel.classList.add('hidden');
+  };
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
-      // If currently in L2 or L3 view, hamburger click navigates back to L1 view
-      if (currentViewLevel === 'L2' || currentViewLevel === 'L3') {
-        await renderL1ParentNavigation();
-      } else {
+      if (!isNavOpen) {
+        isNavOpen = true;
+        hamburgerBtnNode.setAttribute('aria-expanded', 'true');
         await renderCurrentPageNavigation();
+      } else {
+        closeAllNavigation();
       }
     });
   }
