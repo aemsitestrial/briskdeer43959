@@ -68,113 +68,121 @@ function getCurrentPageInfo() {
   };
 }
 
+let navTreePromise = null;
+
 /**
  * Parses query-index.json into L1, L2, and L3 multi-level hierarchy
  */
 async function fetchHierarchicalNavData() {
-  try {
-    const response = await fetch('/query-index.json');
-    if (!response.ok) return [];
-    const json = await response.json();
-    const data = json.data || json;
+  if (navTreePromise) return navTreePromise;
 
-    if (!Array.isArray(data)) return [];
+  navTreePromise = (async () => {
+    try {
+      const response = await fetch('/query-index.json');
+      if (!response.ok) return [];
+      const json = await response.json();
+      const data = json.data || json;
 
-    const navTree = {};
-    const excludedPages = [
-      'footer',
-      'header',
-      'tcs-footer',
-      'tcs-header',
-      'blocks',
-      'home',
-      'home-page',
-      'homepage',
-      'demo',
-      'nav',
-      'iconlist',
-      'qa',
-      'test',
-    ];
+      if (!Array.isArray(data)) return [];
 
-    data.forEach((item) => {
-      const rawPath = item?.path || '';
-      if (!rawPath) return;
+      const navTree = {};
+      const excludedPages = [
+        'footer',
+        'header',
+        'tcs-footer',
+        'tcs-header',
+        'blocks',
+        'home',
+        'home-page',
+        'homepage',
+        'demo',
+        'nav',
+        'iconlist',
+        'qa',
+        'test',
+      ];
 
-      const segments = rawPath.split('/').filter(Boolean);
+      data.forEach((item) => {
+        const rawPath = item?.path || '';
+        if (!rawPath) return;
 
-      let locale = '';
-      if (segments[0] && segments[0].length === 2) {
-        locale = segments.shift();
-      }
+        const segments = rawPath.split('/').filter(Boolean);
 
-      if (segments.length === 0) return;
+        let locale = '';
+        if (segments[0] && segments[0].length === 2) {
+          locale = segments.shift();
+        }
 
-      const lastSegment = segments[segments.length - 1]
-        .toLowerCase()
-        .replace(/\s+/g, '-');
-      if (excludedPages.includes(lastSegment)) return;
+        if (segments.length === 0) return;
 
-      const l1Key = segments[0];
-      if (excludedPages.includes(l1Key.toLowerCase())) return;
+        const lastSegment = segments[segments.length - 1]
+          .toLowerCase()
+          .replace(/\s+/g, '-');
+        if (excludedPages.includes(lastSegment)) return;
 
-      if (!navTree[l1Key]) {
-        const titleVal = item.title && segments.length === 1
-          ? item.title
-          : l1Key.replace(/-/g, ' ');
+        const l1Key = segments[0];
+        if (excludedPages.includes(l1Key.toLowerCase())) return;
 
-        navTree[l1Key] = {
-          key: l1Key,
-          title: titleVal,
-          path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
-          children: {},
-        };
-      }
-
-      if (segments.length >= 2) {
-        const l2Key = segments[1];
-        if (excludedPages.includes(l2Key.toLowerCase())) return;
-
-        if (!navTree[l1Key].children[l2Key]) {
-          const l2TitleVal = item.title && segments.length === 2
+        if (!navTree[l1Key]) {
+          const titleVal = item.title && segments.length === 1
             ? item.title
-            : l2Key.replace(/-/g, ' ');
+            : l1Key.replace(/-/g, ' ');
 
-          navTree[l1Key].children[l2Key] = {
-            key: l2Key,
-            title: l2TitleVal,
-            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
-            children: [],
+          navTree[l1Key] = {
+            key: l1Key,
+            title: titleVal,
+            path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}`),
+            children: {},
           };
         }
 
-        if (segments.length >= 3) {
-          const l3Key = segments[2];
-          if (excludedPages.includes(l3Key.toLowerCase())) return;
+        if (segments.length >= 2) {
+          const l2Key = segments[1];
+          if (excludedPages.includes(l2Key.toLowerCase())) return;
 
-          navTree[l1Key].children[l2Key].children.push({
-            key: l3Key,
-            title: item.title || l3Key.replace(/-/g, ' '),
-            path: formatHtmlPath(
-              `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
-            ),
-          });
+          if (!navTree[l1Key].children[l2Key]) {
+            const l2TitleVal = item.title && segments.length === 2
+              ? item.title
+              : l2Key.replace(/-/g, ' ');
+
+            navTree[l1Key].children[l2Key] = {
+              key: l2Key,
+              title: l2TitleVal,
+              path: formatHtmlPath(`/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}`),
+              children: [],
+            };
+          }
+
+          if (segments.length >= 3) {
+            const l3Key = segments[2];
+            if (excludedPages.includes(l3Key.toLowerCase())) return;
+
+            navTree[l1Key].children[l2Key].children.push({
+              key: l3Key,
+              title: item.title || l3Key.replace(/-/g, ' '),
+              path: formatHtmlPath(
+                `/${locale ? `${locale}/` : ''}${l1Key}/${l2Key}/${l3Key}`,
+              ),
+            });
+          }
         }
-      }
-    });
+      });
 
-    return Object.values(navTree).map((l1) => ({
-      ...l1,
-      children: Object.values(l1.children).map((l2) => ({
-        ...l2,
-        children: l2.children || [],
-      })),
-    }));
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to load navigation index:', error);
-    return [];
-  }
+      return Object.values(navTree).map((l1) => ({
+        ...l1,
+        children: Object.values(l1.children).map((l2) => ({
+          ...l2,
+          children: l2.children || [],
+        })),
+      }));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load navigation index:', error);
+      return [];
+    }
+  })();
+
+  return navTreePromise;
 }
 
 export default function decorate(block) {
@@ -458,12 +466,16 @@ export default function decorate(block) {
     const closeIcon = hamburgerBtnNode.querySelector('.icon-close');
 
     if (level === 'L1') {
-      searchRow.prepend(hamburgerWrapperNode);
+      if (hamburgerWrapperNode.parentElement !== searchRow) {
+        searchRow.prepend(hamburgerWrapperNode);
+      }
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.remove('hidden');
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
     } else {
-      navPillsRow.prepend(hamburgerWrapperNode);
+      if (hamburgerWrapperNode.parentElement !== navPillsRow) {
+        navPillsRow.prepend(hamburgerWrapperNode);
+      }
       if (searchBoxWrapperNode) searchBoxWrapperNode.classList.add('hidden');
       if (hamburgerIcon) hamburgerIcon.classList.remove('hidden');
       if (closeIcon) closeIcon.classList.add('hidden');
@@ -555,9 +567,6 @@ export default function decorate(block) {
 
   /**
    * Requirement 2: L2 Navigation View
-   * - Hamburger is active without clicking and pre-attached to navigation pills row.
-   * - Clicking Hamburger navigates back to L1 parent options view.
-   * - Shows L2 options with chevrons and floating submenus for L3.
    */
   renderL2SubNavigation = (l1Data) => {
     activeL1Data = l1Data;
@@ -651,7 +660,7 @@ export default function decorate(block) {
       const linkEl = l1Pill.querySelector('.tcs-pill-link');
       if (linkEl) {
         linkEl.addEventListener('click', (e) => {
-          if (l1.children && Object.keys(l1.children).length > 0) {
+          if (l1.children && l1.children.length > 0) {
             e.preventDefault();
             renderL2SubNavigation(l1);
           } else {
@@ -705,6 +714,9 @@ export default function decorate(block) {
       await renderL1ParentNavigation();
     }
   };
+
+  // Initial load navigation trigger
+  renderCurrentPageNavigation();
 
   if (hamburgerBtnNode) {
     hamburgerBtnNode.addEventListener('click', async () => {
