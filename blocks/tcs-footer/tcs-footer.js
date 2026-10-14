@@ -44,8 +44,9 @@ function getCurrentPageInfo() {
   const path = window.location.pathname.replace(/\.html$/, '');
   const segments = path.split('/').filter(Boolean);
 
+  let locale = '';
   if (segments[0] && segments[0].length === 2) {
-    segments.shift(); // Remove locale segment if present
+    locale = segments.shift();
   }
 
   const contentIdx = segments.indexOf('content');
@@ -58,10 +59,17 @@ function getCurrentPageInfo() {
   if (depth === 2) level = 'L2';
   if (depth >= 3) level = 'L3';
 
+  // Construct parent path for page redirection
+  const parentPath = segments.length > 1
+    ? formatHtmlPath(`/${locale ? `${locale}/` : ''}${segments.slice(0, -1).join('/')}`)
+    : formatHtmlPath(`/${locale ? `${locale}/` : ''}${segments[0] || ''}`);
+
   return {
     level,
     depth,
     segments,
+    locale,
+    parentPath,
     l1Key: segments[0] || '',
     l2Key: segments[1] || '',
     l3Key: segments[2] || '',
@@ -229,7 +237,6 @@ export default function decorate(block) {
   let isNavOpen = false;
   let navTreeData = null;
 
-  let activeL1Data = null;
   let searchQueryVariable = '';
 
   const getModelType = (row, index) => {
@@ -493,73 +500,6 @@ export default function decorate(block) {
     }
   };
 
-  let renderL1ParentNavigation;
-  let renderL2SubNavigation;
-
-  /**
-   * Requirement 3: L3 Page Behavior
-   * - No hamburger menu displayed
-   * - Shows default suggestions pills (Industries, Shopping, etc.)
-   * - Clicking pills updates search bar
-   * - Left arrow back button returns to L2 navigation
-   */
-  const renderL3SuggestionsView = (suggestionsList = []) => {
-    navPillsRow.innerHTML = '';
-    subMenuPanel.classList.add('hidden');
-    updateButtonStateAndPosition('L3');
-
-    const l3Container = document.createElement('div');
-    l3Container.className = 'tcs-l3-suggestions-wrapper';
-
-    // Left Back Arrow
-    const backBtn = document.createElement('button');
-    backBtn.className = 'tcs-nav-back-btn';
-    backBtn.setAttribute('aria-label', 'Return to L2 navigation view');
-    backBtn.innerHTML = getArrowLeftSvg();
-
-    backBtn.addEventListener('click', () => {
-      if (activeL1Data) {
-        renderL2SubNavigation(activeL1Data);
-      } else {
-        renderL1ParentNavigation();
-      }
-    });
-
-    l3Container.append(backBtn);
-
-    const pillsGroup = document.createElement('div');
-    pillsGroup.className = 'tcs-l3-pills-group';
-
-    // Fallback default suggestions if empty
-    const defaultSuggestions = ['Industries', 'Shopping'];
-    const activeSuggestions = suggestionsList.length > 0 ? suggestionsList : defaultSuggestions;
-
-    activeSuggestions.forEach((suggestion) => {
-      const sugText = typeof suggestion === 'string' ? suggestion : (suggestion.title || suggestion.key || '');
-      if (!sugText) return;
-
-      const sugPill = document.createElement('button');
-      sugPill.className = 'tcs-nav-pill l3-suggestion-pill';
-      sugPill.type = 'button';
-      sugPill.textContent = sugText;
-
-      sugPill.addEventListener('click', () => {
-        const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
-        if (searchInput) {
-          searchInput.value = sugText;
-          searchQueryVariable = sugText;
-          searchInput.focus();
-        }
-      });
-
-      pillsGroup.append(sugPill);
-    });
-
-    l3Container.append(pillsGroup);
-    navPillsRow.append(l3Container);
-    navPillsRow.classList.remove('hidden');
-  };
-
   /**
    * Submenu Panel Renderer (Displays L3 Options on L2 Hover/Selection)
    */
@@ -597,8 +537,7 @@ export default function decorate(block) {
   /**
    * Requirement 2: L2 Navigation View
    */
-  renderL2SubNavigation = (l1Data) => {
-    activeL1Data = l1Data;
+  const renderL2SubNavigation = (l1Data) => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
     updateButtonStateAndPosition('L2');
@@ -670,7 +609,7 @@ export default function decorate(block) {
   /**
    * Requirement 1: L1 Navigation View
    */
-  renderL1ParentNavigation = async () => {
+  const renderL1ParentNavigation = async () => {
     navPillsRow.innerHTML = '';
     subMenuPanel.classList.add('hidden');
     updateButtonStateAndPosition('L1');
@@ -699,6 +638,67 @@ export default function decorate(block) {
   };
 
   /**
+   * Requirement 3: L3 Page Behavior
+   * - No hamburger menu displayed
+   * - Dynamically renders search suggestion pills from index tree
+   * - Clicking pills updates search bar
+   * - Left arrow button redirects browser back to parent L2 page URL
+   */
+  const renderL3SuggestionsView = (suggestionsList = []) => {
+    navPillsRow.innerHTML = '';
+    subMenuPanel.classList.add('hidden');
+    updateButtonStateAndPosition('L3');
+
+    const l3Container = document.createElement('div');
+    l3Container.className = 'tcs-l3-suggestions-wrapper';
+
+    // Left Back Arrow -> Redirects to Parent L2 Page Window
+    const backBtn = document.createElement('button');
+    backBtn.className = 'tcs-nav-back-btn';
+    backBtn.setAttribute('aria-label', 'Return to parent page');
+    backBtn.innerHTML = getArrowLeftSvg();
+
+    backBtn.addEventListener('click', () => {
+      const pageInfo = getCurrentPageInfo();
+      if (pageInfo.parentPath) {
+        window.location.href = pageInfo.parentPath;
+      } else {
+        window.history.back();
+      }
+    });
+
+    l3Container.append(backBtn);
+
+    const pillsGroup = document.createElement('div');
+    pillsGroup.className = 'tcs-l3-pills-group';
+
+    suggestionsList.forEach((suggestion) => {
+      const sugText = typeof suggestion === 'string' ? suggestion : (suggestion.title || suggestion.key || '');
+      if (!sugText) return;
+
+      const sugPill = document.createElement('button');
+      sugPill.className = 'tcs-nav-pill l3-suggestion-pill';
+      sugPill.type = 'button';
+      sugPill.textContent = sugText;
+
+      sugPill.addEventListener('click', () => {
+        const searchInput = searchBoxWrapperNode?.querySelector('.tcs-search-input');
+        if (searchInput) {
+          searchInput.value = sugText;
+          searchQueryVariable = sugText;
+          searchInput.focus();
+        }
+      });
+
+      pillsGroup.append(sugPill);
+    });
+
+    l3Container.append(pillsGroup);
+    navPillsRow.append(l3Container);
+    navPillsRow.classList.remove('hidden');
+  };
+
+  /**
    * Auto-detect level and render corresponding navigation view based on URL path
    */
   const renderCurrentPageNavigation = async () => {
@@ -710,15 +710,14 @@ export default function decorate(block) {
 
     if (depth >= 3) {
       const matchedL1 = navTreeData.find((l1) => l1.key === l1Key) || navTreeData[0];
-      activeL1Data = matchedL1;
       let suggestions = [];
 
       if (matchedL1) {
         const matchedL2 = matchedL1.children.find((l2) => l2.key === l2Key)
           || matchedL1.children[0];
-        if (matchedL2 && matchedL2.children.length > 0) {
+        if (matchedL2 && matchedL2.children && matchedL2.children.length > 0) {
           suggestions = matchedL2.children;
-        } else {
+        } else if (matchedL1.children && matchedL1.children.length > 0) {
           suggestions = matchedL1.children;
         }
       }
